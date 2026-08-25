@@ -21,6 +21,26 @@ Phase -1 Task 2 result: **complete**.
 
 Phase -1 remains incomplete because Tasks 3 through 8 and the configuration-record blockers below still require resolution.
 
+### 2. Pull request 2 security and history remediation
+
+- Converted pull request 2 to draft before changing its history.
+- Confirmed that GitGuardian found a generated Next.js key inside `frontend/.next/server/server-reference-manifest.json` in old commit `b818750`. The value was not read or displayed.
+- Created local recovery branch `backup/pr-2-pre-cleanup-20260825` at the old pull-request tip. The recovery branch was not pushed.
+- Rebuilt the pull-request branch from current `origin/main` as focused, signed commits.
+- Removed the duplicate Worker commit already squash-merged by pull request 1.
+- Removed every `.next`, `__pycache__`, and `.pyc` artifact from the rewritten pull-request history.
+- Added `noindex`, `nofollow`, and `noarchive` metadata and a `robots.txt` file that disallows `/`.
+- Removed the invalid `next start` command from the static-export frontend.
+- Made `.dev.vars.example` trackable and added the required `.env.example`. Every committed assignment in both templates is empty.
+- Added regression tests for search-index blocking, static-export scripts, and empty secret templates.
+- Ran the frontend tests: 4 passed, 0 failed.
+- Ran the frontend production build and static export: passed.
+- Ran the root TypeScript check and backend Python syntax check: passed.
+- Verified the generated `index.html` contains `noindex, nofollow, noarchive` and the generated `robots.txt` contains `Disallow: /`.
+- Updated pull request 2 with `--force-with-lease` only after confirming its old remote tip was still `9010ced`.
+- Verified pull request 2 is conflict-free and contains only the focused commits listed in its rewritten history. GitGuardian, both CodeQL checks, and Workers Builds pass.
+- Kept pull request 2 in draft. Phase -1 is incomplete, so the pull request must not merge yet.
+
 ## 2026-08-24
 
 ### 1. Cloudflare Pages frontend deployment
@@ -69,25 +89,24 @@ Phase -1 Task 2 result: **complete**. The production Turnstile hostname, Workers
 
 Phase -1 remaining blockers:
 
-1. GitHub secret names and some security settings are not independently verified because the local GitHub CLI login is invalid.
+1. GitHub CLI authentication was restored on 2026-08-25. GitHub secret names and some security settings still need independent verification.
 2. The documented Google Cloud roles do not match Phase -1 Task 3. The log records Secret Manager Secret Accessor, not Secret Manager Admin, and also records Service Account User.
 3. Google Cloud project, API, billing, budget, IAM, and secret state are documented but not independently verified in this audit. The Google Cloud CLI is not installed.
 4. Groq, OpenRouter, Resend, and Sentry setup is documented but not independently verified in this audit.
 5. No UptimeRobot account setup is documented.
 6. The Ed25519 and ML-DSA-65 keypairs from Phase -1 Task 7 do not exist in the repository record. The generic `ENCRYPTION_KEY` does not satisfy this task.
 7. Phase -1 Task 7 depends on a key-generation script assigned to Phase 5. This is a phase-order conflict that needs a human decision.
-8. The tracked `.env.example` claimed in the earlier log does not exist. A local `.dev.vars.example` exists, but `.gitignore` ignores it and Git does not track it.
-9. The local example file does not list every required configuration name. The purpose of `ENCRYPTION_KEY` is also not defined in the architecture or used by current code.
+8. The empty `.env.example` and `.dev.vars.example` files are now tracked, but Phase -1 Task 7 does not define exact secret-slot names for its two private keys. The purpose of the earlier `ENCRYPTION_KEY` remains undefined, and it does not satisfy Task 7.
 
 Phase 0 result: **not complete**.
 
 Phase 0 task status:
 
-1. Frontend: implemented and live, but not review-complete. Its latest source is in local checkpoint `c64eecc`, which is not pushed, has no pull request, and is not on `main`.
+1. Frontend: implemented and live, but not review-complete. Its latest source is in draft pull request 2 and is not on `main`.
 2. Backend: a local FastAPI `/health` route exists. No container file, Cloud Run deployment configuration, or Cloud Run URL exists. The Worker endpoint is not the required FastAPI backend.
 3. CI/CD: no repository workflow deploys the frontend, edge gateway, and backend from a push to `main`.
-4. Index blocking: incomplete. The live frontend uses `lang="en"`, has no required robots meta tag, and has no `X-Robots-Tag`. Its `robots.txt` does not contain `Disallow: /`. The Worker response also has no `X-Robots-Tag`.
-5. Tests: partial. One frontend configuration test exists locally. No backend unit test exists, and no project test runs in CI.
+4. Index blocking: partial. Draft pull request 2 adds the required frontend robots metadata and `robots.txt`, but the production Pages deployment has not been updated and verified. The required `X-Robots-Tag` response header is also not implemented.
+5. Tests: partial. Four frontend configuration and security tests pass. No backend unit test exists, and no project test runs in CI.
 6. UptimeRobot: no monitor is documented, and the required Cloud Run `/health` URL does not exist.
 
 Phase 0 exit-test result:
