@@ -82,10 +82,17 @@ Phase -1 Task 3 result: **not complete**. Billing, APIs, project identity, servi
 - Deleted GitHub secrets `GCP_SA_KEY` and the redundant secret-form `GCP_PROJECT_ID`. Re-verified that neither secret name remains and that the three non-secret variables remain.
 - Removed the temporary smoke-test workflow from the final worktree after the successful proof.
 - Updated draft pull request 2 so reviewers can see the keyless identity design, least-privilege scopes, retired key, proof run, and passing validation.
+- The owner supplied a Google Cloud Billing → Budgets & alerts screenshot showing a specified budget amount of £1.00 GBP.
+- The screenshot shows actual-spend alert thresholds at 50% (£0.50), 90% (£0.90), and 100% (£1.00).
+- The screenshot shows email notifications enabled for billing administrators and users and for project owners.
+- The owner confirmed that the bank account and Google billing account are UK-based and approved expressing the requirement in the billing account's native currency.
+- Revised the architecture to use a stable native-currency budget requirement and recorded Engineering Decision 18. No application code, dependency, or secret changed.
 
 This section supersedes the Google Cloud IAM and CI-identity state recorded earlier on 2026-08-25.
 
-Phase -1 Task 3 result: **not complete**. The keyless identity architecture and all IAM work are complete and verified. The only Task 3 blocker is independent confirmation that the documented `Aethelgard Prod Budget` still has a monthly limit of `$1.00` and alert thresholds at 50%, 90%, and 100%. The Billing Budgets API remains disabled, so this must be confirmed in Billing → Budgets & alerts or through an explicitly approved temporary API audit.
+Phase -1 Task 3 result: **complete**. Project identity, billing linkage, required APIs, the £1.00 GBP budget and alert thresholds, keyless GitHub identity, least-privilege IAM, runtime secret containers, GitHub variables, OIDC proof, and legacy-key retirement are verified.
+
+Phase -1 remains incomplete. Task 4 is the next sequential task; no Phase 0 work may begin yet.
 
 ## 2026-08-24
 

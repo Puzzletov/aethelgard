@@ -284,7 +284,7 @@ Most files stay in memory for the whole pipeline. A file too large for memory ca
 | Edge gateway | Cloudflare Workers on the free `*.workers.dev` subdomain | Validate Turnstile, enforce the Workers Rate Limiting binding, add security headers, and proxy allowed API routes | Workers Free plan: 100,000 requests per day | Backend Safe Mode message; never bypass the gateway for analysis |
 | TLS key exchange | Hybrid X25519 + ML-KEM (FIPS 203) | Post-quantum-safe encryption in transit | Provided by Cloudflare, on by default | — |
 | Backend framework | FastAPI (Python) | Run the API and the processing pipeline | MIT | Flask |
-| Backend hosting | Google Cloud Run | Run the backend container, serverless, scale to zero | Free tier: 2,000,000 requests per month, never expires. Needs a linked billing card; cap Max Instances at 3 and set a $1 budget alert (§15) | AWS Lambda free tier (1,000,000 requests per month, never expires) |
+| Backend hosting | Google Cloud Run | Run the backend container, serverless, scale to zero | Free tier: 2,000,000 requests per month, never expires. Needs a linked billing card; cap Max Instances at 3 and set a 1.00 budget alert in the billing account's native currency (§15) | AWS Lambda free tier (1,000,000 requests per month, never expires) |
 | PDF text extraction | pdfplumber | Read text and tables from a PDF | MIT | PyMuPDF |
 | DOCX extraction | python-docx | Read text from a Word file | MIT | — |
 | PPTX extraction | python-pptx | Read text from a PowerPoint file | MIT | — |
@@ -498,7 +498,7 @@ A daily, scheduled job (GitHub Actions cron) calls `/health`, checks each AI pro
 | Maximum Cloud Run instance count | 3, a hard cap to block a runaway bill |
 | Maximum edge gateway traffic | 100,000 Worker requests per day, the Workers Free platform ceiling; fail closed when the ceiling is reached |
 | Edge upload rate | 5 `POST /analyze` attempts per source IP per Cloudflare location per 60 seconds, with a valid single-use Turnstile token required for every accepted request |
-| Monthly cost ceiling | $0.00. A Google Cloud budget alert at $1.00 gives an early warning if this is ever wrong |
+| Monthly cost ceiling | Zero paid spend. A Google Cloud budget alert at 1.00 in the billing account's native currency (currently £1.00 GBP) gives an early warning if this is ever wrong |
 | Download link lifetime | 15 minutes, or first use, whichever is first |
 | Frontend initial script size | Under 300 KB, compressed |
 | Uptime | No formal guarantee. Track it anyway, through UptimeRobot, as an internal quality signal |
@@ -570,6 +570,7 @@ A change must pass its tests before it can merge. This includes the prompt injec
 | 15 | Kept the working name "Aethelgard" | Gives the document a concrete subject. A rename is a find-and-replace, with no effect on the architecture | Renaming it now. Deferred to the project owner's own choice |
 | 16 | Keep the free `*.pages.dev` frontend and use the existing `*.workers.dev` Worker as the edge gateway. Replace zone-only Bot Fight Mode and WAF rate limiting with Turnstile and the Workers Rate Limiting binding | The owner does not have a custom domain. Buying one breaks the $0.00 constraint. The Workers Free plan fits this portfolio workload, has a 100,000-request daily platform ceiling, and can fail closed. This decision supersedes the zone-only enforcement part of Decision 4 | Buy a custom domain. Rejected because it adds permanent cost. Expose Cloud Run directly with only backend controls. Rejected because it lets callers bypass the edge controls |
 | 17 | Use GitHub OIDC and Google Cloud Workload Identity Federation for deployment. Keep separate `github-actions-deployer` and `aethelgard-runtime` identities. Scope Service Account User to the runtime identity and Secret Manager access to individual application secrets | Short-life federated credentials remove the stored JSON-key risk. Separate identities stop deployment permissions from becoming runtime permissions. Resource-level bindings follow least privilege and still support unattended deployment from protected `main` | Store `GCP_SA_KEY` in GitHub. Rejected because it is a long-life password-equivalent credential. Give Secret Manager Admin to the deployer. Rejected because deployment does not require control of every secret |
+| 18 | Express the Google Cloud budget in the billing account's native currency: £1.00 GBP for the owner's UK billing account | Google Cloud applies the billing account currency to budgets. A fixed native-currency amount is stable and directly matches the configured control | Keep the requirement as US $1.00 or use a changing exchange-rate conversion. Rejected because neither matches the UK billing account's budget currency |
 
 ---
 
@@ -599,7 +600,7 @@ A change must pass its tests before it can merge. This includes the prompt injec
 2. Use project ID `aethelgard-prod-504515` with display name `aethelgard-prod`.
 3. Link a billing account. This is required to use Cloud Run, even within the free tier. Cost stays $0.00 as long as usage stays inside the free limits.
 4. Enable the Cloud Run, Secret Manager, IAM, IAM Service Account Credentials, and Security Token Service APIs.
-5. Under Billing → Budgets & alerts, create a budget alert set to $1.00.
+5. Under Billing → Budgets & alerts, create a budget alert set to 1.00 in the billing account's native currency. For the owner's UK billing account, this is £1.00 GBP.
 6. Keep `github-actions-deployer@aethelgard-prod-504515.iam.gserviceaccount.com` for deployment. Create `aethelgard-runtime@aethelgard-prod-504515.iam.gserviceaccount.com` for the Cloud Run service identity.
 7. Create a Workload Identity pool and GitHub OIDC provider. Restrict admission to the immutable owner and repository IDs for `Puzzletov/aethelgard` and to `refs/heads/main`. Grant that repository identity `roles/iam.workloadIdentityUser` only on `github-actions-deployer`.
 8. Grant `roles/run.admin` to `github-actions-deployer` on the project. Grant `roles/iam.serviceAccountUser` to the deployer only on `aethelgard-runtime`, not on the whole project. Add only the later image-build or registry role proven necessary by the Phase 0 deployment workflow.
