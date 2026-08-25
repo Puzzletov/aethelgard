@@ -238,10 +238,11 @@ See §9 for the exact typefaces, color, and spacing rules.
 
 ## 8. System Architecture
 
-### 8.1 Two independent parts
+### 8.1 Three independent parts
 
-1. **Frontend.** Runs in the browser. Talks to the backend over an API.
-2. **Backend.** Runs in a container on a serverless host.
+1. **Frontend.** Runs in the browser on Cloudflare Pages. Talks to the edge gateway over an API.
+2. **Edge gateway.** Runs as a Cloudflare Worker on the free `*.workers.dev` subdomain. It accepts only the named public API routes. It checks Turnstile tokens, applies the Workers Rate Limiting binding, adds the required response headers, and proxies allowed requests to the backend.
+3. **Backend.** Runs in a container on a serverless host. Except for `GET /health`, it rejects a request that does not carry `EDGE_GATEWAY_SECRET`. The same secret exists only in Cloudflare Workers secrets and Google Cloud Secret Manager.
 
 If the backend is down, the frontend must still load and show a clear message. It must never show a blank page.
 
@@ -279,8 +280,8 @@ Most files stay in memory for the whole pipeline. A file too large for memory ca
 | Frontend framework | Next.js (TypeScript) | Build the user interface | MIT | — |
 | Styling | Tailwind CSS, with a shared design-tokens file | Style the interface from one source of truth | MIT | — |
 | Charts (interactive) | Recharts | Draw charts in the dashboard | MIT | — |
-| Frontend hosting | Cloudflare Pages | Serve the frontend at no cost, under the same provider as the edge security layer | Free tier, no expiry | Vercel Hobby plan (free, non-commercial use only) |
-| Edge security | Cloudflare (free plan) | Web Application Firewall, bot and scraper blocking, rate limiting, TLS | Free tier | — |
+| Frontend hosting | Cloudflare Pages | Serve the frontend at no cost, under the same provider as the edge gateway | Free tier, no expiry | Vercel Hobby plan (free, non-commercial use only) |
+| Edge gateway | Cloudflare Workers on the free `*.workers.dev` subdomain | Validate Turnstile, enforce the Workers Rate Limiting binding, add security headers, and proxy allowed API routes | Workers Free plan: 100,000 requests per day | Backend Safe Mode message; never bypass the gateway for analysis |
 | TLS key exchange | Hybrid X25519 + ML-KEM (FIPS 203) | Post-quantum-safe encryption in transit | Provided by Cloudflare, on by default | — |
 | Backend framework | FastAPI (Python) | Run the API and the processing pipeline | MIT | Flask |
 | Backend hosting | Google Cloud Run | Run the backend container, serverless, scale to zero | Free tier: 2,000,000 requests per month, never expires. Needs a linked billing card; cap Max Instances at 3 and set a $1 budget alert (§15) | AWS Lambda free tier (1,000,000 requests per month, never expires) |
@@ -306,7 +307,7 @@ Most files stay in memory for the whole pipeline. A file too large for memory ca
 | Dependency and code scanning | Dependabot + Semgrep | Find outdated or vulnerable dependencies and risky code patterns | Free | — |
 | Error tracking | Sentry | Report backend errors | Free tier | — |
 | Uptime monitoring | UptimeRobot | Check the site is online | Free tier | — |
-| Bot and scraper protection | Cloudflare Turnstile plus Cloudflare Bot Fight Mode | Block automated abuse and scraping on every route | Free | — |
+| Bot and scraper protection | Cloudflare Turnstile plus the Cloudflare Workers Rate Limiting binding | Require a single-use challenge for analysis requests and limit `POST /analyze` to 5 attempts per source IP per Cloudflare location per 60 seconds | Workers Free plan | Backend request ceiling and Safe Mode |
 
 **Rule for future dependencies:** add a new row to this table before you add a new dependency. Fill in every column.
 
@@ -359,8 +360,9 @@ After Phase 4 is stable, you can expose the pipeline as a tool through the Model
 - 15 MB size limit.
 - Safe parsing libraries only, none of which run macros or embedded scripts.
 - No accounts, no passwords. This removes an entire class of attack because the surface does not exist.
-- Edge-level rate limiting and bot and scraper blocking, through Cloudflare.
-- A second, backend-level rate limit inside FastAPI, behind the edge layer.
+- Edge-level Turnstile validation and rate limiting in the Cloudflare Worker. The Worker permits 5 `POST /analyze` attempts per source IP per Cloudflare location per 60 seconds.
+- The Worker proxies only the named API routes. Except for `GET /health`, FastAPI rejects a direct request that does not carry `EDGE_GATEWAY_SECRET`.
+- A second, backend-level request ceiling exists inside FastAPI, behind the edge gateway.
 - TLS on every connection, with hybrid post-quantum key exchange.
 - Secrets stored only in the host's secret manager, never in the code repository.
 - No verbose error messages to the user. A user-facing error is always short and safe. The full technical error goes only to Sentry.
@@ -379,7 +381,7 @@ After Phase 4 is stable, you can expose the pipeline as a tool through the Model
 - Every page and every generated result page: `<meta name="robots" content="noindex, nofollow, noarchive">`
 - Every response: the header `X-Robots-Tag: noindex, nofollow, noarchive`
 - Every download link (§7.4) carries the same header and the same meta rule, and is never placed on any page a search engine or a scraper could crawl to.
-- Cloudflare Bot Fight Mode and Turnstile apply to every route that returns data, not only the upload form, so an automated scraper cannot walk the site.
+- Turnstile and the Worker rate limit apply to `POST /analyze` and any later route that accepts user data. The Worker exposes only the named API routes. Result and download routes also require their signed, short-life tokens, so an automated scraper cannot walk the site.
 
 ### 11.4 Minimal API surface
 
@@ -491,6 +493,8 @@ A daily, scheduled job (GitHub Actions cron) calls `/health`, checks each AI pro
 | Maximum end-to-end processing time | 90 seconds typical, 180 seconds hard timeout (raised from the single-pass estimate, to allow for the Steelman and Oracle passes) |
 | Maximum backend container memory | 1 GiB starting point; measure and adjust |
 | Maximum Cloud Run instance count | 3, a hard cap to block a runaway bill |
+| Maximum edge gateway traffic | 100,000 Worker requests per day, the Workers Free platform ceiling; fail closed when the ceiling is reached |
+| Edge upload rate | 5 `POST /analyze` attempts per source IP per Cloudflare location per 60 seconds, with a valid single-use Turnstile token required for every accepted request |
 | Monthly cost ceiling | $0.00. A Google Cloud budget alert at $1.00 gives an early warning if this is ever wrong |
 | Download link lifetime | 15 minutes, or first use, whichever is first |
 | Frontend initial script size | Under 300 KB, compressed |
@@ -561,6 +565,7 @@ A change must pass its tests before it can merge. This includes the prompt injec
 | 13 | Download links: high-entropy tokens, 15-minute or first-use expiry, `noindex` headers | Directly answers the requirement that no link is indexed and every link is permanently unusable after the session | A longer-lived or sequential link. Rejected on both privacy and scraping grounds |
 | 14 | UI type and color direction: Fraunces (headings) and Public Sans (body), one warm terracotta accent, warm off-white background | A deliberate move away from the common AI-tool look (a geometric grotesque sans-serif such as Inter, and a purple or indigo accent). A serif heading font also fits the "consulting report" positioning better than a typical software-dashboard look | Inter, or a similar default geometric sans, with a purple or blue accent. Rejected as visually indistinct from most current AI tools |
 | 15 | Kept the working name "Aethelgard" | Gives the document a concrete subject. A rename is a find-and-replace, with no effect on the architecture | Renaming it now. Deferred to the project owner's own choice |
+| 16 | Keep the free `*.pages.dev` frontend and use the existing `*.workers.dev` Worker as the edge gateway. Replace zone-only Bot Fight Mode and WAF rate limiting with Turnstile and the Workers Rate Limiting binding | The owner does not have a custom domain. Buying one breaks the $0.00 constraint. The Workers Free plan fits this portfolio workload, has a 100,000-request daily platform ceiling, and can fail closed. This decision supersedes the zone-only enforcement part of Decision 4 | Buy a custom domain. Rejected because it adds permanent cost. Expose Cloud Run directly with only backend controls. Rejected because it lets callers bypass the edge controls |
 
 ---
 
@@ -580,10 +585,10 @@ A change must pass its tests before it can merge. This includes the prompt injec
 
 **Task 2: Cloudflare**
 1. Create a Cloudflare account, if none exists.
-2. Add a site (your custom domain), or plan to use the free `*.pages.dev` subdomain that Cloudflare Pages gives you automatically.
-3. Under Turnstile, create a new widget. Save the Site Key and the Secret Key.
-4. Under Security → Bots, turn on Bot Fight Mode.
-5. Under Security → WAF, add a rate-limiting rule for the upload endpoint.
+2. Use the free `aethelgard-3j9.pages.dev` frontend hostname. A custom domain is not required.
+3. Under Turnstile, configure the production widget for the exact `aethelgard-3j9.pages.dev` hostname. Save the Site Key and the Secret Key.
+4. Confirm the Workers Free plan is active and keep the existing `aethelgard.justbwas.workers.dev` gateway enabled.
+5. Do not use the zone-only Bot Fight Mode or WAF rate-limiting controls. Use the approved Worker gateway controls from Decision 16 instead.
 
 **Task 3: Google Cloud**
 1. Create a Google Cloud account, if none exists.
@@ -620,22 +625,24 @@ A change must pass its tests before it can merge. This includes the prompt injec
 
 ### Phase 0: Skeleton (no AI yet)
 
-**Goal:** the frontend and backend exist, deploy, and talk to each other.
+**Goal:** the frontend, edge gateway, and backend exist, deploy, and talk to each other.
 
 - [ ] Build a minimal Next.js frontend, deployed to Cloudflare Pages.
+- [ ] Build the Cloudflare Worker edge gateway on `*.workers.dev`, with an allow-list of API routes and fail-closed behavior.
 - [ ] Build a minimal FastAPI backend, deployed to Cloud Run, with a `/health` endpoint.
-- [ ] Connect CI/CD through GitHub Actions: a push to `main` deploys both parts.
+- [ ] Connect CI/CD through GitHub Actions: a push to `main` deploys the frontend, edge gateway, and backend.
 - [ ] Set the `robots.txt`, meta tags, and headers from §11.3.
 - [ ] Write the first unit tests, running in CI.
 - [ ] Add the UptimeRobot monitor pointed at `/health` (the remaining part of Task 6 above).
 
-**Exit test:** the site is live at a public URL. `/health` returns success. A push to `main` deploys with no manual step.
+**Exit test:** the site is live at a public URL. The edge gateway can reach the Cloud Run `/health` endpoint. A push to `main` deploys all three parts with no manual step.
 
 ### Phase 1: Core Mission
 
 **Goal:** delivers §7.1 and §7.2, and pipeline steps 1 through 7 of §8.2.
 
 - [ ] Build file validation (real content-type check, size cap).
+- [ ] Require a valid Turnstile token and the Worker rate limit for `POST /analyze`. Require `EDGE_GATEWAY_SECRET` at the backend.
 - [ ] Build extraction for all six file types.
 - [ ] Build the pattern-based PII masking step.
 - [ ] Build the `model_router` module, with Groq as primary and OpenRouter as fallback.

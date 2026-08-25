@@ -2,6 +2,25 @@
 
 Technical record of setup, build work, checks, and phase-gate audits for Aethelgard.
 
+## 2026-08-25
+
+### 1. Phase -1 Task 2 Cloudflare verification
+
+- The owner confirmed in the Cloudflare dashboard that the Workers Free plan remains selected.
+- Used the authenticated Wrangler CLI to read the Turnstile widget configuration without reading or displaying the secret key.
+- Verified widget `Aethelgard Protection` is in Managed mode.
+- Verified its authorized hostnames are exactly `aethelgard-3j9.pages.dev` and `localhost`.
+- Verified pre-clearance is disabled (`no_clearance`).
+- Verified the widget was changed through the Cloudflare dashboard on 2026-08-25.
+- Used the authenticated Wrangler CLI to verify that Worker `aethelgard` has an active deployment.
+- Confirmed `https://aethelgard-3j9.pages.dev/` returns HTTP 200.
+- Confirmed `https://aethelgard.justbwas.workers.dev/` returns HTTP 200.
+- Kept the existing free `pages.dev` and `workers.dev` hostnames; no custom domain or zone-only WAF control was added.
+
+Phase -1 Task 2 result: **complete**.
+
+Phase -1 remains incomplete because Tasks 3 through 8 and the configuration-record blockers below still require resolution.
+
 ## 2026-08-24
 
 ### 1. Cloudflare Pages frontend deployment
@@ -30,7 +49,8 @@ Confirmed evidence:
 
 - The GitHub repository is public and uses `main` as its default branch.
 - The active `main` ruleset requires pull requests, linear history, and signed commits.
-- The active ruleset does not require a passing status check.
+- Verified through the public GitHub API that the active ruleset requires `Analyze (javascript-typescript)` from GitHub Actions.
+- Verified that the required-status-check policy is strict, so a branch must be up to date before merge.
 - GitHub reports active managed Dependabot Updates and CodeQL workflows.
 - The public `main` branch contains only `README.md`.
 - No pull request is open.
@@ -43,28 +63,29 @@ Confirmed evidence:
 
 Phase -1 result: **not complete**. The earlier completion statement in this log is not a valid phase-gate result.
 
-Phase -1 blockers:
+Phase -1 Task 1 result: **complete**. GitHub branch protection now meets the required passing-status-check rule.
 
-1. GitHub does not require a passing status check on `main`.
-2. GitHub secret names and some security settings are not independently verified because the local GitHub CLI login is invalid.
-3. Cloudflare Bot Fight Mode and the WAF upload rate limit were skipped.
-4. The Turnstile widget is documented for `localhost`, not the public Pages host.
-5. The documented Google Cloud roles do not match Phase -1 Task 3. The log records Secret Manager Secret Accessor, not Secret Manager Admin, and also records Service Account User.
-6. Google Cloud project, API, billing, budget, IAM, and secret state are documented but not independently verified in this audit. The Google Cloud CLI is not installed.
-7. Groq, OpenRouter, Resend, and Sentry setup is documented but not independently verified in this audit.
-8. No UptimeRobot account setup is documented.
-9. The Ed25519 and ML-DSA-65 keypairs from Phase -1 Task 7 do not exist in the repository record. The generic `ENCRYPTION_KEY` does not satisfy this task.
-10. Phase -1 Task 7 depends on a key-generation script assigned to Phase 5. This is a phase-order conflict that needs a human decision.
-11. The tracked `.env.example` claimed in the earlier log does not exist. A local `.dev.vars.example` exists, but `.gitignore` ignores it and Git does not track it.
-12. The local example file does not list every required configuration name. The purpose of `ENCRYPTION_KEY` is also not defined in the architecture or used by current code.
+Phase -1 Task 2 result: **complete**. The production Turnstile hostname, Workers Free selection, deployed Worker gateway, and public endpoints are verified.
+
+Phase -1 remaining blockers:
+
+1. GitHub secret names and some security settings are not independently verified because the local GitHub CLI login is invalid.
+2. The documented Google Cloud roles do not match Phase -1 Task 3. The log records Secret Manager Secret Accessor, not Secret Manager Admin, and also records Service Account User.
+3. Google Cloud project, API, billing, budget, IAM, and secret state are documented but not independently verified in this audit. The Google Cloud CLI is not installed.
+4. Groq, OpenRouter, Resend, and Sentry setup is documented but not independently verified in this audit.
+5. No UptimeRobot account setup is documented.
+6. The Ed25519 and ML-DSA-65 keypairs from Phase -1 Task 7 do not exist in the repository record. The generic `ENCRYPTION_KEY` does not satisfy this task.
+7. Phase -1 Task 7 depends on a key-generation script assigned to Phase 5. This is a phase-order conflict that needs a human decision.
+8. The tracked `.env.example` claimed in the earlier log does not exist. A local `.dev.vars.example` exists, but `.gitignore` ignores it and Git does not track it.
+9. The local example file does not list every required configuration name. The purpose of `ENCRYPTION_KEY` is also not defined in the architecture or used by current code.
 
 Phase 0 result: **not complete**.
 
 Phase 0 task status:
 
-1. Frontend: implemented and live, but not review-complete. Its latest source is uncommitted, has no pull request, and is not on `main`.
+1. Frontend: implemented and live, but not review-complete. Its latest source is in local checkpoint `c64eecc`, which is not pushed, has no pull request, and is not on `main`.
 2. Backend: a local FastAPI `/health` route exists. No container file, Cloud Run deployment configuration, or Cloud Run URL exists. The Worker endpoint is not the required FastAPI backend.
-3. CI/CD: no repository workflow deploys the frontend or backend from a push to `main`.
+3. CI/CD: no repository workflow deploys the frontend, edge gateway, and backend from a push to `main`.
 4. Index blocking: incomplete. The live frontend uses `lang="en"`, has no required robots meta tag, and has no `X-Robots-Tag`. Its `robots.txt` does not contain `Disallow: /`. The Worker response also has no `X-Robots-Tag`.
 5. Tests: partial. One frontend configuration test exists locally. No backend unit test exists, and no project test runs in CI.
 6. UptimeRobot: no monitor is documented, and the required Cloud Run `/health` URL does not exist.
@@ -73,13 +94,28 @@ Phase 0 exit-test result:
 
 - The frontend is live.
 - The required Cloud Run `/health` endpoint is not live.
-- A push to `main` does not deploy both parts.
+- A push to `main` does not deploy all three parts.
 - The Phase 0 exit test fails.
 
 Gate decision:
 
 - Do not start or continue Phase 0 work until the Phase -1 blockers are resolved or the repository owner gives an explicit architecture decision.
 - Do not start Phase 1 or any later phase.
+
+### 3. Approved `pages.dev` edge-control revision
+
+- The owner confirmed that no custom domain is available.
+- The owner chose to keep the free `aethelgard-3j9.pages.dev` hostname.
+- The owner approved an architecture revision instead of buying a domain and breaking the $0.00 constraint.
+- Verified from Cloudflare documentation that Workers provide a stable Rate Limiting binding and that the Workers Free plan has a 100,000-request daily platform ceiling.
+- Revised the architecture to use the existing `aethelgard.justbwas.workers.dev` Worker as the edge gateway.
+- Replaced the zone-only Bot Fight Mode and WAF rate-limit requirement with Turnstile, the Workers Rate Limiting binding, an API route allow-list, `EDGE_GATEWAY_SECRET`, and a backend request ceiling.
+- Set the edge upload limit to 5 `POST /analyze` attempts per source IP per Cloudflare location per 60 seconds.
+- Added Engineering Decision Record entry 16.
+- Updated Phase -1 Task 2, the Phase 0 skeleton, the Phase 1 controls, and the Phase 0 exit test to match the approved three-part deployment.
+- Added no dependency.
+- Changed no application code, CI configuration, or external Cloudflare setting.
+- Phase -1 Task 2 was completed and independently verified on 2026-08-25.
 
 ## 2026-08-04
 
