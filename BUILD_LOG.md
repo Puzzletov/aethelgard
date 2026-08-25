@@ -41,6 +41,23 @@ Phase -1 remains incomplete because Tasks 3 through 8 and the configuration-reco
 - Verified pull request 2 is conflict-free and contains only the focused commits listed in its rewritten history. GitGuardian, both CodeQL checks, and Workers Builds pass.
 - Kept pull request 2 in draft. Phase -1 is incomplete, so the pull request must not merge yet.
 
+### 3. Phase -1 Task 3 Google Cloud audit
+
+- Installed the official Google Cloud SDK 581.0.0 after owner approval.
+- Authenticated the Google Cloud CLI with a user account that can access the project. No service-account private key was read or downloaded.
+- Found that `aethelgard-prod` is the display name, not the project ID. The active project ID is `aethelgard-prod-504515`.
+- Corrected the GitHub secret `GCP_PROJECT_ID` to `aethelgard-prod-504515` and verified its update timestamp. No secret value was displayed.
+- Verified the project is active and billing is linked and enabled.
+- Verified `run.googleapis.com` and `secretmanager.googleapis.com` are enabled.
+- Could not query the budget because `billingbudgets.googleapis.com` is disabled. Did not enable an extra API only for this audit.
+- Verified the deployment service account is `github-actions-deployer@aethelgard-prod-504515.iam.gserviceaccount.com` and is enabled.
+- Verified its project roles are `roles/run.admin`, `roles/iam.serviceAccountUser`, and `roles/secretmanager.secretAccessor`.
+- Verified one enabled user-managed key exists. Verified the GitHub secret name `GCP_SA_KEY` exists, but GitHub does not allow its value to be read back, so the key match is not independently proven.
+- Verified no Workload Identity Federation pool exists.
+- Did not add `roles/secretmanager.admin`, remove `roles/iam.serviceAccountUser`, or delete the existing key. The current Task 3 role and JSON-key instructions conflict with least-privilege Cloud Run deployment and keyless CI guidance, so an owner-approved architecture revision is required first.
+
+Phase -1 Task 3 result: **not complete**. Billing, APIs, project identity, service-account identity, and current IAM are verified. Budget confirmation and the CI identity architecture decision remain open.
+
 ## 2026-08-24
 
 ### 1. Cloudflare Pages frontend deployment
@@ -89,9 +106,9 @@ Phase -1 Task 2 result: **complete**. The production Turnstile hostname, Workers
 
 Phase -1 remaining blockers:
 
-1. GitHub CLI authentication was restored on 2026-08-25. GitHub secret names and some security settings still need independent verification.
-2. The documented Google Cloud roles do not match Phase -1 Task 3. The log records Secret Manager Secret Accessor, not Secret Manager Admin, and also records Service Account User.
-3. Google Cloud project, API, billing, budget, IAM, and secret state are documented but not independently verified in this audit. The Google Cloud CLI is not installed.
+1. Phase -1 Task 3 requires a human architecture decision between its long-lived JSON key instructions and the recommended keyless Workload Identity Federation design. Its documented role pair also omits the Cloud Run service-identity permission and requests broader Secret Manager access than the deployer needs.
+2. The `$1.00` Google Cloud budget is documented but not independently verified. The Billing Budgets API is disabled, and this audit did not enable an extra API.
+3. The GitHub secret `GCP_SA_KEY` exists, and one enabled user-managed Google Cloud key exists, but the secret value cannot be read back to prove that they match.
 4. Groq, OpenRouter, Resend, and Sentry setup is documented but not independently verified in this audit.
 5. No UptimeRobot account setup is documented.
 6. The Ed25519 and ML-DSA-65 keypairs from Phase -1 Task 7 do not exist in the repository record. The generic `ENCRYPTION_KEY` does not satisfy this task.
