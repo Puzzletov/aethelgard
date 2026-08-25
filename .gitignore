@@ -4,3 +4,7 @@ node_modules/
 .dev.vars.*
 dist/
 *.log
+frontend/.next/
+frontend/out/
+backend/app/__pycache__/
+*.pyc
