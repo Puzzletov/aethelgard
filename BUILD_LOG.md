@@ -1,6 +1,85 @@
 # Build Log
 
-Technical record of completed human setup work for Aethelgard Phase -1.
+Technical record of setup, build work, checks, and phase-gate audits for Aethelgard.
+
+## 2026-08-24
+
+### 1. Cloudflare Pages frontend deployment
+
+- Configured the Next.js frontend to make a static export for Cloudflare Pages.
+- Added a test for the static export setting.
+- Added the generated `frontend/out/` directory to `.gitignore`.
+- Ran `npm test` in `frontend/`; 1 test passed.
+- Ran `npm run build` in `frontend/`; the production build and static export passed.
+- Created the Cloudflare Pages project `aethelgard` with `main` as its production branch.
+- Deployed the static frontend to `https://aethelgard-3j9.pages.dev/`.
+- Recorded deployment URL `https://f721c0c7.aethelgard-3j9.pages.dev/`.
+- Confirmed that the public URL returned HTTP 200 and contained the expected title and heading.
+- The deployment source was an uncommitted worktree on `chore/bootstrap-worker`.
+- No pull request exists for these local changes. This deployment is not yet review-complete.
+
+### 2. Phase-gate audit and correction
+
+Audit scope:
+
+- Read `AGENTS.md` and the full approved `ARCHITECTURE.md` again.
+- Compared all Phase -1 and Phase 0 tasks with repository files, Git history, the public GitHub API, and the live public endpoints.
+- Did not inspect secret values.
+
+Confirmed evidence:
+
+- The GitHub repository is public and uses `main` as its default branch.
+- The active `main` ruleset requires pull requests, linear history, and signed commits.
+- The active ruleset does not require a passing status check.
+- GitHub reports active managed Dependabot Updates and CodeQL workflows.
+- The public `main` branch contains only `README.md`.
+- No pull request is open.
+- The Cloudflare Pages frontend returns HTTP 200 at `https://aethelgard-3j9.pages.dev/`.
+- The Cloudflare Worker returns HTTP 200 at `https://aethelgard.justbwas.workers.dev/health`.
+- The local frontend test passes: 1 test, 0 failures.
+- The local frontend production build and static export pass.
+- The root TypeScript check passes.
+- The FastAPI source passes a Python syntax check.
+
+Phase -1 result: **not complete**. The earlier completion statement in this log is not a valid phase-gate result.
+
+Phase -1 blockers:
+
+1. GitHub does not require a passing status check on `main`.
+2. GitHub secret names and some security settings are not independently verified because the local GitHub CLI login is invalid.
+3. Cloudflare Bot Fight Mode and the WAF upload rate limit were skipped.
+4. The Turnstile widget is documented for `localhost`, not the public Pages host.
+5. The documented Google Cloud roles do not match Phase -1 Task 3. The log records Secret Manager Secret Accessor, not Secret Manager Admin, and also records Service Account User.
+6. Google Cloud project, API, billing, budget, IAM, and secret state are documented but not independently verified in this audit. The Google Cloud CLI is not installed.
+7. Groq, OpenRouter, Resend, and Sentry setup is documented but not independently verified in this audit.
+8. No UptimeRobot account setup is documented.
+9. The Ed25519 and ML-DSA-65 keypairs from Phase -1 Task 7 do not exist in the repository record. The generic `ENCRYPTION_KEY` does not satisfy this task.
+10. Phase -1 Task 7 depends on a key-generation script assigned to Phase 5. This is a phase-order conflict that needs a human decision.
+11. The tracked `.env.example` claimed in the earlier log does not exist. A local `.dev.vars.example` exists, but `.gitignore` ignores it and Git does not track it.
+12. The local example file does not list every required configuration name. The purpose of `ENCRYPTION_KEY` is also not defined in the architecture or used by current code.
+
+Phase 0 result: **not complete**.
+
+Phase 0 task status:
+
+1. Frontend: implemented and live, but not review-complete. Its latest source is uncommitted, has no pull request, and is not on `main`.
+2. Backend: a local FastAPI `/health` route exists. No container file, Cloud Run deployment configuration, or Cloud Run URL exists. The Worker endpoint is not the required FastAPI backend.
+3. CI/CD: no repository workflow deploys the frontend or backend from a push to `main`.
+4. Index blocking: incomplete. The live frontend uses `lang="en"`, has no required robots meta tag, and has no `X-Robots-Tag`. Its `robots.txt` does not contain `Disallow: /`. The Worker response also has no `X-Robots-Tag`.
+5. Tests: partial. One frontend configuration test exists locally. No backend unit test exists, and no project test runs in CI.
+6. UptimeRobot: no monitor is documented, and the required Cloud Run `/health` URL does not exist.
+
+Phase 0 exit-test result:
+
+- The frontend is live.
+- The required Cloud Run `/health` endpoint is not live.
+- A push to `main` does not deploy both parts.
+- The Phase 0 exit test fails.
+
+Gate decision:
+
+- Do not start or continue Phase 0 work until the Phase -1 blockers are resolved or the repository owner gives an explicit architecture decision.
+- Do not start Phase 1 or any later phase.
 
 ## 2026-08-04
 
