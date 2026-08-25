@@ -94,6 +94,27 @@ Phase -1 Task 3 result: **complete**. Project identity, billing linkage, require
 
 Phase -1 remains incomplete. Task 4 is the next sequential task; no Phase 0 work may begin yet.
 
+### 5. Phase -1 Task 4 AI provider secret migration
+
+- The 2026-08-04 human setup record already documented creation of the Groq and OpenRouter accounts and API keys.
+- Verified that GitHub repository secrets named `GROQ_API_KEY` and `OPENROUTER_API_KEY` existed without reading either value.
+- Verified that the matching Google Secret Manager containers existed with zero versions before migration.
+- Granted `roles/secretmanager.secretVersionAdder` to `github-actions-deployer` temporarily and only on those two secret resources.
+- Temporarily admitted `chore/bootstrap-worker` to the repository- and owner-ID-restricted Workload Identity provider for the migration run.
+- Added a temporary migration workflow with minimum GitHub permissions and official actions pinned to immutable commits. It rejected empty inputs, disabled shell tracing, suppressed Secret Manager command output, and transferred each GitHub secret directly to its matching container.
+- GitHub Actions run [32889642825](https://github.com/Puzzletov/aethelgard/actions/runs/32889642825) completed successfully from commit `5dfd7438cb15b87ea639aff463ecb7c4a2416717`.
+- Verified that `GROQ_API_KEY` and `OPENROUTER_API_KEY` each contain exactly one enabled Secret Manager version. No secret payload was accessed or displayed.
+- Removed the deployer's temporary version-adder role from both secrets. Re-verified that only `aethelgard-runtime` has `roles/secretmanager.secretAccessor` on each secret.
+- Restored the Workload Identity provider condition to immutable owner ID `131607539`, immutable repository ID `1322880852`, and `refs/heads/main` only.
+- Deleted the migrated `GROQ_API_KEY` and `OPENROUTER_API_KEY` copies from GitHub Actions secrets and verified that neither name remains.
+- Removed the temporary migration workflow from the final worktree.
+- Did not install Ollama because Task 4 marks it optional and local-testing only.
+- Did not call either provider API, so provider-side key validity was not independently tested; Task 4 requires account/key creation and secure storage, which are documented and complete.
+
+Phase -1 Task 4 result: **complete**.
+
+Phase -1 remains incomplete. Task 5 is the next sequential task; no Phase 0 work may begin yet.
+
 ## 2026-08-24
 
 ### 1. Cloudflare Pages frontend deployment
