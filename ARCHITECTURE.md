@@ -242,7 +242,7 @@ See §9 for the exact typefaces, color, and spacing rules.
 
 1. **Frontend.** Runs in the browser on Cloudflare Pages. Talks to the edge gateway over an API.
 2. **Edge gateway.** Runs as a Cloudflare Worker on the free `*.workers.dev` subdomain. It accepts only the named public API routes. It checks Turnstile tokens, applies the Workers Rate Limiting binding, adds the required response headers, and proxies allowed requests to the backend.
-3. **Backend.** Runs in a container on a serverless host. Except for `GET /health`, it rejects a request that does not carry `EDGE_GATEWAY_SECRET`. The same secret exists only in Cloudflare Workers secrets and Google Cloud Secret Manager.
+3. **Backend.** Runs in a container on a serverless host as the dedicated `aethelgard-runtime` Google Cloud service account. Except for `GET /health`, it rejects a request that does not carry `EDGE_GATEWAY_SECRET`. The same secret exists only in Cloudflare Workers secrets and Google Cloud Secret Manager.
 
 If the backend is down, the frontend must still load and show a clear message. It must never show a blank page.
 
@@ -304,6 +304,7 @@ Most files stay in memory for the whole pipeline. A file too large for memory ca
 | Post-quantum signature | ML-DSA-65 (FIPS 204), through `liboqs` | The post-quantum half of the hybrid signature | — | — |
 | Email delivery | Resend | Send the chosen files to the user | Free tier: 3,000 emails per month | — |
 | CI/CD | GitHub Actions | Test and deploy automatically | Free for public repositories | — |
+| Cloud CI identity | Google Cloud Workload Identity Federation with GitHub OIDC | Give the protected `main` deployment workflow short-life Google credentials without a stored service-account key | Google Cloud managed service, no added cost | Long-life JSON service-account key rejected |
 | Dependency and code scanning | Dependabot + Semgrep | Find outdated or vulnerable dependencies and risky code patterns | Free | — |
 | Error tracking | Sentry | Report backend errors | Free tier | — |
 | Uptime monitoring | UptimeRobot | Check the site is online | Free tier | — |
@@ -365,6 +366,8 @@ After Phase 4 is stable, you can expose the pipeline as a tool through the Model
 - A second, backend-level request ceiling exists inside FastAPI, behind the edge gateway.
 - TLS on every connection, with hybrid post-quantum key exchange.
 - Secrets stored only in the host's secret manager, never in the code repository.
+- GitHub Actions authenticates to Google Cloud through repository-restricted OIDC and Workload Identity Federation. No Google service-account private key exists in GitHub.
+- The deployer identity and Cloud Run runtime identity are separate. The deployer can act only as `aethelgard-runtime`. The runtime identity can read only the named Secret Manager secrets required by the application.
 - No verbose error messages to the user. A user-facing error is always short and safe. The full technical error goes only to Sentry.
 - A hard timeout and a resource ceiling on the parsing step, so even an exploit attempt cannot run away with resources.
 
@@ -566,6 +569,7 @@ A change must pass its tests before it can merge. This includes the prompt injec
 | 14 | UI type and color direction: Fraunces (headings) and Public Sans (body), one warm terracotta accent, warm off-white background | A deliberate move away from the common AI-tool look (a geometric grotesque sans-serif such as Inter, and a purple or indigo accent). A serif heading font also fits the "consulting report" positioning better than a typical software-dashboard look | Inter, or a similar default geometric sans, with a purple or blue accent. Rejected as visually indistinct from most current AI tools |
 | 15 | Kept the working name "Aethelgard" | Gives the document a concrete subject. A rename is a find-and-replace, with no effect on the architecture | Renaming it now. Deferred to the project owner's own choice |
 | 16 | Keep the free `*.pages.dev` frontend and use the existing `*.workers.dev` Worker as the edge gateway. Replace zone-only Bot Fight Mode and WAF rate limiting with Turnstile and the Workers Rate Limiting binding | The owner does not have a custom domain. Buying one breaks the $0.00 constraint. The Workers Free plan fits this portfolio workload, has a 100,000-request daily platform ceiling, and can fail closed. This decision supersedes the zone-only enforcement part of Decision 4 | Buy a custom domain. Rejected because it adds permanent cost. Expose Cloud Run directly with only backend controls. Rejected because it lets callers bypass the edge controls |
+| 17 | Use GitHub OIDC and Google Cloud Workload Identity Federation for deployment. Keep separate `github-actions-deployer` and `aethelgard-runtime` identities. Scope Service Account User to the runtime identity and Secret Manager access to individual application secrets | Short-life federated credentials remove the stored JSON-key risk. Separate identities stop deployment permissions from becoming runtime permissions. Resource-level bindings follow least privilege and still support unattended deployment from protected `main` | Store `GCP_SA_KEY` in GitHub. Rejected because it is a long-life password-equivalent credential. Give Secret Manager Admin to the deployer. Rejected because deployment does not require control of every secret |
 
 ---
 
@@ -592,24 +596,28 @@ A change must pass its tests before it can merge. This includes the prompt injec
 
 **Task 3: Google Cloud**
 1. Create a Google Cloud account, if none exists.
-2. Create a new project (for example, `aethelgard-prod`).
+2. Use project ID `aethelgard-prod-504515` with display name `aethelgard-prod`.
 3. Link a billing account. This is required to use Cloud Run, even within the free tier. Cost stays $0.00 as long as usage stays inside the free limits.
-4. In the Console, enable the Cloud Run API and the Secret Manager API.
+4. Enable the Cloud Run, Secret Manager, IAM, IAM Service Account Credentials, and Security Token Service APIs.
 5. Under Billing → Budgets & alerts, create a budget alert set to $1.00.
-6. Create a service account for deployment, with only the Cloud Run Admin and Secret Manager Admin roles (no broader access).
-7. Create a JSON key for that service account. Save its content as a GitHub Actions secret named `GCP_SA_KEY`.
+6. Keep `github-actions-deployer@aethelgard-prod-504515.iam.gserviceaccount.com` for deployment. Create `aethelgard-runtime@aethelgard-prod-504515.iam.gserviceaccount.com` for the Cloud Run service identity.
+7. Create a Workload Identity pool and GitHub OIDC provider. Restrict admission to the immutable owner and repository IDs for `Puzzletov/aethelgard` and to `refs/heads/main`. Grant that repository identity `roles/iam.workloadIdentityUser` only on `github-actions-deployer`.
+8. Grant `roles/run.admin` to `github-actions-deployer` on the project. Grant `roles/iam.serviceAccountUser` to the deployer only on `aethelgard-runtime`, not on the whole project. Add only the later image-build or registry role proven necessary by the Phase 0 deployment workflow.
+9. Grant `roles/secretmanager.secretAccessor` to `aethelgard-runtime` on each required secret, never at project level. The deployer receives no Secret Manager role.
+10. Store the project ID, Workload Identity provider resource name, and deployer service-account email as GitHub Actions variables named `GCP_PROJECT_ID`, `GCP_WORKLOAD_IDENTITY_PROVIDER`, and `GCP_SERVICE_ACCOUNT`. They are identifiers, not secrets.
+11. Prove the GitHub OIDC exchange in a temporary smoke workflow before deployment code is added. After it passes, delete the old user-managed service-account key and the GitHub secret `GCP_SA_KEY`.
 
 **Task 4: AI providers**
-1. Create a Groq account at their console. Generate an API key. Save it as a GitHub Actions secret named `GROQ_API_KEY`.
-2. Create an OpenRouter account. Generate an API key. Save it as `OPENROUTER_API_KEY`.
+1. Create a Groq account at their console. Generate an API key. Save it as a Google Secret Manager secret named `GROQ_API_KEY`.
+2. Create an OpenRouter account. Generate an API key. Save it in Google Secret Manager as `OPENROUTER_API_KEY`.
 3. Optional, for local testing only: install Ollama on your own computer.
 
 **Task 5: Email**
-1. Create a Resend account. Generate an API key. Save it as `RESEND_API_KEY`.
+1. Create a Resend account. Generate an API key. Save it in Google Secret Manager as `RESEND_API_KEY`.
 2. Verify a sending domain in Resend, if you have one, or use their default testing address to start.
 
 **Task 6: Monitoring**
-1. Create a Sentry account and a new project. Save the DSN it gives you as `SENTRY_DSN`.
+1. Create a Sentry account and a new project. Save the DSN in Google Secret Manager as `SENTRY_DSN`.
 2. Create an UptimeRobot account. Add this task to a later step: after Phase 0 is live, add a monitor pointed at your `/health` URL.
 
 **Task 7: Cryptographic keys**
