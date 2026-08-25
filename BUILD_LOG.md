@@ -81,6 +81,7 @@ Phase -1 Task 3 result: **not complete**. Billing, APIs, project identity, servi
 - Deleted the deployer's only user-managed Google service-account key. Re-verified that the deployer has zero user-managed keys.
 - Deleted GitHub secrets `GCP_SA_KEY` and the redundant secret-form `GCP_PROJECT_ID`. Re-verified that neither secret name remains and that the three non-secret variables remain.
 - Removed the temporary smoke-test workflow from the final worktree after the successful proof.
+- Updated draft pull request 2 so reviewers can see the keyless identity design, least-privilege scopes, retired key, proof run, and passing validation.
 
 This section supersedes the Google Cloud IAM and CI-identity state recorded earlier on 2026-08-25.
 
