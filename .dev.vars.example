@@ -1,0 +1,4 @@
+# Copy this file to .dev.vars for local development (never commit .dev.vars)
+SENTRY_DSN=
+TURNSTILE_SECRET_KEY=
+EDGE_GATEWAY_SECRET=
