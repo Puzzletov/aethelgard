@@ -58,6 +58,34 @@ Phase -1 remains incomplete because Tasks 3 through 8 and the configuration-reco
 
 Phase -1 Task 3 result: **not complete**. Billing, APIs, project identity, service-account identity, and current IAM are verified. Budget confirmation and the CI identity architecture decision remain open.
 
+### 4. Approved Phase -1 Task 3 keyless identity revision
+
+- The owner approved replacing the JSON service-account key design with GitHub OIDC and Google Cloud Workload Identity Federation.
+- Revised `ARCHITECTURE.md` to record Engineering Decision 17 and the exact Task 3 least-privilege design. This revision also moves runtime provider keys and the Sentry DSN from GitHub Actions secrets to Google Secret Manager.
+- Verified the active project ID is `aethelgard-prod-504515` and the project number is `922415089317`.
+- Verified the Cloud Run and Secret Manager APIs remain enabled. Enabled and then verified the IAM, IAM Service Account Credentials, and Security Token Service APIs required for federation.
+- Kept `github-actions-deployer@aethelgard-prod-504515.iam.gserviceaccount.com` as the deployment identity.
+- Created `aethelgard-runtime@aethelgard-prod-504515.iam.gserviceaccount.com` as the separate Cloud Run runtime identity.
+- Created Workload Identity pool `github-actions` and GitHub OIDC provider `aethelgard`.
+- Restricted provider admission to immutable GitHub owner ID `131607539`, immutable repository ID `1322880852`, and `refs/heads/main`.
+- Granted `roles/iam.workloadIdentityUser` on the deployer service account only to the repository-ID principal set for repository ID `1322880852`.
+- Verified the deployer has only `roles/run.admin` at project level.
+- Removed project-level `roles/iam.serviceAccountUser` from the deployer. Granted it only on the `aethelgard-runtime` service-account resource.
+- Removed project-level `roles/secretmanager.secretAccessor` from the deployer. The deployer has no Secret Manager role.
+- Created empty Secret Manager containers named `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `RESEND_API_KEY`, `SENTRY_DSN`, and `EDGE_GATEWAY_SECRET`. No secret value was read, copied, or added, and each container has zero versions.
+- Granted `roles/secretmanager.secretAccessor` to `aethelgard-runtime` separately on each of those five secrets. The runtime identity has no project-level IAM role.
+- Added GitHub Actions variables `GCP_PROJECT_ID`, `GCP_WORKLOAD_IDENTITY_PROVIDER`, and `GCP_SERVICE_ACCOUNT`. These contain identifiers, not credentials.
+- Temporarily allowed `chore/bootstrap-worker` in the provider only while running the proof workflow. The temporary workflow used minimum GitHub permissions and official actions pinned to immutable commits.
+- GitHub Actions run [32886633686](https://github.com/Puzzletov/aethelgard/actions/runs/32886633686) completed successfully from commit `e1195827ae93b059b8a424618622673ebd5fba7f`. It proved OIDC exchange and a read-only Cloud Run API call without a stored key.
+- Immediately removed the temporary feature-branch exception. Re-verified that the provider now accepts only `refs/heads/main` for the immutable owner and repository IDs above.
+- Deleted the deployer's only user-managed Google service-account key. Re-verified that the deployer has zero user-managed keys.
+- Deleted GitHub secrets `GCP_SA_KEY` and the redundant secret-form `GCP_PROJECT_ID`. Re-verified that neither secret name remains and that the three non-secret variables remain.
+- Removed the temporary smoke-test workflow from the final worktree after the successful proof.
+
+This section supersedes the Google Cloud IAM and CI-identity state recorded earlier on 2026-08-25.
+
+Phase -1 Task 3 result: **not complete**. The keyless identity architecture and all IAM work are complete and verified. The only Task 3 blocker is independent confirmation that the documented `Aethelgard Prod Budget` still has a monthly limit of `$1.00` and alert thresholds at 50%, 90%, and 100%. The Billing Budgets API remains disabled, so this must be confirmed in Billing → Budgets & alerts or through an explicitly approved temporary API audit.
+
 ## 2026-08-24
 
 ### 1. Cloudflare Pages frontend deployment
