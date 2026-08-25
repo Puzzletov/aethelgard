@@ -115,6 +115,28 @@ Phase -1 Task 4 result: **complete**.
 
 Phase -1 remains incomplete. Task 5 is the next sequential task; no Phase 0 work may begin yet.
 
+### 6. Phase -1 Task 5 Resend key rotation and storage
+
+- Confirmed the earlier human setup record documented one Resend API key with Full access and a GitHub secret named `RESEND_API_KEY`.
+- Verified that the matching Google Secret Manager container existed with zero versions before rotation. No secret value was read or displayed.
+- Used Resend's documented API-key permission and rotation flow because Full access can manage account resources while Sending access can only send email.
+- Granted `roles/secretmanager.secretVersionAdder` to `github-actions-deployer` temporarily and only on the `RESEND_API_KEY` secret resource.
+- Temporarily admitted `chore/bootstrap-worker` to the repository- and owner-ID-restricted Workload Identity provider for the rotation run.
+- Added a temporary workflow with minimum GitHub permissions and official actions pinned to immutable commits.
+- The workflow required exactly one existing Resend key before making a change, created `aethelgard-production-send` with Sending access, and masked the replacement value immediately.
+- The workflow validated the replacement by sending from Resend's default `onboarding@resend.dev` testing sender to the safe `delivered@resend.dev` simulation address. No real recipient or custom domain was used.
+- The workflow stored the replacement directly as version 1 of `RESEND_API_KEY` in Google Secret Manager, then revoked the old Full access key. A pre-storage failure path would have deleted the replacement automatically.
+- GitHub Actions run [32890937430](https://github.com/Puzzletov/aethelgard/actions/runs/32890937430) and every recorded step completed successfully from commit `b20507e4daeba455fc5bbd0600735298c2bf6f59`.
+- Verified that `RESEND_API_KEY` contains exactly one enabled Secret Manager version.
+- Removed the deployer's temporary version-adder role. Re-verified that only `aethelgard-runtime` has `roles/secretmanager.secretAccessor` on the secret.
+- Restored the Workload Identity provider condition to immutable owner ID `131607539`, immutable repository ID `1322880852`, and `refs/heads/main` only.
+- Deleted the GitHub Actions `RESEND_API_KEY` copy and verified that the name no longer exists.
+- Removed the temporary rotation workflow from the final worktree.
+
+Phase -1 Task 5 result: **complete**.
+
+Phase -1 remains incomplete. Task 6 is the next sequential task; no Phase 0 work may begin yet.
+
 ## 2026-08-24
 
 ### 1. Cloudflare Pages frontend deployment
