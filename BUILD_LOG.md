@@ -137,6 +137,26 @@ Phase -1 Task 5 result: **complete**.
 
 Phase -1 remains incomplete. Task 6 is the next sequential task; no Phase 0 work may begin yet.
 
+### 7. Phase -1 Task 6 Sentry migration and monitoring audit
+
+- The 2026-08-04 human setup record already documented creation of the Sentry account and project, project slug `node-cloudflare-workers`, alert threshold, and GitHub secret name `SENTRY_DSN`.
+- Verified that GitHub repository secret `SENTRY_DSN` existed and that the matching Google Secret Manager container had zero versions. The DSN value was not read or displayed.
+- Granted `roles/secretmanager.secretVersionAdder` to `github-actions-deployer` temporarily and only on the `SENTRY_DSN` secret resource.
+- Temporarily admitted `chore/bootstrap-worker` to the repository- and owner-ID-restricted Workload Identity provider for the migration run.
+- Added a temporary workflow with minimum GitHub permissions and official actions pinned to immutable commits. It rejected an empty source, disabled shell tracing, and suppressed Secret Manager command output.
+- GitHub Actions run [32956654246](https://github.com/Puzzletov/aethelgard/actions/runs/32956654246) completed successfully from commit `acd8adc14b54b602aaaff695dea3a8f45eccdd3e`.
+- Verified that `SENTRY_DSN` contains exactly one enabled Secret Manager version. No secret payload was accessed.
+- Removed the deployer's temporary version-adder role. Re-verified that only `aethelgard-runtime` has `roles/secretmanager.secretAccessor` on `SENTRY_DSN`.
+- Restored the Workload Identity provider condition to immutable owner ID `131607539`, immutable repository ID `1322880852`, and `refs/heads/main` only.
+- Deleted the GitHub Actions `SENTRY_DSN` copy and verified that its name no longer exists.
+- Removed the temporary migration workflow from the final worktree.
+- Found no repository evidence or authenticated UptimeRobot connection that proves an account exists.
+- Did not create the UptimeRobot monitor because Task 6 explicitly defers it until Phase 0 provides the public Cloud Run `/health` URL.
+
+Phase -1 Task 6 result: **not complete**. Sentry setup and secure DSN storage are complete. The only current Task 6 blocker is human confirmation that the UptimeRobot account has been created; the monitor remains a documented Phase 0 action.
+
+Phase -1 remains incomplete. Do not begin Task 7 or Phase 0 until this human-owned account step is confirmed.
+
 ## 2026-08-24
 
 ### 1. Cloudflare Pages frontend deployment
