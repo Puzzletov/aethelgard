@@ -153,9 +153,11 @@ Phase -1 remains incomplete. Task 6 is the next sequential task; no Phase 0 work
 - Found no repository evidence or authenticated UptimeRobot connection that proves an account exists.
 - Did not create the UptimeRobot monitor because Task 6 explicitly defers it until Phase 0 provides the public Cloud Run `/health` URL.
 
-Phase -1 Task 6 result: **not complete**. Sentry setup and secure DSN storage are complete. The only current Task 6 blocker is human confirmation that the UptimeRobot account has been created; the monitor remains a documented Phase 0 action.
+The owner confirmed on 2026-08-26 that the UptimeRobot account is created and its email is verified. No credential or API key was shared.
 
-Phase -1 remains incomplete. Do not begin Task 7 or Phase 0 until this human-owned account step is confirmed.
+Phase -1 Task 6 result: **complete**. Sentry setup, secure DSN storage, and UptimeRobot account creation are verified. The `/health` monitor remains correctly deferred to Phase 0, when the public Cloud Run URL exists.
+
+Phase -1 remains incomplete. Task 7 is the next sequential task; no Phase 0 work may begin yet.
 
 ## 2026-08-24
 
