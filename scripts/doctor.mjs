@@ -6,6 +6,7 @@ import {
   ARCHITECTURE_VERSION,
   BUILD_PHASE,
   EXPECTED_ALLOWED_ORIGIN,
+  EXPECTED_PRIVATE_BROWSER_BINDING,
   EXPECTED_PUBLIC_ROUTES,
   EXPECTED_TRUSTED_RUNTIME,
   FORBIDDEN_DEPENDENCIES,
@@ -77,6 +78,7 @@ check("private_no_public_target", [
   !/^routes?\s*=/m.test(privateConfig),
 ].every(Boolean));
 check("private_secret_slots", REQUIRED_PRIVATE_SECRET_NAMES.every((name) => section(privateConfig, "secrets").includes(`"${name}"`)));
+check("private_browser_binding", hasTomlAssignment(section(privateConfig, "browser"), "binding", `"${EXPECTED_PRIVATE_BROWSER_BINDING}"`));
 check("public_secret_free", !/^\[secrets\]\s*$/m.test(publicConfig) && !/SECRET|API_KEY|PRIVATE_KEY/m.test(publicConfig));
 check("public_routes", EXPECTED_PUBLIC_ROUTES.every((route) => publicSource.includes(`"${route}"`)));
 check("forbidden_routes", !/["'`](?:\/sign|\/upload|\/parse)["'`]/.test(publicSource));
@@ -84,7 +86,6 @@ check("public_logging_disabled", hasTomlAssignment(section(publicConfig, "observ
 check("private_logging_disabled", hasTomlAssignment(section(privateConfig, "observability"), "enabled", "false"));
 check("no_logging_products", !/tail_consumers|logpush|analytics_engine_datasets/i.test(`${publicConfig}\n${privateConfig}`));
 check("no_forbidden_storage", !/\[\[(?:kv_namespaces|r2_buckets|d1_databases|queues\.(?:producers|consumers))\b/i.test(`${publicConfig}\n${privateConfig}`));
-
 for (const manifest of [rootPackage, frontendPackage]) {
   const dependencies = { ...manifest.dependencies, ...manifest.devDependencies };
   check("forbidden_dependencies", FORBIDDEN_DEPENDENCIES.every((name) => dependencies[name] === undefined));
@@ -96,6 +97,12 @@ const workerFiles = [
   ...await listTypeScriptFiles("frontend"),
 ];
 const workerSources = await Promise.all(workerFiles.map(text));
+const workerSourceText = workerSources.join("\n");
+check("browser_quota_guard", [
+  "utc_date",
+  "aggregate_browser_run_ms",
+  "8 * 60 * 1_000",
+].every((marker) => workerSourceText.includes(marker)));
 check("no_application_logging", workerSources.every((source) => !/\bconsole\s*\.|\bctx\.waitUntil\s*\([^)]*(?:log|telemetry)/i.test(source)));
 
 if (failures.length > 0) {

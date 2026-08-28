@@ -14,6 +14,7 @@ export const EXPECTED_TRUSTED_RUNTIME = Object.freeze({
   scriptName: "aethelgard-trusted-runtime",
 });
 export const REQUIRED_PRIVATE_SECRET_NAMES = Object.freeze(["TURNSTILE_SECRET"] as const);
+export const EXPECTED_PRIVATE_BROWSER_BINDING = "BROWSER";
 export const FORBIDDEN_DEPENDENCIES = Object.freeze([
   "@google-cloud/secret-manager",
   "@sentry/cloudflare",

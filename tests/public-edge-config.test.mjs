@@ -23,14 +23,19 @@ test("public edge source does not verify Turnstile or call providers", async () 
 });
 
 test("TrustedRuntime is private and has no dispatcher or public target", async () => {
-  const config = await readFile(new URL("workers/trusted-runtime/wrangler.toml", root), "utf8");
-  const source = await readFile(new URL("workers/trusted-runtime/src/index.ts", root), "utf8");
+  const [config, publicConfig, source] = await Promise.all([
+    readFile(new URL("workers/trusted-runtime/wrangler.toml", root), "utf8"),
+    readFile(new URL("wrangler.toml", root), "utf8"),
+    readFile(new URL("workers/trusted-runtime/src/index.ts", root), "utf8"),
+  ]);
   assert.match(config, /workers_dev = false/);
   assert.match(config, /preview_urls = false/);
   assert.match(config, /\[exports\.TrustedRuntime\]/);
   assert.match(config, /TURNSTILE_EXPECTED_ACTION = "analyze"/);
   assert.match(config, /TURNSTILE_EXPECTED_HOSTNAME = "aethelgard\.pages\.dev"/);
   assert.match(config, /required = \["TURNSTILE_SECRET"\]/);
+  assert.match(config, /\[browser\]\s+binding = "BROWSER"/m);
+  assert.doesNotMatch(publicConfig, /\[browser\]|binding = "BROWSER"/);
   assert.doesNotMatch(config, /^route\s*=|^routes\s*=/m);
   assert.match(source, /export default/);
   assert.doesNotMatch(source, /getByName|idFromName|newUniqueId/);

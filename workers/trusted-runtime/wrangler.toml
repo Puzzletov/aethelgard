@@ -8,6 +8,9 @@ preview_urls = false
 [observability]
 enabled = false
 
+[browser]
+binding = "BROWSER"
+
 [vars]
 TURNSTILE_EXPECTED_ACTION = "analyze"
 TURNSTILE_EXPECTED_HOSTNAME = "aethelgard.pages.dev"

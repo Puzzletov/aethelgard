@@ -10,7 +10,7 @@ historical work.
 - Phase -1: **CLOSED**.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 0** on `phase/0-foundation`.
-- Phase 0 status: **IN PROGRESS — TASK 0.6 PASSED**.
+- Phase 0 status: **IN PROGRESS — TASK 0.7 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Frozen PII baseline: **APPROVED**.
@@ -255,3 +255,30 @@ historical work.
   Worker dry builds, and static export passed. Public edge size measured
   12.16 KiB raw / 3.75 KiB gzip; private runtime remained 736.38 KiB raw /
   113.29 KiB gzip.
+
+### 17. Phase 0 Task 0.7 — Browser Run and aggregate quota guard
+
+- Task 0.7: **PASSED** on 2026-08-28.
+- Added the Browser Run binding only to the private runtime and used the
+  `/pdf` Quick Action with fixed service-owned synthetic HTML. JavaScript and
+  Quick Action caching are disabled; no caller HTML or real report rendering
+  exists yet.
+- PDF output fails closed unless the response is successful, has the PDF
+  content type and `%PDF-` magic, remains within the 8 MiB complete-output
+  bound, and supplies a valid `X-Browser-Ms-Used` value.
+- The Durable Object stores only `utc_date` and
+  `aggregate_browser_run_ms`. It resets lazily on a UTC-date change, reserves
+  60 seconds before each call, reconciles only trusted usage values, and
+  refuses calls that could exceed the eight-minute application ceiling.
+- The in-memory final-PDF queue allows at most two active/waiting operations
+  and spaces Quick Actions by at least ten seconds. Storage, Browser Run,
+  malformed output, missing usage, provider, queue, and quota failures all
+  fail closed. The unsigned synthetic PDF is discarded until signing exists.
+- A secret-free disposable deployment ran the production helper against the
+  real Browser Run binding. It returned a 17,934-byte `%PDF-` result and 382 ms
+  of accounted browser time. The proof Worker was deleted; its URL returned
+  404 afterward, and all local proof files were removed.
+- Doctor passed 19 checks. Twenty-five root tests, eight frontend tests,
+  strict TypeScript, lint, public/private dry builds, and static export passed.
+  Public edge size stayed 12.16 KiB raw / 3.75 KiB gzip; the final private
+  runtime measured 744.03 KiB raw / 115.30 KiB gzip.
