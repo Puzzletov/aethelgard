@@ -1,0 +1,45 @@
+export const ARCHITECTURE_VERSION = "2.1";
+export const BUILD_PHASE = "0";
+export const PUBLIC_SERVICE_NAME = "aethelgard-edge";
+export const EXPECTED_ALLOWED_ORIGIN = "https://aethelgard.pages.dev";
+export const EXPECTED_PUBLIC_ROUTES = Object.freeze(["/analyze", "/health"] as const);
+export const EXPECTED_PUBLIC_ENV_NAMES = Object.freeze([
+  "ALLOWED_ORIGIN",
+  "ANALYZE_RATE_LIMIT",
+  "TRUSTED_RUNTIME",
+] as const);
+export const EXPECTED_TRUSTED_RUNTIME = Object.freeze({
+  binding: "TRUSTED_RUNTIME",
+  className: "TrustedRuntime",
+  scriptName: "aethelgard-trusted-runtime",
+});
+export const REQUIRED_PRIVATE_SECRET_NAMES = Object.freeze(["TURNSTILE_SECRET"] as const);
+export const FORBIDDEN_DEPENDENCIES = Object.freeze([
+  "@google-cloud/secret-manager",
+  "@sentry/cloudflare",
+  "@sentry/nextjs",
+  "express",
+  "resend",
+] as const);
+
+interface PublicRuntimeShape {
+  readonly ALLOWED_ORIGIN?: unknown;
+  readonly ANALYZE_RATE_LIMIT?: unknown;
+  readonly TRUSTED_RUNTIME?: unknown;
+}
+
+function hasMethod(value: unknown, method: string): boolean {
+  return typeof value === "object" && value !== null && typeof Reflect.get(value, method) === "function";
+}
+
+export function publicRuntimeInvariantsPass(env: PublicRuntimeShape): boolean {
+  const names = Object.keys(env).sort();
+  const expectedNames = [...EXPECTED_PUBLIC_ENV_NAMES].sort();
+  return (
+    names.length === expectedNames.length &&
+    names.every((name, index) => name === expectedNames[index]) &&
+    env.ALLOWED_ORIGIN === EXPECTED_ALLOWED_ORIGIN &&
+    hasMethod(env.ANALYZE_RATE_LIMIT, "limit") &&
+    hasMethod(env.TRUSTED_RUNTIME, "getByName")
+  );
+}

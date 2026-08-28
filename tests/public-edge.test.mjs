@@ -71,6 +71,17 @@ test("health is minimal, secure, and no-indexed", async () => {
   assert.equal(response.headers.get("x-robots-tag"), "noindex, nofollow, noarchive");
 });
 
+test("health fails closed without exposing a failed invariant", async () => {
+  const { env } = createEnv();
+  env.UNEXPECTED_SECRET = "not-returned";
+  const response = await worker.fetch(new Request("https://edge.example.test/health"), env);
+  assert.equal(response.status, 503);
+  assert.deepEqual(await response.json(), {
+    status: "unavailable",
+    service: "aethelgard-edge",
+  });
+});
+
 test("only the named routes and methods are accepted", async () => {
   const { env } = createEnv();
   const unknown = await worker.fetch(new Request("https://edge.example.test/upload"), env);

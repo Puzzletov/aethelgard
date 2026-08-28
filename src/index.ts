@@ -12,6 +12,11 @@ import {
   preflightResponse,
   safeError,
 } from "./public-edge/responses.ts";
+import {
+  ARCHITECTURE_VERSION,
+  PUBLIC_SERVICE_NAME,
+  publicRuntimeInvariantsPass,
+} from "./invariants.ts";
 
 function allowedOrigin(request: Request, env: PublicEdgeEnv): string | undefined {
   const origin = request.headers.get("origin");
@@ -107,7 +112,14 @@ async function routeRequest(request: Request, env: PublicEdgeEnv): Promise<Respo
   if (url.search !== "") return safeError(404, "not_found", "Route not found.");
   if (url.pathname === "/health") {
     if (request.method !== "GET") return methodNotAllowed("GET");
-    return jsonResponse(200, { status: "ok", service: "aethelgard-edge", architecture: "2.1" });
+    if (!publicRuntimeInvariantsPass(env)) {
+      return jsonResponse(503, { status: "unavailable", service: PUBLIC_SERVICE_NAME });
+    }
+    return jsonResponse(200, {
+      status: "ok",
+      service: PUBLIC_SERVICE_NAME,
+      architecture: ARCHITECTURE_VERSION,
+    });
   }
   if (url.pathname !== "/analyze") return safeError(404, "not_found", "Route not found.");
   if (request.method === "OPTIONS") return handlePreflight(request, env);

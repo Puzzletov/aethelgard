@@ -10,7 +10,7 @@ historical work.
 - Phase -1: **CLOSED**.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 0** on `phase/0-foundation`.
-- Phase 0 status: **IN PROGRESS — TASK 0.5 PASSED**.
+- Phase 0 status: **IN PROGRESS — TASK 0.6 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Frozen PII baseline: **APPROVED**.
@@ -238,3 +238,20 @@ historical work.
   audit passed. The audit reported zero vulnerabilities. Public edge size
   remained 10.64 KiB raw / 3.31 KiB gzip; private runtime size measured
   736.38 KiB raw / 113.29 KiB gzip.
+
+### 16. Phase 0 Task 0.6 — Doctor and production no-logging
+
+- Task 0.6: **PASSED** on 2026-08-28.
+- Added one deterministic, read-only Doctor driven by shared Architecture 2.1
+  invariants. `npm run doctor` checks 17 applicable repository and deployment
+  conditions without calling AI, Browser Run, or any network service.
+- Live `/health` reuses the safe public-runtime invariants. It returns only
+  minimal service/version state when healthy and a fixed non-sensitive 503
+  response when a binding, origin, or secret-free environment invariant fails.
+- Persistent Workers observability is explicitly disabled in both the public
+  and private Wrangler configurations. No Tail Worker, Logpush, Sentry,
+  analytics binding, application logging, or third-party telemetry was added.
+- Doctor, 19 root tests, eight frontend tests, strict TypeScript, lint, both
+  Worker dry builds, and static export passed. Public edge size measured
+  12.16 KiB raw / 3.75 KiB gzip; private runtime remained 736.38 KiB raw /
+  113.29 KiB gzip.

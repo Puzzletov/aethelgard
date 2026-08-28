@@ -20,4 +20,4 @@ class_name = "TrustedRuntime"
 script_name = "aethelgard-trusted-runtime"
 
 [observability]
-enabled = true
+enabled = false

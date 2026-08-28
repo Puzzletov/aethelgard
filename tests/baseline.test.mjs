@@ -38,7 +38,7 @@ test("implementation dependencies are exact and exclude retired services", async
 test("root quality gates cover both implementation packages", async () => {
   const manifest = await readPackage("package.json");
 
-  for (const script of ["audit", "build", "lint", "test", "typecheck"]) {
+  for (const script of ["audit", "build", "doctor", "lint", "test", "typecheck"]) {
     assert.equal(typeof manifest.scripts[script], "string");
   }
   assert.match(manifest.scripts.build, /frontend/);
