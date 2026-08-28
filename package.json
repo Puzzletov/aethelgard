@@ -3,13 +3,17 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "audit": "npm audit --audit-level=moderate && npm --prefix frontend audit --audit-level=moderate",
+    "build": "wrangler deploy --dry-run && npm --prefix frontend run build",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "typecheck": "tsc --noEmit"
+    "lint": "tsc --noEmit --noUnusedLocals --noUnusedParameters --noImplicitReturns --noFallthroughCasesInSwitch && npm --prefix frontend run lint",
+    "test": "node --test tests/*.test.mjs && npm --prefix frontend test",
+    "typecheck": "tsc --noEmit && npm --prefix frontend run typecheck"
   },
   "devDependencies": {
-    "wrangler": "^4.18.0",
-    "typescript": "^5.5.0",
-    "@cloudflare/workers-types": "^4.20250801.0"
+    "@cloudflare/workers-types": "5.20260825.1",
+    "typescript": "5.9.3",
+    "wrangler": "4.126.0"
   }
 }

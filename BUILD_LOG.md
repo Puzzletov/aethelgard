@@ -8,10 +8,9 @@ historical work.
 - Architecture: **2.1 — APPROVED FOR BUILD**. Protected `main` receives this
   authority when the preparation pull request is reviewed and merged.
 - Phase -1: **CLOSED**.
-- Preparation gate: **PASSED — READY FOR REVIEW**.
-- Current implementation phase: Phase 0 is authorized only after preparation
-  merges to protected `main`.
-- Phase 0 status: **NOT STARTED**.
+- Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
+- Current implementation phase: **PHASE 0** on `phase/0-foundation`.
+- Phase 0 status: **IN PROGRESS — TASK 0.1 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Frozen PII baseline: **APPROVED**.
@@ -154,6 +153,21 @@ historical work.
   the 300 KiB gate. Package audit reported zero vulnerabilities.
 - Generated install/build/typecheck output was removed. The preparation
   commits contain signed SSH signature headers.
-- Preparation branch: `chore/final-architecture-2.1`. Phase 0 remains not
-  started and cannot branch until this preparation work merges to protected
-  `main`.
+- Preparation branch `chore/final-architecture-2.1` merged to protected `main`
+  as `7ddad437` before the Phase 0 branch was created.
+
+### 11. Phase 0 Task 0.1 — clean implementation baseline
+
+- Task 0.1: **PASSED** on 2026-08-28.
+- Classified all 11 active Dependabot alerts as transitive dependencies of
+  approved tools. Root alerts followed `wrangler -> miniflare -> undici`.
+  Frontend alerts followed `Next.js -> postcss -> nanoid` and
+  `Next.js -> sharp`.
+- Pinned Wrangler 4.126.0, Miniflare 5.20260825.0-alpha, and undici 7.29.0.
+  Pinned Next.js 16.3.2, PostCSS 8.5.23, nanoid 3.3.18, and sharp 0.35.4.
+- Removed obsolete Resend and Sentry binding examples from the public Worker.
+- Root and frontend npm audits reported zero vulnerabilities at every
+  severity. Five root/frontend tests, strict TypeScript, lint, Worker dry
+  build, and static export passed.
+- No document parsing, AI, signing, Browser Run, persistence, paid path, or
+  other future-task feature was added.
