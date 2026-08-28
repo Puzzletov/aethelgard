@@ -10,7 +10,7 @@ historical work.
 - Phase -1: **CLOSED**.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 0** on `phase/0-foundation`.
-- Phase 0 status: **IN PROGRESS — TASK 0.1 PASSED**.
+- Phase 0 status: **IN PROGRESS — TASK 0.2 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Frozen PII baseline: **APPROVED**.
@@ -171,3 +171,16 @@ historical work.
   build, and static export passed.
 - No document parsing, AI, signing, Browser Run, persistence, paid path, or
   other future-task feature was added.
+
+### 12. Phase 0 Task 0.2 — static shell and design tokens
+
+- Task 0.2: **PASSED** on 2026-08-28.
+- Added one typed visual-token source, an architectural static Pages shell,
+  valid `lang="en"`, keyboard focus, semantic landmarks, and reduced-motion
+  behavior. No dashboard, parser, upload, or AI control was added.
+- Self-hosted the required Latin Fraunces and Public Sans WOFF2 assets under
+  the SIL Open Font License. SHA-256 values are
+  `7234ed860a9cc83045413c4faee63c960a8f2d1917adcf728119307d56e0d783`
+  and `5ed4d31c988e73b258894244f209069ebe77dc7e564861954b21198b6de90d68`.
+- Static export, strict TypeScript, lint, and eight tests passed. Initial page
+  JavaScript measured 172,578 gzip bytes against the 307,200-byte gate.
