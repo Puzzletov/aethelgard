@@ -12,7 +12,7 @@ test("CI uses only pinned GitHub-native standard runners without uploaded caches
   assert.match(workflow, /actions\/setup-node@[0-9a-f]{40} # v7\.0\.0/);
   assert.match(workflow, /permissions:\s+contents: read/m);
   assert.match(workflow, /persist-credentials: false/);
-  assert.match(workflow, /cache: false/);
+  assert.match(workflow, /package-manager-cache: false/);
   assert.doesNotMatch(workflow, /pull_request_target|self-hosted|actions\/cache|upload-artifact|save-always/i);
 });
 
