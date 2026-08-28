@@ -10,7 +10,7 @@ historical work.
 - Phase -1: **CLOSED**.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 0** on `phase/0-foundation`.
-- Phase 0 status: **IN PROGRESS — TASK 0.4 PASSED**.
+- Phase 0 status: **IN PROGRESS — TASK 0.5 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Frozen PII baseline: **APPROVED**.
@@ -216,3 +216,25 @@ historical work.
 - Tests, strict TypeScript, lint, and both dry builds passed. Public edge size
   measured 10.64 KiB raw / 3.31 KiB gzip; private runtime size measured
   1.49 KiB raw / 0.71 KiB gzip.
+
+### 15. Phase 0 Task 0.5 — private Turnstile verification
+
+- Task 0.5: **PASSED** on 2026-08-28.
+- `TrustedRuntime` performs one bounded Turnstile Siteverify call before any
+  future trusted operation. It sends only the private secret and response
+  token, and does not send `remoteip`.
+- Verification fails closed for missing or oversized tokens, invalid and
+  replayed tokens, wrong action, wrong hostname, malformed or oversized
+  responses, transport failure, and timeout. Expected action is `analyze` and
+  expected hostname is `aethelgard.pages.dev`.
+- The browser helper holds only the public site key and an in-memory token. It
+  consumes each token once and resets the widget after every attempt. The
+  public edge remains secret-free and does not call Siteverify.
+- No production secret was created or committed. The private configuration
+  declares the `TURNSTILE_SECRET` slot; human-owned key migration remains a
+  later Phase 0 gate.
+- Tests using Cloudflare's documented disposable test credentials, strict
+  TypeScript, lint, both Worker dry builds, static export, and the root npm
+  audit passed. The audit reported zero vulnerabilities. Public edge size
+  remained 10.64 KiB raw / 3.31 KiB gzip; private runtime size measured
+  736.38 KiB raw / 113.29 KiB gzip.

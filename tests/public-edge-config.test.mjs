@@ -28,8 +28,11 @@ test("TrustedRuntime is private and has no dispatcher or public target", async (
   assert.match(config, /workers_dev = false/);
   assert.match(config, /preview_urls = false/);
   assert.match(config, /\[exports\.TrustedRuntime\]/);
+  assert.match(config, /TURNSTILE_EXPECTED_ACTION = "analyze"/);
+  assert.match(config, /TURNSTILE_EXPECTED_HOSTNAME = "aethelgard\.pages\.dev"/);
+  assert.match(config, /required = \["TURNSTILE_SECRET"\]/);
   assert.doesNotMatch(config, /^route\s*=|^routes\s*=/m);
   assert.match(source, /export default/);
   assert.doesNotMatch(source, /getByName|idFromName|newUniqueId/);
-  assert.doesNotMatch(source, /API_KEY|PRIVATE_B64|TURNSTILE_SECRET|ENCRYPTION_KEY/);
+  assert.doesNotMatch(source, /API_KEY|PRIVATE_B64|ENCRYPTION_KEY/);
 });

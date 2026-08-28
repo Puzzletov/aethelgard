@@ -5,6 +5,13 @@ compatibility_flags = ["nodejs_compat"]
 workers_dev = false
 preview_urls = false
 
+[vars]
+TURNSTILE_EXPECTED_ACTION = "analyze"
+TURNSTILE_EXPECTED_HOSTNAME = "aethelgard.pages.dev"
+
+[secrets]
+required = ["TURNSTILE_SECRET"]
+
 [exports.TrustedRuntime]
 type = "durable-object"
 storage = "sqlite"

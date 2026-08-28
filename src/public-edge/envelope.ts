@@ -15,6 +15,14 @@ const ENVELOPE_FIELDS = Object.freeze([
   "sources",
 ]);
 
+export interface BasicAnalysisEnvelope {
+  readonly schema_version: string;
+  readonly turnstile_token: string;
+  readonly focus: string;
+  readonly requested_outputs: readonly string[];
+  readonly sources: readonly Record<string, unknown>[];
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -41,7 +49,7 @@ function hasBoundedSources(value: unknown): boolean {
     value.every(isRecord);
 }
 
-export function isBasicAnalysisEnvelope(value: unknown): boolean {
+export function isBasicAnalysisEnvelope(value: unknown): value is BasicAnalysisEnvelope {
   if (!isRecord(value) || !hasExactFields(value)) return false;
   if (value.schema_version !== ANALYSIS_SCHEMA_VERSION) return false;
   if (typeof value.turnstile_token !== "string") return false;
