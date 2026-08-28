@@ -1,4 +1,5 @@
 import { readFile, readdir } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -7,6 +8,8 @@ import {
   BUILD_PHASE,
   EXPECTED_ALLOWED_ORIGIN,
   EXPECTED_PRIVATE_BROWSER_BINDING,
+  EXPECTED_MLDSA65_WASM_BYTES,
+  EXPECTED_MLDSA65_WASM_SHA256,
   EXPECTED_PUBLIC_ROUTES,
   EXPECTED_TRUSTED_RUNTIME,
   FORBIDDEN_DEPENDENCIES,
@@ -55,12 +58,13 @@ async function listTypeScriptFiles(relativeDirectory) {
   return files;
 }
 
-const [rootPackage, frontendPackage, publicConfig, privateConfig, publicSource] = await Promise.all([
+const [rootPackage, frontendPackage, publicConfig, privateConfig, publicSource, mldsaWasm] = await Promise.all([
   json("package.json"),
   json("frontend/package.json"),
   text("wrangler.toml"),
   text("workers/trusted-runtime/wrangler.toml"),
   text("src/index.ts"),
+  readFile(path.join(root, "workers/trusted-runtime/vendor/mldsa-native/mldsa65.wasm")),
 ]);
 
 check("architecture_version", ARCHITECTURE_VERSION === "2.1");
@@ -79,6 +83,12 @@ check("private_no_public_target", [
 ].every(Boolean));
 check("private_secret_slots", REQUIRED_PRIVATE_SECRET_NAMES.every((name) => section(privateConfig, "secrets").includes(`"${name}"`)));
 check("private_browser_binding", hasTomlAssignment(section(privateConfig, "browser"), "binding", `"${EXPECTED_PRIVATE_BROWSER_BINDING}"`));
+check("private_wasm_rule", [
+  'type = "CompiledWasm"',
+  'globs = ["**/*.wasm"]',
+].every((line) => privateConfig.includes(line)));
+check("mldsa_wasm_size", mldsaWasm.byteLength === EXPECTED_MLDSA65_WASM_BYTES);
+check("mldsa_wasm_hash", createHash("sha256").update(mldsaWasm).digest("hex") === EXPECTED_MLDSA65_WASM_SHA256);
 check("public_secret_free", !/^\[secrets\]\s*$/m.test(publicConfig) && !/SECRET|API_KEY|PRIVATE_KEY/m.test(publicConfig));
 check("public_routes", EXPECTED_PUBLIC_ROUTES.every((route) => publicSource.includes(`"${route}"`)));
 check("forbidden_routes", !/["'`](?:\/sign|\/upload|\/parse)["'`]/.test(publicSource));

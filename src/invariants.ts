@@ -13,8 +13,14 @@ export const EXPECTED_TRUSTED_RUNTIME = Object.freeze({
   className: "TrustedRuntime",
   scriptName: "aethelgard-trusted-runtime",
 });
-export const REQUIRED_PRIVATE_SECRET_NAMES = Object.freeze(["TURNSTILE_SECRET"] as const);
+export const REQUIRED_PRIVATE_SECRET_NAMES = Object.freeze([
+  "TURNSTILE_SECRET",
+  "SIGNING_ED25519_PRIVATE_B64",
+  "SIGNING_MLDSA65_SEED_B64",
+] as const);
 export const EXPECTED_PRIVATE_BROWSER_BINDING = "BROWSER";
+export const EXPECTED_MLDSA65_WASM_SHA256 = "960ea1d9ceb0449f91301cb4168db83ab1cba3f0a86fa1bed0515f880b85f802";
+export const EXPECTED_MLDSA65_WASM_BYTES = 40_843;
 export const FORBIDDEN_DEPENDENCIES = Object.freeze([
   "@google-cloud/secret-manager",
   "@sentry/cloudflare",

@@ -6,6 +6,7 @@ import { verifyTurnstile } from "./turnstile.ts";
 import { renderSyntheticPdf } from "./browser-pdf.ts";
 import { reserveBrowserRun, settleBrowserRun } from "./browser-quota.ts";
 import { FinalPdfQueue } from "./pdf-queue.ts";
+import { signTrustedFinalPdf } from "./signing-runtime.ts";
 
 const RESPONSE_HEADERS = Object.freeze({
   "cache-control": "no-store",
@@ -19,6 +20,8 @@ interface TrustedRuntimeEnv {
   readonly TURNSTILE_EXPECTED_ACTION: string;
   readonly TURNSTILE_EXPECTED_HOSTNAME: string;
   readonly TURNSTILE_SECRET: string;
+  readonly SIGNING_ED25519_PRIVATE_B64: string;
+  readonly SIGNING_MLDSA65_SEED_B64: string;
 }
 
 function errorResponse(status: number, code: string, message: string): Response {
@@ -78,7 +81,8 @@ export class TrustedRuntime extends DurableObject<TrustedRuntimeEnv> {
         if (pdf.browserMs === undefined) return { ok: false, reason: "browser" } as const;
         const settled = await settleBrowserRun(this.ctx.storage, quota.reservation, pdf.browserMs);
         if (!settled || !pdf.ok) return { ok: false, reason: "browser" } as const;
-        return { ok: true } as const;
+        if (pdf.bytes === undefined) return { ok: false, reason: "browser" } as const;
+        return { ok: true, bytes: pdf.bytes } as const;
       });
       if (!queued.ok) {
         return errorResponse(503, "pdf_queue_full", "PDF generation is busy. Try again later.");
@@ -87,7 +91,16 @@ export class TrustedRuntime extends DurableObject<TrustedRuntimeEnv> {
         const code = queued.value.reason === "exhausted" ? "pdf_quota_exhausted" : "pdf_unavailable";
         return errorResponse(503, code, "PDF generation is unavailable.");
       }
-      return errorResponse(503, "signing_not_ready", "Signed PDF output is not available yet.");
+      try {
+        await signTrustedFinalPdf(
+          queued.value.bytes,
+          this.env.SIGNING_ED25519_PRIVATE_B64,
+          this.env.SIGNING_MLDSA65_SEED_B64,
+        );
+      } catch {
+        return errorResponse(503, "signing_unavailable", "Signed PDF output is unavailable.");
+      }
+      return errorResponse(503, "delivery_not_ready", "Signed PDF delivery is not available yet.");
     }
     return errorResponse(503, "analysis_not_ready", "Analysis is not available yet.");
   }

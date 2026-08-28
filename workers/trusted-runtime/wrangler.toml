@@ -16,7 +16,12 @@ TURNSTILE_EXPECTED_ACTION = "analyze"
 TURNSTILE_EXPECTED_HOSTNAME = "aethelgard.pages.dev"
 
 [secrets]
-required = ["TURNSTILE_SECRET"]
+required = ["TURNSTILE_SECRET", "SIGNING_ED25519_PRIVATE_B64", "SIGNING_MLDSA65_SEED_B64"]
+
+[[rules]]
+type = "CompiledWasm"
+globs = ["**/*.wasm"]
+fallthrough = true
 
 [exports.TrustedRuntime]
 type = "durable-object"

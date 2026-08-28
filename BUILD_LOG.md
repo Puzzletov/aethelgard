@@ -10,7 +10,7 @@ historical work.
 - Phase -1: **CLOSED**.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 0** on `phase/0-foundation`.
-- Phase 0 status: **IN PROGRESS — TASK 0.7 PASSED**.
+- Phase 0 status: **IN PROGRESS — TASK 0.8 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Frozen PII baseline: **APPROVED**.
@@ -282,3 +282,40 @@ historical work.
   strict TypeScript, lint, public/private dry builds, and static export passed.
   Public edge size stayed 12.16 KiB raw / 3.75 KiB gzip; the final private
   runtime measured 744.03 KiB raw / 115.30 KiB gzip.
+
+### 18. Phase 0 Task 0.8 — hybrid signing foundation
+
+- Task 0.8: **PASSED** on 2026-08-29.
+- Vendored the approved import-free `mldsa-native` ML-DSA-65 Wasm built from
+  source commit `6d661fd1865b38d8612692c52160cf76193785fb`. The committed artifact is
+  40,843 bytes and its SHA-256 is
+  `960ea1d9ceb0449f91301cb4168db83ab1cba3f0a86fa1bed0515f880b85f802`.
+  The build record, upstream license, minimal C boundary, pinned Zig 0.15.2
+  archive hash, exact flags, and a clean rebuild script are in the repository.
+- The private runtime hashes the exact final Browser Run PDF bytes with
+  SHA-256, signs the digest with Ed25519 through `node:crypto`, signs the same
+  digest with the pinned ML-DSA-65 Wasm, self-verifies both, and creates only
+  the approved public detached-manifest fields. Mutable decoded seed, expanded
+  key, randomness, digest, and Wasm arena buffers are wiped in `finally` paths.
+- Caller HTML, PDF bytes, hashes, extra envelope fields, and `/sign` routes are
+  rejected. Signing is reachable only after the private Durable Object has
+  produced and validated the service-owned PDF. A signing failure returns no
+  PDF and no unsigned substitute.
+- Official NIST ACVP v1.1.0.43 passed all 340 applicable ML-DSA-65 cases: 25
+  key-generation, 270 signature-generation, and 45 signature-verification
+  cases. Verification covered nine accepted and 36 rejected signatures.
+- Independent Node 24 and Wasm signatures cross-verified. The exact-PDF
+  integration passed, and changing one PDF byte caused both Ed25519 and
+  ML-DSA-65 verification to fail.
+- Added the reviewed key-generation/upload script. Disposable tests create no
+  production key. The production path requires an explicit reviewed flag,
+  prints no private value, uploads both seeds through one Wrangler secret-bulk
+  process, writes public keys only, and wipes mutable seed buffers.
+- No production key or secret was generated, read, uploaded, or committed.
+  The private configuration declares only the current Turnstile and signing
+  secret slots. Production secret migration remains a later Phase 0 gate.
+- Doctor passed 22 checks. Thirty root tests and eight frontend tests, strict
+  TypeScript, lint, dependency audit, public/private dry builds, and static
+  export passed. The audit reported zero moderate-or-higher findings. Public
+  edge size stayed 12.22 KiB raw / 3.79 KiB gzip; the private runtime measured
+  791.36 KiB raw / 130.80 KiB gzip.

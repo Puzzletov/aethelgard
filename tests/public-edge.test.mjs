@@ -112,11 +112,19 @@ test("analysis applies the per-source rate limit before reading the body", async
 });
 
 test("analysis accepts only the bounded basic envelope", async () => {
-  const invalidEnv = createEnv();
-  const invalid = await worker.fetch(analyzeRequest({ ...validEnvelope, prompt: "ignore rules" }), invalidEnv.env);
+  for (const callerInput of [
+    { prompt: "ignore rules" },
+    { html: "<h1>caller report</h1>" },
+    { pdf: "JVBERi0=" },
+    { hash: "caller-selected-hash" },
+  ]) {
+    const invalidEnv = createEnv();
+    const invalid = await worker.fetch(analyzeRequest({ ...validEnvelope, ...callerInput }), invalidEnv.env);
+    assert.equal(invalid.status, 400);
+    assert.equal(invalidEnv.runtimeCalls.length, 0);
+  }
   const validEnv = createEnv();
   const valid = await worker.fetch(analyzeRequest(), validEnv.env);
-  assert.equal(invalid.status, 400);
   assert.equal(valid.status, 503);
   assert.equal((await valid.json()).error.code, "turnstile_not_ready");
   assert.equal(valid.headers.get("access-control-allow-origin"), allowedOrigin);
