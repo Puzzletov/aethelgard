@@ -3,5 +3,16 @@ main = "src/index.ts"
 compatibility_date = "2026-08-04"
 compatibility_flags = ["nodejs_compat"]
 
+[vars]
+ALLOWED_ORIGIN = "https://aethelgard.pages.dev"
+
+[[ratelimits]]
+name = "ANALYZE_RATE_LIMIT"
+namespace_id = "1001"
+
+  [ratelimits.simple]
+  limit = 5
+  period = 60
+
 [observability]
 enabled = true

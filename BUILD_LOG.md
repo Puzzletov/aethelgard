@@ -10,7 +10,7 @@ historical work.
 - Phase -1: **CLOSED**.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 0** on `phase/0-foundation`.
-- Phase 0 status: **IN PROGRESS — TASK 0.2 PASSED**.
+- Phase 0 status: **IN PROGRESS — TASK 0.3 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Frozen PII baseline: **APPROVED**.
@@ -184,3 +184,19 @@ historical work.
   and `5ed4d31c988e73b258894244f209069ebe77dc7e564861954b21198b6de90d68`.
 - Static export, strict TypeScript, lint, and eight tests passed. Initial page
   JavaScript measured 172,578 gzip bytes against the 307,200-byte gate.
+
+### 13. Phase 0 Task 0.3 — secret-free public edge
+
+- Task 0.3: **PASSED** on 2026-08-28.
+- The public Worker exposes only `GET /health`, `POST /analyze`, and the
+  required restricted CORS preflight. Unknown routes, query strings, methods,
+  origins, content types, and invalid envelopes fail with fixed safe errors.
+- Analysis bodies use a 512 KiB streaming limit, 1,024-chunk limit, and
+  five-second read deadline. The Workers Rate Limiting binding is configured
+  for five attempts per source per Cloudflare location per 60 seconds.
+- The edge configuration contains one public origin value and the rate-limit
+  binding. It contains no secret, Turnstile verification, provider key,
+  Browser Run binding, signing input, parser, AI call, or application state.
+- Eleven root tests, six frontend tests, strict TypeScript, lint, Worker dry
+  build, and static export passed. Edge upload measured 9.69 KiB raw and
+  3.05 KiB gzip.
