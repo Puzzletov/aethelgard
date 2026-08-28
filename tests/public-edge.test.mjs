@@ -14,14 +14,30 @@ const validEnvelope = Object.freeze({
 
 function createEnv(rateLimitSuccess = true) {
   const calls = [];
+  const runtimeCalls = [];
   return {
     calls,
+    runtimeCalls,
     env: {
       ALLOWED_ORIGIN: allowedOrigin,
       ANALYZE_RATE_LIMIT: {
         async limit(input) {
           calls.push(input);
           return { success: rateLimitSuccess };
+        },
+      },
+      TRUSTED_RUNTIME: {
+        getByName(name) {
+          runtimeCalls.push({ name });
+          return {
+            async fetch(request) {
+              runtimeCalls.push({ request });
+              return new Response(JSON.stringify({
+                ok: false,
+                error: { code: "turnstile_not_ready", message: "Analysis is not available yet." },
+              }), { status: 503, headers: { "content-type": "application/json" } });
+            },
+          };
         },
       },
     },
@@ -91,7 +107,10 @@ test("analysis accepts only the bounded basic envelope", async () => {
   const valid = await worker.fetch(analyzeRequest(), validEnv.env);
   assert.equal(invalid.status, 400);
   assert.equal(valid.status, 503);
-  assert.equal((await valid.json()).error.code, "trusted_runtime_unavailable");
+  assert.equal((await valid.json()).error.code, "turnstile_not_ready");
+  assert.equal(valid.headers.get("access-control-allow-origin"), allowedOrigin);
+  assert.equal(validEnv.runtimeCalls[0].name, "global");
+  assert.equal(validEnv.runtimeCalls[1].request.url, "https://trusted-runtime.internal/analyze");
 });
 
 test("analysis fails closed when the streamed body exceeds its bound", async () => {

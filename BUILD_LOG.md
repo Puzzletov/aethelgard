@@ -10,7 +10,7 @@ historical work.
 - Phase -1: **CLOSED**.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 0** on `phase/0-foundation`.
-- Phase 0 status: **IN PROGRESS — TASK 0.3 PASSED**.
+- Phase 0 status: **IN PROGRESS — TASK 0.4 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Frozen PII baseline: **APPROVED**.
@@ -200,3 +200,19 @@ historical work.
 - Eleven root tests, six frontend tests, strict TypeScript, lint, Worker dry
   build, and static export passed. Edge upload measured 9.69 KiB raw and
   3.05 KiB gzip.
+
+### 14. Phase 0 Task 0.4 — private TrustedRuntime binding
+
+- Task 0.4: **PASSED** on 2026-08-28.
+- Added a separate `aethelgard-trusted-runtime` script with a declarative
+  SQLite Durable Object export. `workers_dev` and preview URLs are disabled,
+  no route exists, and its default module entry fails with a fixed 404.
+- The public edge binds directly to external class `TrustedRuntime` through
+  `script_name`. There is no Service Binding, dispatcher call, or shared
+  edge/runtime secret.
+- A two-process local workerd proof passed through the public `/analyze` route
+  and returned the Durable Object marker `turnstile_not_ready`. Both
+  disposable process trees were stopped after the proof.
+- Tests, strict TypeScript, lint, and both dry builds passed. Public edge size
+  measured 10.64 KiB raw / 3.31 KiB gzip; private runtime size measured
+  1.49 KiB raw / 0.71 KiB gzip.

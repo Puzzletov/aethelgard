@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "audit": "npm audit --audit-level=moderate && npm --prefix frontend audit --audit-level=moderate",
-    "build": "wrangler deploy --dry-run && npm --prefix frontend run build",
+    "build": "wrangler deploy --dry-run && wrangler deploy --dry-run --config workers/trusted-runtime/wrangler.toml && npm --prefix frontend run build",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "lint": "tsc --noEmit --noUnusedLocals --noUnusedParameters --noImplicitReturns --noFallthroughCasesInSwitch && npm --prefix frontend run lint",

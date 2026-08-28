@@ -24,6 +24,16 @@ function responseHeaders(origin?: string, additional?: HeadersInit): Headers {
   return headers;
 }
 
+export function passThroughResponse(response: Response, origin: string): Response {
+  const headers = responseHeaders(origin, {
+    "content-type": response.headers.get("content-type") ?? "application/octet-stream",
+  });
+  return new Response(response.body, {
+    status: response.status,
+    headers,
+  });
+}
+
 export function jsonResponse(status: number, body: JsonValue, origin?: string): Response {
   return new Response(JSON.stringify(body), {
     status,

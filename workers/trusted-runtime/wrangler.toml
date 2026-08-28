@@ -1,0 +1,10 @@
+name = "aethelgard-trusted-runtime"
+main = "src/index.ts"
+compatibility_date = "2026-08-04"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = false
+preview_urls = false
+
+[exports.TrustedRuntime]
+type = "durable-object"
+storage = "sqlite"

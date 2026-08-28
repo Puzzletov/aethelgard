@@ -14,5 +14,10 @@ namespace_id = "1001"
   limit = 5
   period = 60
 
+[[durable_objects.bindings]]
+name = "TRUSTED_RUNTIME"
+class_name = "TrustedRuntime"
+script_name = "aethelgard-trusted-runtime"
+
 [observability]
 enabled = true

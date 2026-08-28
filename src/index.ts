@@ -1,9 +1,14 @@
-import { MAX_ANALYSIS_BODY_BYTES, type PublicEdgeEnv } from "./public-edge/config.ts";
+import {
+  MAX_ANALYSIS_BODY_BYTES,
+  TRUSTED_RUNTIME_INSTANCE,
+  type PublicEdgeEnv,
+} from "./public-edge/config.ts";
 import { readBoundedBody } from "./public-edge/body.ts";
 import { isBasicAnalysisEnvelope } from "./public-edge/envelope.ts";
 import {
   jsonResponse,
   methodNotAllowed,
+  passThroughResponse,
   preflightResponse,
   safeError,
 } from "./public-edge/responses.ts";
@@ -43,6 +48,26 @@ async function passesRateLimit(request: Request, env: PublicEdgeEnv): Promise<bo
   }
 }
 
+async function callTrustedRuntime(
+  bytes: Uint8Array,
+  env: PublicEdgeEnv,
+  origin: string,
+): Promise<Response> {
+  try {
+    const stub = env.TRUSTED_RUNTIME.getByName(TRUSTED_RUNTIME_INSTANCE);
+    const ownedBody = new Uint8Array(bytes.byteLength);
+    ownedBody.set(bytes);
+    const request = new Request("https://trusted-runtime.internal/analyze", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: ownedBody.buffer,
+    });
+    return passThroughResponse(await stub.fetch(request), origin);
+  } catch {
+    return safeError(503, "trusted_runtime_unavailable", "Analysis is not available yet.", origin);
+  }
+}
+
 function handlePreflight(request: Request, env: PublicEdgeEnv): Response {
   const origin = allowedOrigin(request, env);
   if (origin === undefined) return safeError(403, "origin_denied", "Origin is not allowed.");
@@ -74,7 +99,7 @@ async function handleAnalyze(request: Request, env: PublicEdgeEnv): Promise<Resp
   if (!isBasicAnalysisEnvelope(parseJson(body.bytes))) {
     return safeError(400, "envelope_invalid", "Request body is invalid.", origin);
   }
-  return safeError(503, "trusted_runtime_unavailable", "Analysis is not available yet.", origin);
+  return callTrustedRuntime(body.bytes, env, origin);
 }
 
 async function routeRequest(request: Request, env: PublicEdgeEnv): Promise<Response> {
