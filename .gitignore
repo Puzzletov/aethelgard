@@ -9,3 +9,4 @@ frontend/.next/
 frontend/out/
 backend/**/__pycache__/
 *.pyc
+*.tsbuildinfo

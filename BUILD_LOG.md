@@ -8,7 +8,7 @@ historical work.
 - Architecture: **2.1 — APPROVED FOR BUILD**. Protected `main` receives this
   authority when the preparation pull request is reviewed and merged.
 - Phase -1: **CLOSED**.
-- Preparation gate: **IN PROGRESS — Gate Task A5**.
+- Preparation gate: **PASSED — READY FOR REVIEW**.
 - Current implementation phase: Phase 0 is authorized only after preparation
   merges to protected `main`.
 - Phase 0 status: **NOT STARTED**.
@@ -144,3 +144,16 @@ historical work.
   on 2026-08-28.
 - Authoritative `ARCHITECTURE.md` SHA-256:
   `2798ded6dd80ac81d4e8d83fd8500c77dafdf2f9ba547d105d59cedc7c97c4d0`.
+- Gate Task A5 preparation verification: **PASSED** on 2026-08-28.
+- Architecture sections 0-52 and EDR decisions 1-36 are complete and ordered.
+  Markdown links and table shapes pass. Obsolete research documents are absent.
+- No removed target dependency appears in an active manifest. `AGENTS.md`, the
+  approved EDR, and Architecture 2.1 agree on scope and phase authority.
+- Frontend tests: 3 passed, 0 failed. Root and frontend TypeScript checks
+  passed. Static export passed with 103 KiB initial shared JavaScript, below
+  the 300 KiB gate. Package audit reported zero vulnerabilities.
+- Generated install/build/typecheck output was removed. The preparation
+  commits contain signed SSH signature headers.
+- Preparation branch: `chore/final-architecture-2.1`. Phase 0 remains not
+  started and cannot branch until this preparation work merges to protected
+  `main`.
