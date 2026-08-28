@@ -10,7 +10,7 @@ historical work.
 - Phase -1: **CLOSED**.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 0** on `phase/0-foundation`.
-- Phase 0 status: **IN PROGRESS — TASK 0.8 PASSED**.
+- Phase 0 status: **IN PROGRESS — TASK 0.9 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Frozen PII baseline: **APPROVED**.
@@ -319,3 +319,47 @@ historical work.
   export passed. The audit reported zero moderate-or-higher findings. Public
   edge size stayed 12.22 KiB raw / 3.79 KiB gzip; the private runtime measured
   791.36 KiB raw / 130.80 KiB gzip.
+
+### 19. Phase 0 Task 0.9 — CI and supply-chain gate
+
+- Task 0.9: **PASSED** on 2026-08-29.
+- Added one GitHub-native workflow on the standard public `ubuntu-24.04`
+  runner. Checkout and Node setup actions are pinned to full reviewed commit
+  SHAs. The workflow uses Node 24.13.1, read-only repository permission, a
+  20-minute job limit, no package-manager cache, no uploaded artifact, no
+  uploaded cache, and no paid or self-hosted runner.
+- The hosted push run `33220605474` passed the clean root and frontend installs,
+  Doctor, license and lock integrity check, dependency audit, TypeScript,
+  strict lint, all tests, both Worker dry builds, and static frontend build.
+  A bounded command wrapper makes any emitted warning or non-zero command fail
+  the job.
+- Repaired eight malformed optional Next.js SWC records in the frontend
+  lockfile. Their approved 16.3.2 versions did not change; each record now has
+  its registry URL, SHA-512 integrity, platform bound, and MIT license. Clean
+  `npm ci` now succeeds on the standard hosted Linux runner.
+- The deterministic dependency gate checked 154 locked packages. Every real
+  package has an approved recorded license, npm registry source, and SHA-512
+  integrity. It also checks both self-hosted font licenses and the vendored
+  `mldsa-native` license. Root and frontend audits reported zero
+  vulnerabilities.
+- Dependabot now covers both npm lockfiles on bounded weekly schedules.
+  GitHub Dependabot security updates, CodeQL default setup, secret scanning,
+  and push protection are enabled. CodeQL uses the default JavaScript and
+  TypeScript suite on a standard runner. GitHub secret scanning reported zero
+  open alerts after the Phase 0 branch push.
+- Protected `main` still requires signed commits, linear history, pull-request
+  review, the existing CodeQL check, and strict up-to-date checks. The passing
+  `Build, test, and supply chain` job is now also required. No existing rule
+  was removed or weakened.
+- There is no active Python code in Phase 0, so no empty Python toolchain or
+  dependency was added. Thirty-four root tests and eight frontend tests passed.
+  Public edge size stayed 12.22 KiB raw / 3.79 KiB gzip; the private runtime
+  stayed 791.36 KiB raw / 130.80 KiB gzip.
+- A separate pre-existing Cloudflare Workers Builds check attempted the
+  feature branch and failed. It is not a required protected-main status and is
+  not part of the GitHub-native Task 0.9 workflow. No production deployment
+  succeeded. Its deployment behavior remains inside the Task 0.10 deployment
+  verification gate and was not hidden or converted into a CI exception.
+- GitHub continues to show the 11 old Dependabot alerts on protected `main`
+  until the already tested Phase 0 dependency fixes merge. The active Phase 0
+  branch audits clean.
