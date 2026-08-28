@@ -5,10 +5,10 @@ historical work.
 
 ## Current State
 
-- Architecture: 2.0 remains authoritative until the Architecture 2.1
-  preparation pull request is reviewed and merged.
+- Architecture: **2.1 — APPROVED FOR BUILD**. Protected `main` receives this
+  authority when the preparation pull request is reviewed and merged.
 - Phase -1: **CLOSED**.
-- Preparation gate: **IN PROGRESS — Gate Task A4**.
+- Preparation gate: **IN PROGRESS — Gate Task A5**.
 - Current implementation phase: Phase 0 is authorized only after preparation
   merges to protected `main`.
 - Phase 0 status: **NOT STARTED**.
@@ -140,3 +140,7 @@ historical work.
 - Frontend configuration tests: 3 passed, 0 failed.
 - PII corpus: 84 cases and canonical hash matched.
 - Gate Task A3 build-log compaction: **PASSED** on 2026-08-28.
+- Gate Task A4 Architecture 2.1 promotion and EDR/agent alignment: **PASSED**
+  on 2026-08-28.
+- Authoritative `ARCHITECTURE.md` SHA-256:
+  `2798ded6dd80ac81d4e8d83fd8500c77dafdf2f9ba547d105d59cedc7c97c4d0`.

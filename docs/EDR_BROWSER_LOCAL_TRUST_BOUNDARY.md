@@ -2,11 +2,10 @@
 
 Date: 2026-08-27
 
-Status: **Owner approved - pending incorporation into an approved architecture revision**
+Status: **Owner approved and incorporated into Architecture 2.1**
 
-This decision record does not change `ARCHITECTURE.md` by itself. It records
-the owner's security decision for the later proposed `ARCHITECTURE.md` v2.x
-revision.
+This decision is binding through `ARCHITECTURE.md` version 2.1, Sections 12.5
+and 35, and its release gates.
 
 ## Decision
 
@@ -97,9 +96,8 @@ malware-scanning requirements must be reconsidered before deployment.
    old failures.
 8. Reopen this decision under the binding malware-scan invariant above.
 
-These controls must be present in the proposed architecture before this EDR
-can be incorporated. They must remain release-gating regression tests after
-implementation begins.
+These controls are binding Architecture 2.1 invariants. They must remain
+release-gating regression tests.
 
 ## Evidence
 
@@ -111,8 +109,9 @@ with a fresh Web Worker.
 Phase -1D preserved the privacy boundary across 576 labelled synthetic PII
 entities and passed Safe Mode tests in modern Chrome and Edge.
 
-See [`PHASE_MINUS_1C_FEASIBILITY.md`](PHASE_MINUS_1C_FEASIBILITY.md) and
-[`PHASE_MINUS_1D_CLOSURE.md`](PHASE_MINUS_1D_CLOSURE.md).
+The concise milestone evidence is in [`BUILD_LOG.md`](../BUILD_LOG.md). The
+approved frozen corpus is in
+[`tests/fixtures/pii-corpus.mjs`](../tests/fixtures/pii-corpus.mjs).
 
 ## Strawman and steelman
 
@@ -130,4 +129,5 @@ old trust boundary.
 - Decision: **Approved with the precise Web Worker wording and binding
   malware-scan invariant above.**
 - Date: **2026-08-27**
-- Scope: decision record only; no production or implementation approval.
+- Incorporated into Architecture 2.1: **2026-08-28**
+- Scope: binding security decision for Architecture 2.1.
