@@ -11,7 +11,7 @@ historical work.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 1** on `phase/1-core-mission`.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
-- Phase 1 status: **IN PROGRESS — TASK 1.5 PASSED**.
+- Phase 1 status: **IN PROGRESS — TASK 1.6 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Frozen PII baseline: **APPROVED**.
@@ -634,3 +634,29 @@ historical work.
   static export passed without warnings. Initial JavaScript is 175,334 gzip
   bytes; the lazy parser Worker is 38,678 raw / 13,242 gzip bytes. No npm
   dependency, paid path, persistence, or source-data network route was added.
+
+### 28. Phase 1 Task 1.6 — XLSX parser
+
+- Task 1.6: **PASSED** on 2026-08-29. Added the approved direct `openpyxl`
+  3.1.5 reader with its exact pure-Python `et-xmlfile` 2.0.0 dependency. The
+  workbook is opened read-only with links disabled and formulas returned as
+  inert source text, never calculated or executed.
+- Output contains only bounded cell text plus neutral one-based sheet indexes
+  and cell coordinates. Raw sheet names, workbook metadata, relationship
+  targets, filenames, styles, and links are not returned.
+- A real XLSX with a deliberately sensitive sheet name, inline text, and a
+  formula passed in a disposable Edge module Worker. It returned `A1` and the
+  inert `B2` formula under sheet index 1, exposed no sheet name, made zero
+  external network requests, and completed cold in 3,962 ms against the
+  10-second readiness gate.
+- The parser bounds sheets at 200, rows at 100,000, columns at 16,384, visited
+  cells at 200,000, returned sources at 100,000, each source at 100,000 code
+  points, total text at 2,000,000 code points, and the disposable Worker at ten
+  seconds. Non-finite numbers, unsupported cell values, excessive dimensions,
+  empty text, malformed structure, schema, asset, or runtime failure fail closed.
+- Parser assets total 25,258,264 bytes; the largest individual file remains
+  9,597,831 bytes under 25 MiB. Nineteen frontend tests, parser asset hashes,
+  the focused XLSX browser regression, TypeScript, strict lint, licenses, and
+  static export passed without warnings. Initial JavaScript is 175,333 gzip
+  bytes; the lazy parser Worker is 40,573 raw / 13,669 gzip bytes. No native or
+  npm dependency, paid path, persistence, or source-data network route was added.

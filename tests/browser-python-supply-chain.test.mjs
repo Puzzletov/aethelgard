@@ -121,3 +121,33 @@ test("python-pptx extracts slide text without Pillow or XlsxWriter in a browser 
   });
   assert.ok(report.elapsed_ms > 0 && report.elapsed_ms <= 30_000);
 });
+
+test("openpyxl extracts cells without exposing sheet names in a browser module Worker", () => {
+  const result = spawnSync(process.execPath, ["scripts/verify-xlsx-parser.mjs"], {
+    cwd: root,
+    encoding: "utf8",
+    timeout: 60_000,
+    maxBuffer: 1024 * 1024,
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stderr, "");
+  const report = JSON.parse(result.stdout);
+  assert.deepEqual({
+    status: report.status,
+    pyodide: report.pyodide,
+    openpyxl: report.openpyxl,
+    et_xmlfile: report.et_xmlfile,
+    sources: report.sources,
+    sheet_names_exposed: report.sheet_names_exposed,
+    external_network_requests: report.external_network_requests,
+  }, {
+    status: "ok",
+    pyodide: "314.0.5",
+    openpyxl: "3.1.5",
+    et_xmlfile: "2.0.0",
+    sources: 2,
+    sheet_names_exposed: false,
+    external_network_requests: 0,
+  });
+  assert.ok(report.elapsed_ms > 0 && report.elapsed_ms <= 30_000);
+});
