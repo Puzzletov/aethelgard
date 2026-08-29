@@ -1,3 +1,5 @@
+import { DocumentPicker } from "../components/document-picker";
+
 const principles = [
   {
     title: "Local first",
@@ -19,7 +21,7 @@ function SiteHeader() {
       <a className="wordmark" href="/" aria-label="Aethelgard home">
         Aethelgard
       </a>
-      <span className="phase-mark">Foundation</span>
+      <span className="phase-mark">Core mission</span>
     </header>
   );
 }
@@ -78,6 +80,7 @@ export default function Home() {
       <SiteHeader />
       <main id="main-content">
         <Hero />
+        <DocumentPicker />
         <Principles />
       </main>
       <SiteFooter />

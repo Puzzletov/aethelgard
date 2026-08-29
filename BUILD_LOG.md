@@ -9,8 +9,9 @@ historical work.
   authority when the preparation pull request is reviewed and merged.
 - Phase -1: **CLOSED**.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
-- Current implementation phase: **PHASE 0** on `phase/0-foundation`.
-- Phase 0 status: **IN PROGRESS — TASK 0.10 PASSED**.
+- Current implementation phase: **PHASE 1** on `phase/1-core-mission`.
+- Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
+- Phase 1 status: **IN PROGRESS — TASK 1.1 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Frozen PII baseline: **APPROVED**.
@@ -488,3 +489,23 @@ historical work.
   storage service, logging product, or superseded Google runtime. The next
   human-only action is review and merge of the single Phase 0 pull request;
   Phase 1 remains unauthorized.
+
+### 23. Phase 1 Task 1.1 — browser input contract and early file bound
+
+- Task 1.1: **PASSED** on 2026-08-29 from protected-main merge `6c36e14`.
+  The shared build/Doctor phase marker is now Phase 1.
+- Added one local single-file contract for exactly PDF, DOCX, PPTX, XLSX, CSV,
+  and TXT. The extension is only an initial format choice; MIME and extension
+  are not treated as trusted content evidence. Task 1.2 retains responsibility
+  for magic and hostile-container validation.
+- The browser rejects zero, invalid, multi-file, unsupported, overlong-name,
+  and oversized selections before reading file bytes. Exactly 15 MiB is
+  accepted; 15 MiB plus one byte fails closed with a fixed safe error.
+- Added an accessible file-selection control that reports only neutral format
+  and size status. It performs no parse, network request, browser persistence,
+  or content read, and it exposes no raw filename outside local browser memory.
+- Twelve frontend tests, frontend TypeScript, strict lint, static export,
+  Doctor, its regression test, and root strict TypeScript passed without
+  warnings. Initial frontend JavaScript measured 173,769 gzip bytes against the
+  307,200-byte limit. No dependency, paid path, storage, or external processor
+  was added.

@@ -68,7 +68,7 @@ const [rootPackage, frontendPackage, publicConfig, privateConfig, publicSource, 
 ]);
 
 check("architecture_version", ARCHITECTURE_VERSION === "2.1");
-check("build_phase", BUILD_PHASE === "0");
+check("build_phase", BUILD_PHASE === "1");
 check("project_version", rootPackage.version === "0.0.1");
 check("public_origin", hasTomlAssignment(publicConfig, "ALLOWED_ORIGIN", `"${EXPECTED_ALLOWED_ORIGIN}"`));
 check("external_do_binding", [
