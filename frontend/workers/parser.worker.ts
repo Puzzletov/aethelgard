@@ -3,11 +3,12 @@
 import { SUPPORTED_DOCUMENT_FORMATS, type DocumentFormat } from "../input/document-input";
 import { parseDocx } from "../input/parsers/docx-parser";
 import { parsePdf } from "../input/parsers/pdf-parser";
+import { parsePptx } from "../input/parsers/pptx-parser";
 import { prevalidateDocument } from "../input/preflight/document";
 import { failedPreflight } from "../input/preflight/result";
 
 interface PreflightRequest {
-  readonly kind: "preflight" | "parse_pdf" | "parse_docx";
+  readonly kind: "preflight" | "parse_pdf" | "parse_docx" | "parse_pptx";
   readonly format: DocumentFormat;
   readonly buffer: ArrayBuffer;
 }
@@ -21,7 +22,7 @@ function isPreflightRequest(value: unknown): value is PreflightRequest {
   const keys = Object.keys(value).sort();
   const kind = Reflect.get(value, "kind");
   return keys.join("\0") === "buffer\0format\0kind"
-    && (kind === "preflight" || kind === "parse_pdf" || kind === "parse_docx")
+    && (kind === "preflight" || kind === "parse_pdf" || kind === "parse_docx" || kind === "parse_pptx")
     && isDocumentFormat(Reflect.get(value, "format"))
     && Reflect.get(value, "buffer") instanceof ArrayBuffer;
 }
@@ -29,6 +30,7 @@ function isPreflightRequest(value: unknown): value is PreflightRequest {
 async function parseValidated(request: PreflightRequest) {
   if (request.kind === "parse_pdf" && request.format === "pdf") return parsePdf(request.buffer);
   if (request.kind === "parse_docx" && request.format === "docx") return parseDocx(request.buffer);
+  if (request.kind === "parse_pptx" && request.format === "pptx") return parsePptx(request.buffer);
   return failedPreflight("magic_invalid");
 }
 

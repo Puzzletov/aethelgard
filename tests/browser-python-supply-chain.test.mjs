@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFile, stat } from "node:fs/promises";
+import { readFile, readdir, stat } from "node:fs/promises";
 import test from "node:test";
 
 const root = new URL("../", import.meta.url);
@@ -15,6 +15,8 @@ test("browser Python parser assets match the approved pinned manifest", async ()
   assert.equal(manifest.pyodide_version, "314.0.5");
   assert.equal(manifest.python_version, "3.14.2");
   assert.equal(packageJson.dependencies.pyodide, "314.0.5");
+  assert.equal(manifest.packages.some((asset) => /pillow|xlsxwriter/i.test(asset.name)), false);
+  assert.equal((await readdir(new URL("public/pyodide/", frontend))).some((name) => /pillow|xlsxwriter/i.test(name)), false);
   assert.match(attributes, /^frontend\/public\/parser\/\*\* -text$/m);
   assert.match(attributes, /^frontend\/public\/pyodide\/\*\* -text$/m);
   for (const asset of [...manifest.core, ...manifest.packages, ...manifest.licenses]) {
@@ -83,6 +85,38 @@ test("the pinned Pyodide runtime executes python-docx with structural references
     python_docx: "1.2.0",
     lxml: "6.0.2",
     sources: 2,
+    external_network_requests: 0,
+  });
+  assert.ok(report.elapsed_ms > 0 && report.elapsed_ms <= 30_000);
+});
+
+test("python-pptx extracts slide text without Pillow or XlsxWriter in a browser module Worker", () => {
+  const result = spawnSync(process.execPath, ["scripts/verify-pptx-parser.mjs"], {
+    cwd: root,
+    encoding: "utf8",
+    timeout: 60_000,
+    maxBuffer: 1024 * 1024,
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stderr, "");
+  const report = JSON.parse(result.stdout);
+  assert.deepEqual({
+    status: report.status,
+    pyodide: report.pyodide,
+    python_pptx: report.python_pptx,
+    slides: report.slides,
+    pillow_omitted: report.pillow_omitted,
+    xlsxwriter_omitted: report.xlsxwriter_omitted,
+    package_data_pruned: report.package_data_pruned,
+    external_network_requests: report.external_network_requests,
+  }, {
+    status: "ok",
+    pyodide: "314.0.5",
+    python_pptx: "1.0.2",
+    slides: 1,
+    pillow_omitted: true,
+    xlsxwriter_omitted: true,
+    package_data_pruned: true,
     external_network_requests: 0,
   });
   assert.ok(report.elapsed_ms > 0 && report.elapsed_ms <= 30_000);

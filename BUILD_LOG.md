@@ -11,7 +11,7 @@ historical work.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 1** on `phase/1-core-mission`.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
-- Phase 1 status: **IN PROGRESS — TASK 1.4 PASSED**.
+- Phase 1 status: **IN PROGRESS — TASK 1.5 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Frozen PII baseline: **APPROVED**.
@@ -600,4 +600,37 @@ historical work.
   the DOCX browser proof, manifest hashes, strict TypeScript, lint, licenses,
   and static export passed without warnings. Initial JavaScript is 175,321
   gzip bytes; the lazy parser Worker is 37,293 raw / 13,003 gzip bytes. No npm
+  dependency, paid path, persistence, or source-data network route was added.
+
+### 27. Phase 1 Task 1.5 — PPTX parser
+
+- Task 1.5: **PASSED** on 2026-08-29. Added the approved direct `python-pptx`
+  1.0.2 parser, reusing the exact pinned `lxml` and `typing-extensions` runtime.
+  It returns bounded slide text with neutral one-based slide references and
+  includes visible text-frame and table-cell content in slide order.
+- Pillow 12.2.0 was not added: its current official advisory record contains
+  applicable memory, denial-of-service, and native-memory issues fixed in
+  12.3.0, which is not in the approved Pyodide 314.0.5 package set. The fixed
+  parser installs a fail-closed image/font-decoder import stub. XlsxWriter is
+  also omitted because it is reachable only through presentation/chart-writing
+  code, not the read-only text extraction path.
+- A real text-bearing PPTX containing a text shape, table cell, and PNG passed
+  in a disposable Edge module Worker. Text and table content retained slide 1;
+  the image was not decoded, Pillow and XlsxWriter remained absent, two
+  write-only package-data files were pruned, external network requests were
+  zero, and cold completion was 5,838 ms against the 10-second readiness gate.
+- The parser bounds slides at 500, shapes per slide at 10,000, table cells per
+  slide at 50,000, slide text at 100,000 code points, total text at 2,000,000
+  code points, and the disposable Worker at ten seconds. Image/font access,
+  empty text, malformed structure, schema, asset, native, or runtime failure
+  fails closed. It adds no OCR or image-processing claim.
+- Native-code audit note: no vulnerable Pillow native wheel is present. The
+  exact `python-pptx` wheel uses the already-audited pinned `lxml` Wasm only
+  after hostile OOXML prevalidation and inside the disposable parser Worker.
+  The proof and manifest regressions enforce the Pillow/XlsxWriter absence.
+- Parser assets total 24,989,295 bytes; the largest individual file remains
+  9,597,831 bytes under 25 MiB. Nineteen frontend tests, parser asset hashes,
+  the focused PPTX browser regression, TypeScript, strict lint, licenses, and
+  static export passed without warnings. Initial JavaScript is 175,334 gzip
+  bytes; the lazy parser Worker is 38,678 raw / 13,242 gzip bytes. No npm
   dependency, paid path, persistence, or source-data network route was added.
