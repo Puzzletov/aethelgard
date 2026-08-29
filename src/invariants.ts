@@ -1,4 +1,5 @@
 export const ARCHITECTURE_VERSION = "2.1";
+export const AUTHORITATIVE_ARCHITECTURE_SHA256 = "ccf4897db878f27a49aa609dc6cdb523890a1980e303996f8ccecbf873d5d053";
 export const BUILD_PHASE = "1";
 export const PUBLIC_SERVICE_NAME = "aethelgard-edge";
 export const EXPECTED_ALLOWED_ORIGIN = "https://aethelgard-3j9.pages.dev";

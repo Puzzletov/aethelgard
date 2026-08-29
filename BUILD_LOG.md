@@ -5,8 +5,9 @@ historical work.
 
 ## Current State
 
-- Architecture: **2.1 — APPROVED FOR BUILD**. Protected `main` receives this
-  authority when the preparation pull request is reviewed and merged.
+- Architecture: **2.1 — APPROVED FOR BUILD**, execution-hardened under EDR 37.
+- Authoritative exact Git-blob SHA-256:
+  `ccf4897db878f27a49aa609dc6cdb523890a1980e303996f8ccecbf873d5d053`.
 - Phase -1: **CLOSED**.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 1** on `phase/1-core-mission`.
@@ -14,6 +15,7 @@ historical work.
 - Phase 1 status: **IN PROGRESS — TASK 1.6 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
+- Architecture execution-hardening EDR 37: **APPROVED**.
 - Frozen PII baseline: **APPROVED**.
 - Trusted PDF and hybrid-signing feasibility: **PASSED**.
 - External Durable Object direct binding: **PASSED**.
@@ -142,7 +144,7 @@ historical work.
 - Gate Task A3 build-log compaction: **PASSED** on 2026-08-28.
 - Gate Task A4 Architecture 2.1 promotion and EDR/agent alignment: **PASSED**
   on 2026-08-28.
-- Authoritative `ARCHITECTURE.md` SHA-256:
+- Historical initial Architecture 2.1 promotion SHA-256:
   `2798ded6dd80ac81d4e8d83fd8500c77dafdf2f9ba547d105d59cedc7c97c4d0`.
 - Gate Task A5 preparation verification: **PASSED** on 2026-08-28.
 - Architecture sections 0-52 and EDR decisions 1-36 are complete and ordered.
@@ -461,7 +463,7 @@ historical work.
 - Phase 0 exit gate: **PASSED** on 2026-08-29. Tasks 0.1 through 0.11 passed in
   order. No Phase 1 document parsing, redaction, NER, AI analysis, report
   generation, or user-facing workflow was implemented early.
-- The authoritative LF-normalized Architecture 2.1 SHA-256 remains
+- The historical initial Architecture 2.1 Git-blob SHA-256 was
   `2798ded6dd80ac81d4e8d83fd8500c77dafdf2f9ba547d105d59cedc7c97c4d0`.
   Repository hygiene, the Scandinavian design-token shell, named-route edge,
   direct external Durable Object binding, private-only runtime, Turnstile,
@@ -660,3 +662,21 @@ historical work.
   static export passed without warnings. Initial JavaScript is 175,333 gzip
   bytes; the lazy parser Worker is 40,573 raw / 13,669 gzip bytes. No native or
   npm dependency, paid path, persistence, or source-data network route was added.
+
+### 29. Architecture 2.1 execution hardening
+
+- Owner-approved execution hardening: **PASSED** on 2026-08-29 under EDR 37.
+  Runtime topology, mission, privacy boundary, exact-zero policy, providers,
+  cryptography, supported browsers and visual direction are unchanged.
+- Canonical tasks are Phase 1: 22, Phase 2: 14, Phase 3: 26 and Phase 4: 12.
+  Phase exits are separate gates; Task 4.12 is the reviewed production release.
+- Registries contain 118 Bounds, 37 Schemas and 28 Failures. Every Phase 1–4
+  task has a complete execution contract and only known registry references.
+- `architecture:lint` and seven tooling/consistency tests pass. Task-context
+  extraction returns only the requested task and referenced registry entries.
+  The exact staged Git-blob hash is
+  `ccf4897db878f27a49aa609dc6cdb523890a1980e303996f8ccecbf873d5d053`.
+- Consistency regressions preserve completed Phase 0 and Tasks 1.1–1.6 values.
+  No runtime dependency, paid path, persistence, secret, production resource,
+  source-data network route, Phase 2 implementation or architecture drift was
+  introduced.
