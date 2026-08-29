@@ -1,0 +1,28 @@
+name = "aethelgard-trusted-runtime"
+main = "src/index.ts"
+compatibility_date = "2026-08-04"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = false
+preview_urls = false
+
+[observability]
+enabled = false
+
+[browser]
+binding = "BROWSER"
+
+[vars]
+TURNSTILE_EXPECTED_ACTION = "analyze"
+TURNSTILE_EXPECTED_HOSTNAME = "aethelgard-3j9.pages.dev"
+
+[secrets]
+required = ["TURNSTILE_SECRET", "GROQ_API_KEY", "OPENROUTER_API_KEY", "SIGNING_ED25519_PRIVATE_B64", "SIGNING_MLDSA65_SEED_B64"]
+
+[[rules]]
+type = "CompiledWasm"
+globs = ["**/*.wasm"]
+fallthrough = true
+
+[exports.TrustedRuntime]
+type = "durable-object"
+storage = "sqlite"

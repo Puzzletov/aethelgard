@@ -8,10 +8,9 @@ historical work.
 - Architecture: **2.1 — APPROVED FOR BUILD**. Protected `main` receives this
   authority when the preparation pull request is reviewed and merged.
 - Phase -1: **CLOSED**.
-- Preparation gate: **PASSED — READY FOR REVIEW**.
-- Current implementation phase: Phase 0 is authorized only after preparation
-  merges to protected `main`.
-- Phase 0 status: **NOT STARTED**.
+- Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
+- Current implementation phase: **PHASE 0** on `phase/0-foundation`.
+- Phase 0 status: **IN PROGRESS — TASK 0.10 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Frozen PII baseline: **APPROVED**.
@@ -154,6 +153,338 @@ historical work.
   the 300 KiB gate. Package audit reported zero vulnerabilities.
 - Generated install/build/typecheck output was removed. The preparation
   commits contain signed SSH signature headers.
-- Preparation branch: `chore/final-architecture-2.1`. Phase 0 remains not
-  started and cannot branch until this preparation work merges to protected
-  `main`.
+- Preparation branch `chore/final-architecture-2.1` merged to protected `main`
+  as `7ddad437` before the Phase 0 branch was created.
+
+### 11. Phase 0 Task 0.1 — clean implementation baseline
+
+- Task 0.1: **PASSED** on 2026-08-28.
+- Classified all 11 active Dependabot alerts as transitive dependencies of
+  approved tools. Root alerts followed `wrangler -> miniflare -> undici`.
+  Frontend alerts followed `Next.js -> postcss -> nanoid` and
+  `Next.js -> sharp`.
+- Pinned Wrangler 4.126.0, Miniflare 5.20260825.0-alpha, and undici 7.29.0.
+  Pinned Next.js 16.3.2, PostCSS 8.5.23, nanoid 3.3.18, and sharp 0.35.4.
+- Removed obsolete Resend and Sentry binding examples from the public Worker.
+- Root and frontend npm audits reported zero vulnerabilities at every
+  severity. Five root/frontend tests, strict TypeScript, lint, Worker dry
+  build, and static export passed.
+- No document parsing, AI, signing, Browser Run, persistence, paid path, or
+  other future-task feature was added.
+
+### 12. Phase 0 Task 0.2 — static shell and design tokens
+
+- Task 0.2: **PASSED** on 2026-08-28.
+- Added one typed visual-token source, an architectural static Pages shell,
+  valid `lang="en"`, keyboard focus, semantic landmarks, and reduced-motion
+  behavior. No dashboard, parser, upload, or AI control was added.
+- Self-hosted the required Latin Fraunces and Public Sans WOFF2 assets under
+  the SIL Open Font License. SHA-256 values are
+  `7234ed860a9cc83045413c4faee63c960a8f2d1917adcf728119307d56e0d783`
+  and `5ed4d31c988e73b258894244f209069ebe77dc7e564861954b21198b6de90d68`.
+- Static export, strict TypeScript, lint, and eight tests passed. Initial page
+  JavaScript measured 172,578 gzip bytes against the 307,200-byte gate.
+
+### 13. Phase 0 Task 0.3 — secret-free public edge
+
+- Task 0.3: **PASSED** on 2026-08-28.
+- The public Worker exposes only `GET /health`, `POST /analyze`, and the
+  required restricted CORS preflight. Unknown routes, query strings, methods,
+  origins, content types, and invalid envelopes fail with fixed safe errors.
+- Analysis bodies use a 512 KiB streaming limit, 1,024-chunk limit, and
+  five-second read deadline. The Workers Rate Limiting binding is configured
+  for five attempts per source per Cloudflare location per 60 seconds.
+- The edge configuration contains one public origin value and the rate-limit
+  binding. It contains no secret, Turnstile verification, provider key,
+  Browser Run binding, signing input, parser, AI call, or application state.
+- Eleven root tests, six frontend tests, strict TypeScript, lint, Worker dry
+  build, and static export passed. Edge upload measured 9.69 KiB raw and
+  3.05 KiB gzip.
+
+### 14. Phase 0 Task 0.4 — private TrustedRuntime binding
+
+- Task 0.4: **PASSED** on 2026-08-28.
+- Added a separate `aethelgard-trusted-runtime` script with a declarative
+  SQLite Durable Object export. `workers_dev` and preview URLs are disabled,
+  no route exists, and its default module entry fails with a fixed 404.
+- The public edge binds directly to external class `TrustedRuntime` through
+  `script_name`. There is no Service Binding, dispatcher call, or shared
+  edge/runtime secret.
+- A two-process local workerd proof passed through the public `/analyze` route
+  and returned the Durable Object marker `turnstile_not_ready`. Both
+  disposable process trees were stopped after the proof.
+- Tests, strict TypeScript, lint, and both dry builds passed. Public edge size
+  measured 10.64 KiB raw / 3.31 KiB gzip; private runtime size measured
+  1.49 KiB raw / 0.71 KiB gzip.
+
+### 15. Phase 0 Task 0.5 — private Turnstile verification
+
+- Task 0.5: **PASSED** on 2026-08-28.
+- `TrustedRuntime` performs one bounded Turnstile Siteverify call before any
+  future trusted operation. It sends only the private secret and response
+  token, and does not send `remoteip`.
+- Verification fails closed for missing or oversized tokens, invalid and
+  replayed tokens, wrong action, wrong hostname, malformed or oversized
+  responses, transport failure, and timeout. Expected action is `analyze` and
+  expected hostname is the account-owned `aethelgard-3j9.pages.dev`.
+- The browser helper holds only the public site key and an in-memory token. It
+  consumes each token once and resets the widget after every attempt. The
+  public edge remains secret-free and does not call Siteverify.
+- No production secret was created or committed. The private configuration
+  declares the `TURNSTILE_SECRET` slot; human-owned key migration remains a
+  later Phase 0 gate.
+- Tests using Cloudflare's documented disposable test credentials, strict
+  TypeScript, lint, both Worker dry builds, static export, and the root npm
+  audit passed. The audit reported zero vulnerabilities. Public edge size
+  remained 10.64 KiB raw / 3.31 KiB gzip; private runtime size measured
+  736.38 KiB raw / 113.29 KiB gzip.
+
+### 16. Phase 0 Task 0.6 — Doctor and production no-logging
+
+- Task 0.6: **PASSED** on 2026-08-28.
+- Added one deterministic, read-only Doctor driven by shared Architecture 2.1
+  invariants. `npm run doctor` checks 17 applicable repository and deployment
+  conditions without calling AI, Browser Run, or any network service.
+- Live `/health` reuses the safe public-runtime invariants. It returns only
+  minimal service/version state when healthy and a fixed non-sensitive 503
+  response when a binding, origin, or secret-free environment invariant fails.
+- Persistent Workers observability is explicitly disabled in both the public
+  and private Wrangler configurations. No Tail Worker, Logpush, Sentry,
+  analytics binding, application logging, or third-party telemetry was added.
+- Doctor, 19 root tests, eight frontend tests, strict TypeScript, lint, both
+  Worker dry builds, and static export passed. Public edge size measured
+  12.16 KiB raw / 3.75 KiB gzip; private runtime remained 736.38 KiB raw /
+  113.29 KiB gzip.
+
+### 17. Phase 0 Task 0.7 — Browser Run and aggregate quota guard
+
+- Task 0.7: **PASSED** on 2026-08-28.
+- Added the Browser Run binding only to the private runtime and used the
+  `/pdf` Quick Action with fixed service-owned synthetic HTML. JavaScript and
+  Quick Action caching are disabled; no caller HTML or real report rendering
+  exists yet.
+- PDF output fails closed unless the response is successful, has the PDF
+  content type and `%PDF-` magic, remains within the 8 MiB complete-output
+  bound, and supplies a valid `X-Browser-Ms-Used` value.
+- The Durable Object stores only `utc_date` and
+  `aggregate_browser_run_ms`. It resets lazily on a UTC-date change, reserves
+  60 seconds before each call, reconciles only trusted usage values, and
+  refuses calls that could exceed the eight-minute application ceiling.
+- The in-memory final-PDF queue allows at most two active/waiting operations
+  and spaces Quick Actions by at least ten seconds. Storage, Browser Run,
+  malformed output, missing usage, provider, queue, and quota failures all
+  fail closed. The unsigned synthetic PDF is discarded until signing exists.
+- A secret-free disposable deployment ran the production helper against the
+  real Browser Run binding. It returned a 17,934-byte `%PDF-` result and 382 ms
+  of accounted browser time. The proof Worker was deleted; its URL returned
+  404 afterward, and all local proof files were removed.
+- Doctor passed 19 checks. Twenty-five root tests, eight frontend tests,
+  strict TypeScript, lint, public/private dry builds, and static export passed.
+  Public edge size stayed 12.16 KiB raw / 3.75 KiB gzip; the final private
+  runtime measured 744.03 KiB raw / 115.30 KiB gzip.
+
+### 18. Phase 0 Task 0.8 — hybrid signing foundation
+
+- Task 0.8: **PASSED** on 2026-08-29.
+- Vendored the approved import-free `mldsa-native` ML-DSA-65 Wasm built from
+  source commit `6d661fd1865b38d8612692c52160cf76193785fb`. The committed artifact is
+  40,843 bytes and its SHA-256 is
+  `960ea1d9ceb0449f91301cb4168db83ab1cba3f0a86fa1bed0515f880b85f802`.
+  The build record, upstream license, minimal C boundary, pinned Zig 0.15.2
+  archive hash, exact flags, and a clean rebuild script are in the repository.
+- The private runtime hashes the exact final Browser Run PDF bytes with
+  SHA-256, signs the digest with Ed25519 through `node:crypto`, signs the same
+  digest with the pinned ML-DSA-65 Wasm, self-verifies both, and creates only
+  the approved public detached-manifest fields. Mutable decoded seed, expanded
+  key, randomness, digest, and Wasm arena buffers are wiped in `finally` paths.
+- Caller HTML, PDF bytes, hashes, extra envelope fields, and `/sign` routes are
+  rejected. Signing is reachable only after the private Durable Object has
+  produced and validated the service-owned PDF. A signing failure returns no
+  PDF and no unsigned substitute.
+- Official NIST ACVP v1.1.0.43 passed all 340 applicable ML-DSA-65 cases: 25
+  key-generation, 270 signature-generation, and 45 signature-verification
+  cases. Verification covered nine accepted and 36 rejected signatures.
+- Independent Node 24 and Wasm signatures cross-verified. The exact-PDF
+  integration passed, and changing one PDF byte caused both Ed25519 and
+  ML-DSA-65 verification to fail.
+- Added the reviewed key-generation/upload script. Disposable tests create no
+  production key. The production path requires an explicit reviewed flag,
+  prints no private value, uploads both seeds through one Wrangler secret-bulk
+  process, writes public keys only, and wipes mutable seed buffers.
+- No production key or secret was generated, read, uploaded, or committed.
+  The private configuration declares only the current Turnstile and signing
+  secret slots. Production secret migration remains a later Phase 0 gate.
+- Doctor passed 22 checks. Thirty root tests and eight frontend tests, strict
+  TypeScript, lint, dependency audit, public/private dry builds, and static
+  export passed. The audit reported zero moderate-or-higher findings. Public
+  edge size stayed 12.22 KiB raw / 3.79 KiB gzip; the private runtime measured
+  791.36 KiB raw / 130.80 KiB gzip.
+
+### 19. Phase 0 Task 0.9 — CI and supply-chain gate
+
+- Task 0.9: **PASSED** on 2026-08-29.
+- Added one GitHub-native workflow on the standard public `ubuntu-24.04`
+  runner. Checkout and Node setup actions are pinned to full reviewed commit
+  SHAs. The workflow uses Node 24.13.1, read-only repository permission, a
+  20-minute job limit, no package-manager cache, no uploaded artifact, no
+  uploaded cache, and no paid or self-hosted runner.
+- The hosted push run `33220605474` passed the clean root and frontend installs,
+  Doctor, license and lock integrity check, dependency audit, TypeScript,
+  strict lint, all tests, both Worker dry builds, and static frontend build.
+  A bounded command wrapper makes any emitted warning or non-zero command fail
+  the job.
+- Repaired eight malformed optional Next.js SWC records in the frontend
+  lockfile. Their approved 16.3.2 versions did not change; each record now has
+  its registry URL, SHA-512 integrity, platform bound, and MIT license. Clean
+  `npm ci` now succeeds on the standard hosted Linux runner.
+- The deterministic dependency gate checked 154 locked packages. Every real
+  package has an approved recorded license, npm registry source, and SHA-512
+  integrity. It also checks both self-hosted font licenses and the vendored
+  `mldsa-native` license. Root and frontend audits reported zero
+  vulnerabilities.
+- Dependabot now covers both npm lockfiles on bounded weekly schedules.
+  GitHub Dependabot security updates, CodeQL default setup, secret scanning,
+  and push protection are enabled. CodeQL uses the default JavaScript and
+  TypeScript suite on a standard runner. GitHub secret scanning reported zero
+  open alerts after the Phase 0 branch push.
+- Protected `main` still requires signed commits, linear history, pull-request
+  review, the existing CodeQL check, and strict up-to-date checks. The passing
+  `Build, test, and supply chain` job is now also required. No existing rule
+  was removed or weakened.
+- There is no active Python code in Phase 0, so no empty Python toolchain or
+  dependency was added. Thirty-four root tests and eight frontend tests passed.
+  Public edge size stayed 12.22 KiB raw / 3.79 KiB gzip; the private runtime
+  stayed 791.36 KiB raw / 130.80 KiB gzip.
+- A separate pre-existing Cloudflare Workers Builds check attempted the
+  feature branch and failed. It is not a required protected-main status and is
+  not part of the GitHub-native Task 0.9 workflow. No production deployment
+  succeeded. Its deployment behavior remains inside the Task 0.10 deployment
+  verification gate and was not hidden or converted into a CI exception.
+- GitHub continues to show the 11 old Dependabot alerts on protected `main`
+  until the already tested Phase 0 dependency fixes merge. The active Phase 0
+  branch audits clean.
+
+### 20. Phase 0 Task 0.10 — deployed verification
+
+- Task 0.10: **PASSED** on 2026-08-29 using isolated non-production Free-plan
+  resources. The protected production deployment was not changed before the
+  Phase 0 pull request review.
+- Cloudflare account inventory proved that the owned Pages project is
+  `aethelgard`, with free hostname `aethelgard-3j9.pages.dev`.
+  `aethelgard.pages.dev` is different content and is not owned by this account.
+  The implementation now uses the owned free hostname; Architecture 2.1's
+  binding requirement remains the approved free `pages.dev` route.
+- Added an explicit Pages Wrangler configuration. The final warning-free branch
+  preview deployed at `phase-0-foundation.aethelgard-3j9.pages.dev`. Three live
+  shell checks returned HTTP 200 in 510 ms, 122 ms, and 111 ms. Responses were
+  `noindex`; `robots.txt` returned HTTP 200 with `Disallow: /`. Production Pages
+  content was not promoted.
+- The private runtime now returns the bounded service-owned synthetic PDF,
+  detached manifest, and public verification keys only after Turnstile,
+  Browser Run, exact-byte hashing, and both signatures succeed. No caller PDF,
+  HTML, or hash reaches signing. An independent Node verifier checks the exact
+  response and changed-byte rejection.
+- The canonical disposable proof used unique Worker names, official Turnstile
+  test credentials, and disposable signing seeds. It proved the direct external
+  Durable Object binding, Browser Run, SHA-256, Ed25519, and ML-DSA-65 chain in
+  1,366 ms wall time. The PDF was 17,934 bytes with SHA-256
+  `33e3d6589c6e6e6388f0ba981ef8eb89cc17a5d679165c180912812677449bef`.
+  Both signatures independently verified; changing one byte failed both.
+- The live public edge had zero secrets. The private proof runtime had exactly
+  the three Task 0.10 slots, no public target, and no persistent observability.
+  `/sign` returned 404 and a caller-HTML envelope returned 400 before expensive
+  work. Only the anonymous UTC date and aggregate Browser Run milliseconds were
+  stored. No paid fallback exists.
+- Cloudflare's current official test response includes the provider-controlled
+  `metadata.result_with_testing_key` field and omits `action`. The strict parser
+  now accepts that response only when the private runtime is explicitly set to
+  test mode. Production still requires exact `action=analyze` and the owned
+  production hostname.
+- The deployed private bundle measured 792.62 KiB raw / 131.08 KiB gzip against
+  the 3 MiB Free-plan limit. Startup was 27 ms against the 1,000 ms limit. The
+  pinned Wasm linear memory is 2 MiB against the 128 MiB isolate limit. The live
+  invocation completed without a CPU or memory-limit outcome, and the Browser
+  Run application guard remained active.
+- All disposable Worker scripts, Durable Object definition, test secrets, keys,
+  and temporary configuration files were removed automatically. No production
+  key or secret was generated, read, uploaded, logged, or committed.
+- Doctor passed 22 checks. Thirty-seven root tests and eight frontend tests,
+  strict TypeScript, lint, dependency/license checks, zero-vulnerability audits,
+  public/private dry builds, and static export passed without warnings.
+
+### 21. Phase 0 Task 0.11 — secret migration and obsolete-runtime retirement
+
+- Task 0.11: **PASSED** on 2026-08-29 after explicit owner approval of the
+  exact destructive scope. No unrelated owner resource was removed.
+- Created the final route-less `aethelgard-trusted-runtime` secret holder with
+  Workers development URLs, preview URLs, and persistent observability disabled.
+  The public Worker has zero secret slots. The private Worker has exactly the
+  five required slots: Turnstile, Groq, OpenRouter, Ed25519, and ML-DSA-65.
+- The account-owned Turnstile secret was copied directly to the private Worker.
+  Groq and OpenRouter credentials passed live authentication-only checks against
+  their model-list/key-information endpoints without inference or user data,
+  were copied without printing their values, and remained present in Cloudflare
+  after the superseded Google copies were removed.
+- Generated the production Ed25519 and ML-DSA-65 seeds in mutable memory,
+  uploaded them directly through Wrangler, wiped the mutable seed buffers, and
+  printed or persisted no private value. Committed only the public verification
+  record with key IDs `ed25519:1bb84280f5f88947bbcc33761c96e8ae` and
+  `mldsa65:57ec85ded568caa2c382a85f64359777`.
+- Retired only the approved obsolete resources: all five Aethelgard GCP Secret
+  Manager objects, the `aethelgard-runtime` and `github-actions-deployer`
+  service accounts, the `github-actions` WIF pool and provider, GitHub's generic
+  `ENCRYPTION_KEY`, the three GCP deployment variables, and the ignored local
+  `.dev.vars`. The obsolete Resend credential returned HTTP 401 before its last
+  stored copy was removed. The obsolete Sentry DSN and repository/runtime
+  configuration are absent. GCP had no Cloud Run service or Artifact Registry
+  repository to remove.
+- Post-retirement verification found zero GCP secrets, neither custom service
+  account, no active Aethelgard WIF pool, none of the obsolete GitHub entries,
+  and no local `.dev.vars`. The unrelated default Compute Engine service account
+  was deliberately retained. The Cloudflare replacement still reported exactly
+  five private slots and zero public slots.
+- Added guarded, bounded migration tooling and tests that require an explicit
+  reviewed flag, never print private values, validate providers without model
+  inference, and check that the published signing-key record contains public
+  verification material only.
+- The complete local Phase 0 gate passed without warnings: Doctor, license and
+  lock integrity, zero-vulnerability dependency audits, TypeScript, strict lint,
+  41 root tests, eight frontend tests, both Worker dry builds, static export, and
+  the initial-JavaScript measurement. No dependency was added or changed.
+- Architecture 2.1 remains unchanged. Target operational dependence is now only
+  Cloudflare, Groq, OpenRouter, and GitHub, all within the approved exact-zero
+  configuration.
+
+### 22. Phase 0 exit gate
+
+- Phase 0 exit gate: **PASSED** on 2026-08-29. Tasks 0.1 through 0.11 passed in
+  order. No Phase 1 document parsing, redaction, NER, AI analysis, report
+  generation, or user-facing workflow was implemented early.
+- The authoritative LF-normalized Architecture 2.1 SHA-256 remains
+  `2798ded6dd80ac81d4e8d83fd8500c77dafdf2f9ba547d105d59cedc7c97c4d0`.
+  Repository hygiene, the Scandinavian design-token shell, named-route edge,
+  direct external Durable Object binding, private-only runtime, Turnstile,
+  Browser Run quota guard, and production no-logging invariants all passed.
+- The isolated deployed chain produced a 17,934-byte PDF in 1,366 ms, hashed
+  its exact final bytes, independently verified Ed25519 and ML-DSA-65, and
+  rejected both signatures after one byte changed. The private bundle was
+  792.62 KiB raw / 131.08 KiB gzip with 27 ms startup and 2 MiB Wasm memory.
+  No public arbitrary-signing path or forbidden storage exists.
+- The final local gate passed Doctor, license and lock integrity, audits,
+  TypeScript, strict lint, 41 root tests, eight frontend tests, Worker builds,
+  static export, and the initial-JavaScript limit without warnings. Hosted
+  GitHub run `33245071127` passed the clean-install Phase 0 CI gate on exact
+  implementation commit `ca5f305e26f5b23861ce88caa9f433267cf6e1d1`.
+- The active branch has zero known dependency-audit findings. Eleven historical
+  Dependabot alerts remain visible only against protected `main` until the
+  Phase 0 pull request merges. No dependency or approved technology changed in
+  Tasks 0.10 or 0.11.
+- Raw source files, unredacted extracted text, private signing keys, and provider
+  credentials were not persisted or exposed. The public edge remains
+  secret-free, the private runtime has only the five approved secret slots, and
+  obsolete Google, Sentry, Resend, generic-encryption, and local secret paths
+  are no longer operational dependencies.
+- The target uses only approved free allocations and has no paid fallback,
+  storage service, logging product, or superseded Google runtime. The next
+  human-only action is review and merge of the single Phase 0 pull request;
+  Phase 1 remains unauthorized.

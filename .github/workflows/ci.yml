@@ -1,0 +1,64 @@
+name: Phase 0 CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase-0-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Build, test, and supply chain
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      CI: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+      WRANGLER_SEND_METRICS: "false"
+      npm_config_audit: "false"
+      npm_config_fund: "false"
+    steps:
+      - name: Check out the exact revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Use the tested Node release
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24.13.1
+          package-manager-cache: false
+
+      - name: Install locked root dependencies without a cache
+        run: node scripts/run-warning-free.mjs npm ci --no-audit --no-fund
+
+      - name: Install locked frontend dependencies without a cache
+        run: node scripts/run-warning-free.mjs npm --prefix frontend ci --no-audit --no-fund
+
+      - name: Check architecture and runtime invariants
+        run: node scripts/run-warning-free.mjs npm run doctor
+
+      - name: Check dependency licenses
+        run: node scripts/run-warning-free.mjs npm run license:check
+
+      - name: Check dependencies for known vulnerabilities
+        env:
+          npm_config_audit: "true"
+        run: node scripts/run-warning-free.mjs npm run audit
+
+      - name: Type-check all TypeScript
+        run: node scripts/run-warning-free.mjs npm run typecheck
+
+      - name: Run strict lint checks
+        run: node scripts/run-warning-free.mjs npm run lint
+
+      - name: Run all Phase 0 tests
+        run: node scripts/run-warning-free.mjs npm test
+
+      - name: Build Workers and the static frontend
+        run: node scripts/run-warning-free.mjs npm run build
