@@ -1,0 +1,3 @@
+# Preserve byte-exact, SHA-256-pinned browser parser assets on every platform.
+frontend/public/parser/** -text
+frontend/public/pyodide/** -text

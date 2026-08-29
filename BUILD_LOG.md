@@ -11,7 +11,7 @@ historical work.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 1** on `phase/1-core-mission`.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
-- Phase 1 status: **IN PROGRESS — TASK 1.2 PASSED**.
+- Phase 1 status: **IN PROGRESS — TASK 1.3 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Frozen PII baseline: **APPROVED**.
@@ -538,3 +538,36 @@ historical work.
 - Initial JavaScript remains 175,298 gzip bytes under 307,200 bytes. The lazy
   preflight Worker is 11,979 raw / 3,969 gzip bytes. No dependency, parser,
   provider, paid path, storage, or malware-scanning claim was added.
+
+### 25. Phase 1 Task 1.3 — PDF parser
+
+- Task 1.3: **PASSED** on 2026-08-29. Added the approved direct
+  `pdfminer.six` 20260107 parser on Pyodide 314.0.5 / Python 3.14.2. It runs
+  only inside the disposable browser module Worker after Task 1.2 prevalidation
+  and returns bounded page text with one-based page source references.
+- All runtime files are same-origin, locally served, version-pinned, and
+  SHA-256-pinned. The reproducible asset manifest covers Pyodide core, Python
+  standard library, pdfminer and its exact transitive wheels, parser source,
+  and required license texts. The self-hosted parser assets total 22,580,055
+  bytes; no file exceeds the Cloudflare Pages 25 MiB file limit.
+- A bounded headless Edge proof executed the exact self-hosted runtime and
+  fixed parser source in a module Web Worker with external name resolution
+  blocked. It extracted the expected text from a real PDF, preserved page 1 as
+  its source reference, made zero external network requests, wiped disposable
+  byte buffers, and completed cold in 4,221 ms against the 10-second engine
+  readiness gate.
+- The parser bounds pages at 500, layout elements at 10,000 per page, page text
+  at 100,000 code points, total text at 2,000,000 code points, asset chunks at
+  4,096, and the disposable Worker at ten seconds. Asset, schema, parse, or
+  runtime failures return one fixed safe failure and persist nothing.
+- Native-code audit note: Pyodide core, `cryptography` 47.0.0, and `cffi` 2.0.0
+  are exact official Pyodide Wasm wheels required by the approved runtime and
+  pdfminer dependency graph. Their bytes and licenses are pinned; they execute
+  only inside the disposable parser Worker, receive no key or remote data, and
+  are not used for Aethelgard signing. Task 1.2 rejects encrypted PDFs before
+  parsing, and any unexpected native/import failure fails closed.
+- Forty-four root and nineteen frontend tests, Doctor, license integrity,
+  zero-vulnerability audits, strict TypeScript, lint, and static export passed
+  without warnings. Initial JavaScript is 175,319 gzip bytes under 307,200;
+  the lazy parser Worker bundle is 34,966 raw / 12,406 gzip bytes. No paid path,
+  remote parser, source-data network route, or browser storage was added.

@@ -1,0 +1,70 @@
+{
+  "schema_version": "1",
+  "pyodide_version": "314.0.5",
+  "python_version": "3.14.2",
+  "sources": [
+    {
+      "name": "../parser/pdf_parser.py",
+      "sha256": "aa21f9484e13da62000db5a4994053cda1fdc49be47dc36f96f795b46c3b2a2c"
+    }
+  ],
+  "core": [
+    { "name": "pyodide.mjs", "sha256": "1fec5d63238eff5d099c209c659b88f480c1d854856301596d64e8e6839a3f50" },
+    { "name": "pyodide.asm.mjs", "sha256": "f86edbb66b925ae933ff32ecdcb738ebde2ba926b6be3e485401587de7be89ea" },
+    { "name": "pyodide.asm.wasm", "sha256": "85f66436c802db3dd0caf437134f98af5c69d199c6ffba116ee2bac8be8acf09" },
+    { "name": "python_stdlib.zip", "sha256": "3e7b7affd80aaf35fcff786613eebd0ce885a964dbda56714ccecb7573f57a70" },
+    { "name": "pyodide-lock.json", "sha256": "3fdaef09e9e365c85e002737720f8d0ab8f278c1c244a2dde6a37663cf488ad4" }
+  ],
+  "packages": [
+    {
+      "name": "charset_normalizer-3.4.7-py3-none-any.whl",
+      "sha256": "cf0651de4082d2a16e4c2b594768eca0f589f48891c80a89055ded42f73be7f1",
+      "license": "MIT",
+      "url": "https://cdn.jsdelivr.net/pyodide/v314.0.5/full/charset_normalizer-3.4.7-py3-none-any.whl"
+    },
+    {
+      "name": "cryptography-47.0.0-cp314-abi3-pyemscripten_2026_0_wasm32.whl",
+      "sha256": "024e379cdb8bcd25cfe818ea12da5752074868b02b067f0af9b1e28b98086844",
+      "license": "Apache-2.0 OR BSD-3-Clause",
+      "url": "https://cdn.jsdelivr.net/pyodide/v314.0.5/full/cryptography-47.0.0-cp314-abi3-pyemscripten_2026_0_wasm32.whl"
+    },
+    {
+      "name": "cffi-2.0.0-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+      "sha256": "257317126fa036cd90ad5d14a603cb636127bbdd90a89cd39c7cffbb5f762b30",
+      "license": "MIT",
+      "url": "https://cdn.jsdelivr.net/pyodide/v314.0.5/full/cffi-2.0.0-cp314-cp314-pyemscripten_2026_0_wasm32.whl"
+    },
+    {
+      "name": "pycparser-3.0-py3-none-any.whl",
+      "sha256": "0977ba3a753c001213dccc66c11957d7b0437a0b69885e380376c256cde7759c",
+      "license": "BSD-3-Clause",
+      "url": "https://cdn.jsdelivr.net/pyodide/v314.0.5/full/pycparser-3.0-py3-none-any.whl"
+    },
+    {
+      "name": "six-1.17.0-py2.py3-none-any.whl",
+      "sha256": "29edb1e328c61cad6ac21a2ff92c7d274a2b662eb7c12b2d147f04917b765ad6",
+      "license": "MIT",
+      "url": "https://cdn.jsdelivr.net/pyodide/v314.0.5/full/six-1.17.0-py2.py3-none-any.whl"
+    },
+    {
+      "name": "pdfminer_six-20260107-py3-none-any.whl",
+      "sha256": "366585ba97e80dffa8f00cebe303d2f381884d8637af4ce422f1df3ef38111a9",
+      "license": "MIT",
+      "url": "https://files.pythonhosted.org/packages/20/8b/28c4eaec9d6b036a52cb44720408f26b1a143ca9bce76cc19e8f5de00ab4/pdfminer_six-20260107-py3-none-any.whl"
+    }
+  ],
+  "licenses": [
+    {
+      "name": "LICENSE-Pyodide.txt",
+      "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5",
+      "license": "MPL-2.0",
+      "url": "https://raw.githubusercontent.com/pyodide/pyodide/314.0.5/LICENSE"
+    },
+    {
+      "name": "LICENSE-pdfminer.six.txt",
+      "sha256": "f01e5d699a33766b5caf4a5099f2856aba4f3f75ea1df05dc0572b34b4bea8f2",
+      "license": "MIT",
+      "url": "https://raw.githubusercontent.com/pdfminer/pdfminer.six/20260107/LICENSE"
+    }
+  ]
+}
