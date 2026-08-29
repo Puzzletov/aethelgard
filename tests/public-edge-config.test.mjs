@@ -41,12 +41,12 @@ test("TrustedRuntime is private and has no dispatcher or public target", async (
   assert.match(config, /\[exports\.TrustedRuntime\]/);
   assert.match(config, /TURNSTILE_EXPECTED_ACTION = "analyze"/);
   assert.match(config, /TURNSTILE_EXPECTED_HOSTNAME = "aethelgard-3j9\.pages\.dev"/);
-  assert.match(config, /required = \["TURNSTILE_SECRET", "SIGNING_ED25519_PRIVATE_B64", "SIGNING_MLDSA65_SEED_B64"\]/);
+  assert.match(config, /required = \["TURNSTILE_SECRET", "GROQ_API_KEY", "OPENROUTER_API_KEY", "SIGNING_ED25519_PRIVATE_B64", "SIGNING_MLDSA65_SEED_B64"\]/);
   assert.match(config, /type = "CompiledWasm"/);
   assert.match(config, /\[browser\]\s+binding = "BROWSER"/m);
   assert.doesNotMatch(publicConfig, /\[browser\]|binding = "BROWSER"/);
   assert.doesNotMatch(config, /^route\s*=|^routes\s*=/m);
   assert.match(source, /export default/);
   assert.doesNotMatch(source, /getByName|idFromName|newUniqueId/);
-  assert.doesNotMatch(source, /GROQ|OPENROUTER|ENCRYPTION_KEY/);
+  assert.doesNotMatch(source, /ENCRYPTION_KEY/);
 });

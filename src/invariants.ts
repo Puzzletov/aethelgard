@@ -15,6 +15,8 @@ export const EXPECTED_TRUSTED_RUNTIME = Object.freeze({
 });
 export const REQUIRED_PRIVATE_SECRET_NAMES = Object.freeze([
   "TURNSTILE_SECRET",
+  "GROQ_API_KEY",
+  "OPENROUTER_API_KEY",
   "SIGNING_ED25519_PRIVATE_B64",
   "SIGNING_MLDSA65_SEED_B64",
 ] as const);

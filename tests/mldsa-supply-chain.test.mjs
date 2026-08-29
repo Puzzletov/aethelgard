@@ -31,6 +31,31 @@ test("the committed ML-DSA-65 module has the approved bytes, hash, and surface",
   ]);
 });
 
+test("the published signing-key record contains public verification material only", async () => {
+  const publicKeys = JSON.parse(
+    await readFile(new URL("../frontend/public/signing-keys.json", import.meta.url), "utf8"),
+  );
+  assert.deepEqual(Object.keys(publicKeys).sort(), ["ed25519", "mldsa65", "schema_version"]);
+  assert.equal(publicKeys.schema_version, "1");
+  assert.deepEqual(Object.keys(publicKeys.ed25519).sort(), [
+    "algorithm",
+    "public_key_id",
+    "public_key_spki_b64",
+  ]);
+  assert.deepEqual(Object.keys(publicKeys.mldsa65).sort(), [
+    "algorithm",
+    "public_key_id",
+    "public_key_raw_b64",
+  ]);
+  assert.equal(publicKeys.ed25519.algorithm, "Ed25519");
+  assert.equal(publicKeys.mldsa65.algorithm, "ML-DSA-65");
+  assert.match(publicKeys.ed25519.public_key_id, /^ed25519:[0-9a-f]{32}$/);
+  assert.match(publicKeys.mldsa65.public_key_id, /^mldsa65:[0-9a-f]{32}$/);
+  assert.equal(Buffer.from(publicKeys.ed25519.public_key_spki_b64, "base64").byteLength, 44);
+  assert.equal(Buffer.from(publicKeys.mldsa65.public_key_raw_b64, "base64").byteLength, 1_952);
+  assert.doesNotMatch(JSON.stringify(publicKeys), /private|secret|seed/i);
+});
+
 test("the key generator uses disposable keys without printing private material", async () => {
   const directory = await mkdtemp(path.join(tmpdir(), "aethelgard-keygen-test-"));
   const output = path.join(directory, "public-keys.json");

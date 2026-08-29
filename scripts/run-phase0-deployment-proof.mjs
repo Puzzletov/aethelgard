@@ -159,6 +159,8 @@ try {
     writeFile(privateConfigPath, privateConfig, { encoding: "utf8", flag: "wx" }),
     writeFile(privateSecretsPath, JSON.stringify({
       TURNSTILE_SECRET: disposableSecret,
+      GROQ_API_KEY: "phase0-unused-groq",
+      OPENROUTER_API_KEY: "phase0-unused-openrouter",
       SIGNING_ED25519_PRIVATE_B64: edSeed.toString("base64"),
       SIGNING_MLDSA65_SEED_B64: mlSeed.toString("base64"),
     }), { encoding: "utf8", flag: "wx", mode: 0o600 }),
@@ -194,6 +196,8 @@ try {
   requireSuccess(privateSecrets, "Checking private-runtime secret names");
   if (parseSecretNames(publicSecrets.stdout).length !== 0) throw new Error("Public edge has a secret.");
   const expectedPrivateSecrets = [
+    "GROQ_API_KEY",
+    "OPENROUTER_API_KEY",
     "SIGNING_ED25519_PRIVATE_B64",
     "SIGNING_MLDSA65_SEED_B64",
     "TURNSTILE_SECRET",

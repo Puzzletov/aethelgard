@@ -411,3 +411,46 @@ historical work.
 - Doctor passed 22 checks. Thirty-seven root tests and eight frontend tests,
   strict TypeScript, lint, dependency/license checks, zero-vulnerability audits,
   public/private dry builds, and static export passed without warnings.
+
+### 21. Phase 0 Task 0.11 — secret migration and obsolete-runtime retirement
+
+- Task 0.11: **PASSED** on 2026-08-29 after explicit owner approval of the
+  exact destructive scope. No unrelated owner resource was removed.
+- Created the final route-less `aethelgard-trusted-runtime` secret holder with
+  Workers development URLs, preview URLs, and persistent observability disabled.
+  The public Worker has zero secret slots. The private Worker has exactly the
+  five required slots: Turnstile, Groq, OpenRouter, Ed25519, and ML-DSA-65.
+- The account-owned Turnstile secret was copied directly to the private Worker.
+  Groq and OpenRouter credentials passed live authentication-only checks against
+  their model-list/key-information endpoints without inference or user data,
+  were copied without printing their values, and remained present in Cloudflare
+  after the superseded Google copies were removed.
+- Generated the production Ed25519 and ML-DSA-65 seeds in mutable memory,
+  uploaded them directly through Wrangler, wiped the mutable seed buffers, and
+  printed or persisted no private value. Committed only the public verification
+  record with key IDs `ed25519:1bb84280f5f88947bbcc33761c96e8ae` and
+  `mldsa65:57ec85ded568caa2c382a85f64359777`.
+- Retired only the approved obsolete resources: all five Aethelgard GCP Secret
+  Manager objects, the `aethelgard-runtime` and `github-actions-deployer`
+  service accounts, the `github-actions` WIF pool and provider, GitHub's generic
+  `ENCRYPTION_KEY`, the three GCP deployment variables, and the ignored local
+  `.dev.vars`. The obsolete Resend credential returned HTTP 401 before its last
+  stored copy was removed. The obsolete Sentry DSN and repository/runtime
+  configuration are absent. GCP had no Cloud Run service or Artifact Registry
+  repository to remove.
+- Post-retirement verification found zero GCP secrets, neither custom service
+  account, no active Aethelgard WIF pool, none of the obsolete GitHub entries,
+  and no local `.dev.vars`. The unrelated default Compute Engine service account
+  was deliberately retained. The Cloudflare replacement still reported exactly
+  five private slots and zero public slots.
+- Added guarded, bounded migration tooling and tests that require an explicit
+  reviewed flag, never print private values, validate providers without model
+  inference, and check that the published signing-key record contains public
+  verification material only.
+- The complete local Phase 0 gate passed without warnings: Doctor, license and
+  lock integrity, zero-vulnerability dependency audits, TypeScript, strict lint,
+  41 root tests, eight frontend tests, both Worker dry builds, static export, and
+  the initial-JavaScript measurement. No dependency was added or changed.
+- Architecture 2.1 remains unchanged. Target operational dependence is now only
+  Cloudflare, Groq, OpenRouter, and GitHub, all within the approved exact-zero
+  configuration.

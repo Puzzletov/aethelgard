@@ -21,6 +21,8 @@ interface TrustedRuntimeEnv {
   readonly TURNSTILE_EXPECTED_ACTION: string;
   readonly TURNSTILE_EXPECTED_HOSTNAME: string;
   readonly TURNSTILE_SECRET: string;
+  readonly GROQ_API_KEY: string;
+  readonly OPENROUTER_API_KEY: string;
   readonly SIGNING_ED25519_PRIVATE_B64: string;
   readonly SIGNING_MLDSA65_SEED_B64: string;
 }
