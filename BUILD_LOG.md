@@ -11,7 +11,7 @@ historical work.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 1** on `phase/1-core-mission`.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
-- Phase 1 status: **IN PROGRESS — TASK 1.3 PASSED**.
+- Phase 1 status: **IN PROGRESS — TASK 1.4 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Frozen PII baseline: **APPROVED**.
@@ -571,3 +571,33 @@ historical work.
   without warnings. Initial JavaScript is 175,319 gzip bytes under 307,200;
   the lazy parser Worker bundle is 34,966 raw / 12,406 gzip bytes. No paid path,
   remote parser, source-data network route, or browser storage was added.
+
+### 26. Phase 1 Task 1.4 — DOCX parser
+
+- Task 1.4: **PASSED** on 2026-08-29. Added the approved direct `python-docx`
+  1.2.0 parser with exact Pyodide `lxml` 6.0.2 and `typing-extensions` 4.15.0
+  dependencies. The common asset verifier/runtime is shared with PDF without
+  changing the PDF contract.
+- DOCX output contains text only and neutral one-based paragraph or
+  table/row/column references. Body paragraphs and tables retain document
+  order. No filename, relationship target, style, author, or other source
+  metadata is returned.
+- A real DOCX with a table before a paragraph passed in a disposable Edge
+  module Worker. The exact self-hosted packages and fixed parser source kept
+  both structural references in order, made zero external network requests,
+  and completed cold in 6,179 ms against the 10-second readiness gate.
+- The parser bounds structural units at 100,000, paragraphs at 20,000, tables
+  at 2,000, rows per table at 5,000, cells per row at 256, returned sources at
+  20,000, each source at 100,000 code points, total text at 2,000,000 code
+  points, and the disposable Worker at ten seconds. Empty, malformed, schema,
+  asset, native, and runtime failures fail closed with fixed safe output.
+- Native-code audit note: the exact official Pyodide `lxml` Wasm wheel is the
+  required python-docx XML dependency. It runs after the hostile OOXML/DTD/
+  entity/external-content gate, only inside the disposable parser Worker, and
+  receives no secret or network data. Its bytes and license are pinned.
+- Parser assets now total 24,516,507 bytes; the largest individual Pages file
+  is 9,597,831 bytes under 25 MiB. Nineteen frontend tests, the PDF regression,
+  the DOCX browser proof, manifest hashes, strict TypeScript, lint, licenses,
+  and static export passed without warnings. Initial JavaScript is 175,321
+  gzip bytes; the lazy parser Worker is 37,293 raw / 13,003 gzip bytes. No npm
+  dependency, paid path, persistence, or source-data network route was added.

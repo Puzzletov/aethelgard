@@ -6,6 +6,10 @@
     {
       "name": "../parser/pdf_parser.py",
       "sha256": "aa21f9484e13da62000db5a4994053cda1fdc49be47dc36f96f795b46c3b2a2c"
+    },
+    {
+      "name": "../parser/docx_parser.py",
+      "sha256": "18a15677cc8b88f4433dc3d4c1388213b0eec3edf943d26105c5a4615f45bc0c"
     }
   ],
   "core": [
@@ -51,6 +55,24 @@
       "sha256": "366585ba97e80dffa8f00cebe303d2f381884d8637af4ce422f1df3ef38111a9",
       "license": "MIT",
       "url": "https://files.pythonhosted.org/packages/20/8b/28c4eaec9d6b036a52cb44720408f26b1a143ca9bce76cc19e8f5de00ab4/pdfminer_six-20260107-py3-none-any.whl"
+    },
+    {
+      "name": "lxml-6.0.2-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+      "sha256": "13b273a49a4737efb22148af07644fb1b2db6540768b92d14ecdf852ed2d6148",
+      "license": "BSD-3-Clause",
+      "url": "https://cdn.jsdelivr.net/pyodide/v314.0.5/full/lxml-6.0.2-cp314-cp314-pyemscripten_2026_0_wasm32.whl"
+    },
+    {
+      "name": "typing_extensions-4.15.0-py3-none-any.whl",
+      "sha256": "3f122252f0d498d80f7a684cc1d8baa6fa65b75e99447d77a6dd90e0f04302e3",
+      "license": "PSF-2.0",
+      "url": "https://cdn.jsdelivr.net/pyodide/v314.0.5/full/typing_extensions-4.15.0-py3-none-any.whl"
+    },
+    {
+      "name": "python_docx-1.2.0-py3-none-any.whl",
+      "sha256": "3fd478f3250fbbbfd3b94fe1e985955737c145627498896a8a6bf81f4baf66c7",
+      "license": "MIT",
+      "url": "https://files.pythonhosted.org/packages/d0/00/1e03a4989fa5795da308cd774f05b704ace555a70f9bf9d3be057b680bcf/python_docx-1.2.0-py3-none-any.whl"
     }
   ],
   "licenses": [
@@ -65,6 +87,12 @@
       "sha256": "f01e5d699a33766b5caf4a5099f2856aba4f3f75ea1df05dc0572b34b4bea8f2",
       "license": "MIT",
       "url": "https://raw.githubusercontent.com/pdfminer/pdfminer.six/20260107/LICENSE"
+    },
+    {
+      "name": "LICENSE-python-docx.txt",
+      "sha256": "7652f271e46d0d533e9dc463f3b5fcbdcacf4d6a9c8d6b554d15efd0f37f6132",
+      "license": "MIT",
+      "url": "https://raw.githubusercontent.com/python-openxml/python-docx/v1.2.0/LICENSE"
     }
   ]
 }

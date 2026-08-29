@@ -1,14 +1,25 @@
-import { loadPyodide, type PyodideInterface } from "pyodide";
+import type { PyodideInterface } from "pyodide";
+
+import {
+  installPythonWheel,
+  loadBrowserPython,
+  loadPythonSource,
+  type PythonAsset,
+} from "./python-runtime";
 
 export const MAX_PDF_PAGES = 500;
 export const MAX_PDF_PAGE_CODE_POINTS = 100_000;
 export const MAX_PDF_DOCUMENT_CODE_POINTS = 2_000_000;
-const PDFMINER_WHEEL = "pdfminer_six-20260107-py3-none-any.whl";
-const PDFMINER_WHEEL_BYTES = 6_592_252;
-const PDFMINER_WHEEL_SHA256 = "366585ba97e80dffa8f00cebe303d2f381884d8637af4ce422f1df3ef38111a9";
-const PDF_PARSER_SOURCE_BYTES = 1_587;
-const PDF_PARSER_SOURCE_SHA256 = "aa21f9484e13da62000db5a4994053cda1fdc49be47dc36f96f795b46c3b2a2c";
-const MAX_ASSET_CHUNKS = 4_096;
+const PDFMINER_WHEEL: PythonAsset = Object.freeze({
+  path: "/pyodide/pdfminer_six-20260107-py3-none-any.whl",
+  bytes: 6_592_252,
+  sha256: "366585ba97e80dffa8f00cebe303d2f381884d8637af4ce422f1df3ef38111a9",
+});
+const PDF_PARSER_SOURCE: PythonAsset = Object.freeze({
+  path: "/parser/pdf_parser.py",
+  bytes: 1_587,
+  sha256: "aa21f9484e13da62000db5a4994053cda1fdc49be47dc36f96f795b46c3b2a2c",
+});
 
 export interface PdfPageText {
   readonly page: number;
@@ -21,62 +32,6 @@ export type PdfParserResult =
 
 function failedPdfParse(): PdfParserResult {
   return Object.freeze({ ok: false, code: "pdf_parse_failed", message: "The PDF text could not be read safely." });
-}
-
-async function sha256(bytes: Uint8Array): Promise<string> {
-  const input = Uint8Array.from(bytes);
-  try {
-    const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", input.buffer));
-    return [...digest].map((value) => value.toString(16).padStart(2, "0")).join("");
-  } finally {
-    input.fill(0);
-  }
-}
-
-async function fetchAsset(path: string, expectedBytes: number, expectedHash: string): Promise<Uint8Array> {
-  const response = await fetch(new URL(path, self.location.origin), {
-    cache: "force-cache",
-    credentials: "omit",
-    referrerPolicy: "no-referrer",
-  });
-  if (!response.ok || response.body === null) throw new Error("parser_asset_unavailable");
-  const reader = response.body.getReader();
-  const chunks: Uint8Array[] = [];
-  let total = 0;
-  let complete = false;
-  try {
-    for (let count = 0; count < MAX_ASSET_CHUNKS; count += 1) {
-      const item = await reader.read();
-      if (item.done) {
-        complete = true;
-        break;
-      }
-      total += item.value.byteLength;
-      if (total > expectedBytes) throw new Error("parser_asset_size");
-      chunks.push(item.value);
-    }
-  } finally {
-    await reader.cancel().catch(() => undefined);
-  }
-  if (!complete || total !== expectedBytes) throw new Error("parser_asset_size");
-  const output = new Uint8Array(total);
-  let offset = 0;
-  for (const chunk of chunks) {
-    output.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
-  if (await sha256(output) !== expectedHash) throw new Error("parser_asset_hash");
-  return output;
-}
-
-async function loadPdfRuntime(): Promise<PyodideInterface> {
-  const indexURL = new URL("/pyodide/", self.location.origin).href;
-  return loadPyodide({
-    indexURL,
-    packages: ["cryptography", "charset-normalizer"],
-    stdout: () => undefined,
-    stderr: () => undefined,
-  });
 }
 
 function validatePage(value: unknown, expectedPage: number): PdfPageText | undefined {
@@ -108,25 +63,14 @@ function validatePdfOutput(value: unknown): PdfParserResult {
   return Object.freeze({ ok: true, format: "pdf", pages: Object.freeze(checked) });
 }
 
-async function installPdfMiner(pyodide: PyodideInterface): Promise<void> {
-  const wheel = await fetchAsset(`/pyodide/${PDFMINER_WHEEL}`, PDFMINER_WHEEL_BYTES, PDFMINER_WHEEL_SHA256);
-  try {
-    pyodide.unpackArchive(wheel, "wheel");
-  } finally {
-    wheel.fill(0);
-  }
-}
-
 export async function parsePdf(buffer: ArrayBuffer): Promise<PdfParserResult> {
   const sourceBytes = new Uint8Array(buffer);
   let pyodide: PyodideInterface | undefined;
   let sourceWritten = false;
   try {
-    pyodide = await loadPdfRuntime();
-    await installPdfMiner(pyodide);
-    const parserBytes = await fetchAsset("/parser/pdf_parser.py", PDF_PARSER_SOURCE_BYTES, PDF_PARSER_SOURCE_SHA256);
-    const parserSource = new TextDecoder("utf-8", { fatal: true }).decode(parserBytes);
-    parserBytes.fill(0);
+    pyodide = await loadBrowserPython(["cryptography", "charset-normalizer"]);
+    await installPythonWheel(pyodide, PDFMINER_WHEEL);
+    const parserSource = await loadPythonSource(PDF_PARSER_SOURCE);
     pyodide.FS.writeFile("/tmp/aethelgard-source.pdf", sourceBytes);
     sourceWritten = true;
     const raw = await pyodide.runPythonAsync(parserSource);

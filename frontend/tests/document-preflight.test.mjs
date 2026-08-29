@@ -140,5 +140,8 @@ test("hostile processing is isolated in one bounded disposable module Worker", a
   assert.match(runner, /worker\.terminate\(\)/);
   assert.match(runner, /postMessage\([\s\S]*\[buffer\]/);
   assert.match(worker, /prevalidateDocument/);
+  assert.match(worker, /parseDocx/);
+  assert.ok(worker.indexOf("await prevalidateDocument") < worker.lastIndexOf("await parseValidated"));
+  assert.match(worker, /bytes\.fill\(0\)/);
   assert.doesNotMatch(`${runner}\n${worker}`, /fetch\(|XMLHttpRequest|localStorage|sessionStorage|indexedDB|caches\./);
 });
