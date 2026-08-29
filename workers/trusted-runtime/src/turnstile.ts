@@ -12,7 +12,10 @@ const siteverifySchema = z.object({
   "error-codes": z.array(z.string().max(64)).max(16).optional(),
   action: z.string().max(64).optional(),
   cdata: z.string().max(255).optional(),
-  metadata: z.object({ ephemeral_id: z.string().max(128).optional() }).strict().optional(),
+  metadata: z.object({
+    ephemeral_id: z.string().max(128).optional(),
+    result_with_testing_key: z.boolean().optional(),
+  }).strict().optional(),
 }).strict();
 
 export interface TurnstileConfig {
@@ -79,6 +82,11 @@ export async function verifyTurnstile(
   const parsed = siteverifySchema.safeParse(await readBoundedJson(response));
   if (!parsed.success) return { ok: false, reason: "unavailable" };
   if (!parsed.data.success) return { ok: false, reason: "invalid" };
+  if (parsed.data.metadata?.result_with_testing_key === true) {
+    if (config.expectedAction !== "test") return { ok: false, reason: "action_mismatch" };
+    if (parsed.data.hostname !== config.expectedHostname) return { ok: false, reason: "hostname_mismatch" };
+    return { ok: true };
+  }
   if (parsed.data.action !== config.expectedAction) return { ok: false, reason: "action_mismatch" };
   if (parsed.data.hostname !== config.expectedHostname) return { ok: false, reason: "hostname_mismatch" };
   return { ok: true };

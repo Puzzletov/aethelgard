@@ -3,7 +3,7 @@ import test from "node:test";
 
 import worker from "../src/index.ts";
 
-const allowedOrigin = "https://aethelgard.pages.dev";
+const allowedOrigin = "https://aethelgard-3j9.pages.dev";
 const validEnvelope = Object.freeze({
   schema_version: "1",
   turnstile_token: "test-token",

@@ -7,6 +7,7 @@ import { renderSyntheticPdf } from "./browser-pdf.ts";
 import { reserveBrowserRun, settleBrowserRun } from "./browser-quota.ts";
 import { FinalPdfQueue } from "./pdf-queue.ts";
 import { signTrustedFinalPdf } from "./signing-runtime.ts";
+import { createFoundationProof } from "./foundation-proof.ts";
 
 const RESPONSE_HEADERS = Object.freeze({
   "cache-control": "no-store",
@@ -92,15 +93,18 @@ export class TrustedRuntime extends DurableObject<TrustedRuntimeEnv> {
         return errorResponse(503, code, "PDF generation is unavailable.");
       }
       try {
-        await signTrustedFinalPdf(
+        const signed = await signTrustedFinalPdf(
           queued.value.bytes,
           this.env.SIGNING_ED25519_PRIVATE_B64,
           this.env.SIGNING_MLDSA65_SEED_B64,
         );
+        return new Response(JSON.stringify({
+          ok: true,
+          output: createFoundationProof(queued.value.bytes, signed),
+        }), { status: 200, headers: RESPONSE_HEADERS });
       } catch {
         return errorResponse(503, "signing_unavailable", "Signed PDF output is unavailable.");
       }
-      return errorResponse(503, "delivery_not_ready", "Signed PDF delivery is not available yet.");
     }
     return errorResponse(503, "analysis_not_ready", "Analysis is not available yet.");
   }

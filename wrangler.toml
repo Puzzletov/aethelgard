@@ -4,7 +4,7 @@ compatibility_date = "2026-08-04"
 compatibility_flags = ["nodejs_compat"]
 
 [vars]
-ALLOWED_ORIGIN = "https://aethelgard.pages.dev"
+ALLOWED_ORIGIN = "https://aethelgard-3j9.pages.dev"
 
 [[ratelimits]]
 name = "ANALYZE_RATE_LIMIT"

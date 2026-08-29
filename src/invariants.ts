@@ -1,7 +1,7 @@
 export const ARCHITECTURE_VERSION = "2.1";
 export const BUILD_PHASE = "0";
 export const PUBLIC_SERVICE_NAME = "aethelgard-edge";
-export const EXPECTED_ALLOWED_ORIGIN = "https://aethelgard.pages.dev";
+export const EXPECTED_ALLOWED_ORIGIN = "https://aethelgard-3j9.pages.dev";
 export const EXPECTED_PUBLIC_ROUTES = Object.freeze(["/analyze", "/health"] as const);
 export const EXPECTED_PUBLIC_ENV_NAMES = Object.freeze([
   "ALLOWED_ORIGIN",

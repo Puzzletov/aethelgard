@@ -13,7 +13,7 @@ binding = "BROWSER"
 
 [vars]
 TURNSTILE_EXPECTED_ACTION = "analyze"
-TURNSTILE_EXPECTED_HOSTNAME = "aethelgard.pages.dev"
+TURNSTILE_EXPECTED_HOSTNAME = "aethelgard-3j9.pages.dev"
 
 [secrets]
 required = ["TURNSTILE_SECRET", "SIGNING_ED25519_PRIVATE_B64", "SIGNING_MLDSA65_SEED_B64"]

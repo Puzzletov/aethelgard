@@ -7,7 +7,7 @@ const dummyToken = "XXXX.DUMMY.TOKEN.XXXX";
 const config = Object.freeze({
   secret: "1x0000000000000000000000000000000AA",
   expectedAction: "analyze",
-  expectedHostname: "aethelgard.pages.dev",
+  expectedHostname: "aethelgard-3j9.pages.dev",
 });
 
 function jsonResponse(value, status = 200) {
@@ -31,7 +31,7 @@ function createFetcher(value, status = 200) {
 test("Siteverify sends only the secret and token and accepts exact context", async () => {
   const { calls, fetcher } = createFetcher({
     success: true,
-    hostname: "aethelgard.pages.dev",
+    hostname: "aethelgard-3j9.pages.dev",
     action: "analyze",
     "error-codes": [],
   });
@@ -43,6 +43,24 @@ test("Siteverify sends only the secret and token and accepts exact context", asy
     response: dummyToken,
   });
   assert.doesNotMatch(calls[0].init.body, /remoteip/);
+});
+
+test("the provider-marked test response is accepted only by explicit test configuration", async () => {
+  const response = createFetcher({
+    success: true,
+    hostname: "example.com",
+    "error-codes": [],
+    metadata: { result_with_testing_key: true },
+  });
+  assert.deepEqual(await verifyTurnstile(dummyToken, {
+    ...config,
+    expectedAction: "test",
+    expectedHostname: "example.com",
+  }, response.fetcher), { ok: true });
+  assert.deepEqual(await verifyTurnstile(dummyToken, config, response.fetcher), {
+    ok: false,
+    reason: "action_mismatch",
+  });
 });
 
 test("Siteverify rejects invalid and replayed tokens", async () => {
@@ -86,6 +104,16 @@ test("Siteverify bounds tokens, responses, and transport failures", async () => 
   });
   const failed = async () => { throw new DOMException("timeout", "TimeoutError"); };
   assert.deepEqual(await verifyTurnstile(dummyToken, config, failed), {
+    ok: false,
+    reason: "unavailable",
+  });
+  const unknownMetadata = createFetcher({
+    success: true,
+    hostname: config.expectedHostname,
+    action: config.expectedAction,
+    metadata: { unexpected: true },
+  });
+  assert.deepEqual(await verifyTurnstile(dummyToken, config, unknownMetadata.fetcher), {
     ok: false,
     reason: "unavailable",
   });

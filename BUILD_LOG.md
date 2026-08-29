@@ -10,7 +10,7 @@ historical work.
 - Phase -1: **CLOSED**.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 0** on `phase/0-foundation`.
-- Phase 0 status: **IN PROGRESS — TASK 0.9 PASSED**.
+- Phase 0 status: **IN PROGRESS — TASK 0.10 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Frozen PII baseline: **APPROVED**.
@@ -226,7 +226,7 @@ historical work.
 - Verification fails closed for missing or oversized tokens, invalid and
   replayed tokens, wrong action, wrong hostname, malformed or oversized
   responses, transport failure, and timeout. Expected action is `analyze` and
-  expected hostname is `aethelgard.pages.dev`.
+  expected hostname is the account-owned `aethelgard-3j9.pages.dev`.
 - The browser helper holds only the public site key and an in-memory token. It
   consumes each token once and resets the widget after every attempt. The
   public edge remains secret-free and does not call Siteverify.
@@ -363,3 +363,51 @@ historical work.
 - GitHub continues to show the 11 old Dependabot alerts on protected `main`
   until the already tested Phase 0 dependency fixes merge. The active Phase 0
   branch audits clean.
+
+### 20. Phase 0 Task 0.10 — deployed verification
+
+- Task 0.10: **PASSED** on 2026-08-29 using isolated non-production Free-plan
+  resources. The protected production deployment was not changed before the
+  Phase 0 pull request review.
+- Cloudflare account inventory proved that the owned Pages project is
+  `aethelgard`, with free hostname `aethelgard-3j9.pages.dev`.
+  `aethelgard.pages.dev` is different content and is not owned by this account.
+  The implementation now uses the owned free hostname; Architecture 2.1's
+  binding requirement remains the approved free `pages.dev` route.
+- Added an explicit Pages Wrangler configuration. The final warning-free branch
+  preview deployed at `phase-0-foundation.aethelgard-3j9.pages.dev`. Three live
+  shell checks returned HTTP 200 in 510 ms, 122 ms, and 111 ms. Responses were
+  `noindex`; `robots.txt` returned HTTP 200 with `Disallow: /`. Production Pages
+  content was not promoted.
+- The private runtime now returns the bounded service-owned synthetic PDF,
+  detached manifest, and public verification keys only after Turnstile,
+  Browser Run, exact-byte hashing, and both signatures succeed. No caller PDF,
+  HTML, or hash reaches signing. An independent Node verifier checks the exact
+  response and changed-byte rejection.
+- The canonical disposable proof used unique Worker names, official Turnstile
+  test credentials, and disposable signing seeds. It proved the direct external
+  Durable Object binding, Browser Run, SHA-256, Ed25519, and ML-DSA-65 chain in
+  1,366 ms wall time. The PDF was 17,934 bytes with SHA-256
+  `33e3d6589c6e6e6388f0ba981ef8eb89cc17a5d679165c180912812677449bef`.
+  Both signatures independently verified; changing one byte failed both.
+- The live public edge had zero secrets. The private proof runtime had exactly
+  the three Task 0.10 slots, no public target, and no persistent observability.
+  `/sign` returned 404 and a caller-HTML envelope returned 400 before expensive
+  work. Only the anonymous UTC date and aggregate Browser Run milliseconds were
+  stored. No paid fallback exists.
+- Cloudflare's current official test response includes the provider-controlled
+  `metadata.result_with_testing_key` field and omits `action`. The strict parser
+  now accepts that response only when the private runtime is explicitly set to
+  test mode. Production still requires exact `action=analyze` and the owned
+  production hostname.
+- The deployed private bundle measured 792.62 KiB raw / 131.08 KiB gzip against
+  the 3 MiB Free-plan limit. Startup was 27 ms against the 1,000 ms limit. The
+  pinned Wasm linear memory is 2 MiB against the 128 MiB isolate limit. The live
+  invocation completed without a CPU or memory-limit outcome, and the Browser
+  Run application guard remained active.
+- All disposable Worker scripts, Durable Object definition, test secrets, keys,
+  and temporary configuration files were removed automatically. No production
+  key or secret was generated, read, uploaded, logged, or committed.
+- Doctor passed 22 checks. Thirty-seven root tests and eight frontend tests,
+  strict TypeScript, lint, dependency/license checks, zero-vulnerability audits,
+  public/private dry builds, and static export passed without warnings.

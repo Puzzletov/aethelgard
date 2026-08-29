@@ -11,7 +11,7 @@ const response = await fetch(probeUrl, {
   method: "POST",
   headers: {
     "content-type": "application/json",
-    origin: "https://aethelgard.pages.dev",
+    origin: "https://aethelgard-3j9.pages.dev",
     "cf-connecting-ip": "192.0.2.1",
   },
   body: JSON.stringify(envelope),
