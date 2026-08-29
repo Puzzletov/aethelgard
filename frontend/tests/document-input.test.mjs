@@ -51,13 +51,13 @@ test("invalid selection, empty input, unsafe names, and other formats fail close
   assert.equal(selectBrowserDocument([localFile(`a${"x".repeat(MAX_LOCAL_FILENAME_CODE_UNITS)}.pdf`, 1)]).ok, false);
 });
 
-test("Task 1.1 does not read, transmit, or persist the selected file", async () => {
+test("the early input contract does not read, transmit, or persist the selected file", async () => {
   const [contract, picker] = await Promise.all([
     readFile(new URL("../input/document-input.ts", import.meta.url), "utf8"),
     readFile(new URL("../components/document-picker.tsx", import.meta.url), "utf8"),
   ]);
-  const source = `${contract}\n${picker}`;
-  assert.doesNotMatch(source, /arrayBuffer\(|FileReader|fetch\(|XMLHttpRequest|localStorage|sessionStorage|indexedDB|caches\./);
+  assert.doesNotMatch(contract, /arrayBuffer\(|FileReader/);
+  assert.doesNotMatch(`${contract}\n${picker}`, /fetch\(|XMLHttpRequest|localStorage|sessionStorage|indexedDB|caches\./);
   assert.doesNotMatch(picker, /multiple=/);
   assert.match(picker, /type="file"/);
   assert.match(picker, /accept={DOCUMENT_ACCEPT}/);

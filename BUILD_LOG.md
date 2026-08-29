@@ -11,7 +11,7 @@ historical work.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 1** on `phase/1-core-mission`.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
-- Phase 1 status: **IN PROGRESS — TASK 1.1 PASSED**.
+- Phase 1 status: **IN PROGRESS — TASK 1.2 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Frozen PII baseline: **APPROVED**.
@@ -509,3 +509,32 @@ historical work.
   warnings. Initial frontend JavaScript measured 173,769 gzip bytes against the
   307,200-byte limit. No dependency, paid path, storage, or external processor
   was added.
+
+### 24. Phase 1 Task 1.2 — hostile-container prevalidation
+
+- Task 1.2: **PASSED** on 2026-08-29. Selected bytes now enter one disposable
+  module Web Worker through transferable memory, pass strict prevalidation,
+  return only a bounded result, and terminate on success, rejection, crash, or
+  the ten-second wall stop. No source byte crosses the network or enters browser
+  persistence.
+- Added real-magic and false-extension checks for PDF, OOXML Office containers,
+  and UTF-8 CSV/TXT. PDF checks reject missing terminal structure, encryption,
+  JavaScript/actions, rich media, XFA, file attachments, and embedded files.
+- The ZIP boundary accepts only stored/deflate single-disk non-ZIP64 packages.
+  It validates central/local records, CRC-32, real expansion length, duplicate
+  names, overlapping data, and traversal paths. Named limits are 512 entries,
+  16 MiB per entry, 64 MiB total expansion, 100:1 compression ratio, 512-byte
+  entry names, and 8 MiB per inspected XML part.
+- DOCX, PPTX, and XLSX require their exact package parts and main content type.
+  Every XML/relationship part is decoded as strict UTF-8 before parsing and
+  rejects doctypes, entities, external relationships, macros, ActiveX, OLE,
+  nested packages, and embedded content.
+- The frozen regressions cover all three valid Office formats plus false magic,
+  malformed/truncated ZIP, encryption, traversal, entry/total/per-entry/ratio
+  bombs, XML entities, external relationships, macros, ActiveX, OLE, embedded
+  PDF, encrypted/active PDF, and binary text. Nineteen frontend tests,
+  TypeScript before and after static export, strict lint, static export, Doctor,
+  and the initial-JavaScript gate passed without warnings.
+- Initial JavaScript remains 175,298 gzip bytes under 307,200 bytes. The lazy
+  preflight Worker is 11,979 raw / 3,969 gzip bytes. No dependency, parser,
+  provider, paid path, storage, or malware-scanning claim was added.
