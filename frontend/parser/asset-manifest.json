@@ -18,6 +18,14 @@
     {
       "name": "../parser/xlsx_parser.py",
       "sha256": "0f2f1a723e2b1799c5fcaa6df8579fb27c25445301482a552baadeca7837d2bc"
+    },
+    {
+      "name": "../parser/csv_parser.py",
+      "sha256": "a613b9e912609ee2ce8554eb81381e85575ec5794cea6a9833f024cb1ced58ea"
+    },
+    {
+      "name": "../parser/txt_parser.py",
+      "sha256": "708dd2e757084478d7422c0261a493cbeccbd7015e053f8985c64296f2a14e7c"
     }
   ],
   "core": [

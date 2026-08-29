@@ -151,3 +151,39 @@ test("openpyxl extracts cells without exposing sheet names in a browser module W
   });
   assert.ok(report.elapsed_ms > 0 && report.elapsed_ms <= 30_000);
 });
+
+test("Python standard-library CSV and TXT parsers preserve structural references in a browser module Worker", () => {
+  const result = spawnSync(process.execPath, ["scripts/verify-text-parsers.mjs"], {
+    cwd: root,
+    encoding: "utf8",
+    timeout: 60_000,
+    maxBuffer: 1024 * 1024,
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stderr, "");
+  const report = JSON.parse(result.stdout);
+  assert.deepEqual({
+    status: report.status,
+    pyodide: report.pyodide,
+    csv_sources: report.csv_sources,
+    txt_sources: report.txt_sources,
+    multiline_csv_row: report.multiline_csv_row,
+    blank_txt_line_preserved: report.blank_txt_line_preserved,
+    malformed_rejected: report.malformed_rejected,
+    boundary_rejected: report.boundary_rejected,
+    browsers: report.browsers,
+    external_network_requests: report.external_network_requests,
+  }, {
+    status: "ok",
+    pyodide: "314.0.5",
+    csv_sources: 6,
+    txt_sources: 2,
+    multiline_csv_row: 2,
+    blank_txt_line_preserved: true,
+    malformed_rejected: true,
+    boundary_rejected: true,
+    browsers: ["edge", "chrome"],
+    external_network_requests: 0,
+  });
+  assert.ok(report.elapsed_ms > 0 && report.elapsed_ms <= 30_000);
+});

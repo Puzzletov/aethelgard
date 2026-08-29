@@ -29,14 +29,19 @@ worker.onerror = (event) => { clearTimeout(timer); worker.terminate(); proofErro
 </script></body></html>`;
 }
 
-function browserPath() {
+export function supportedBrowserExecutables() {
   const candidates = process.platform === "win32" ? [
-    "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
-    "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
-  ] : ["/usr/bin/google-chrome", "/usr/bin/chromium", "/usr/bin/chromium-browser"];
-  const found = candidates.find((candidate) => existsSync(candidate));
-  if (found === undefined) throw new Error("A supported Chrome or Edge executable is required for parser proofs.");
-  return found;
+    ["edge", "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"],
+    ["chrome", "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"],
+    ["chrome", "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"],
+  ] : [["chrome", "/usr/bin/google-chrome"], ["chrome", "/usr/bin/chromium"]];
+  const unique = new Map(candidates.filter(([, executable]) => existsSync(executable)));
+  if (unique.size === 0) throw new Error("A supported Chrome or Edge executable is required for parser proofs.");
+  return Object.freeze([...unique].map(([name, executable]) => Object.freeze({ name, executable })));
+}
+
+function browserPath() {
+  return supportedBrowserExecutables()[0].executable;
 }
 
 function contentType(filePath) {
@@ -152,13 +157,13 @@ async function closeBrowser(browser) {
   }
 }
 
-export async function runBrowserParserProof(fixture, workerSource) {
+export async function runBrowserParserProof(fixture, workerSource, executable = browserPath()) {
   const profile = await mkdtemp(path.join(tmpdir(), "aethelgard-parser-proof-"));
   const server = await startServer(fixture, workerSource);
   try {
     const address = server.address();
     if (address === null || typeof address === "string") throw new Error("Parser proof server did not start.");
-    const browser = runBrowser(browserPath(), `http://127.0.0.1:${address.port}/proof`, profile);
+    const browser = runBrowser(executable, `http://127.0.0.1:${address.port}/proof`, profile);
     try {
       const title = await proofTitle(await devToolsPort(profile, browser));
       if (title.startsWith(errorPrefix)) {

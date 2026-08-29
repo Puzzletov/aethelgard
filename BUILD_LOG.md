@@ -12,7 +12,7 @@ historical work.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 1** on `phase/1-core-mission`.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
-- Phase 1 status: **IN PROGRESS — TASK 1.6 PASSED**.
+- Phase 1 status: **IN PROGRESS — TASK 1.7 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Architecture execution-hardening EDR 37: **APPROVED**.
@@ -560,7 +560,8 @@ historical work.
   readiness gate.
 - The parser bounds pages at 500, layout elements at 10,000 per page, page text
   at 100,000 code points, total text at 2,000,000 code points, asset chunks at
-  4,096, and the disposable Worker at ten seconds. Asset, schema, parse, or
+  4,096, and each parser proof attempt at thirty seconds; the separate hostile
+  preflight Worker remains ten seconds. Asset, schema, parse, or
   runtime failures return one fixed safe failure and persist nothing.
 - Native-code audit note: Pyodide core, `cryptography` 47.0.0, and `cffi` 2.0.0
   are exact official Pyodide Wasm wheels required by the approved runtime and
@@ -591,7 +592,8 @@ historical work.
 - The parser bounds structural units at 100,000, paragraphs at 20,000, tables
   at 2,000, rows per table at 5,000, cells per row at 256, returned sources at
   20,000, each source at 100,000 code points, total text at 2,000,000 code
-  points, and the disposable Worker at ten seconds. Empty, malformed, schema,
+  points, and each parser proof attempt at thirty seconds; hostile preflight
+  remains ten seconds. Empty, malformed, schema,
   asset, native, and runtime failures fail closed with fixed safe output.
 - Native-code audit note: the exact official Pyodide `lxml` Wasm wheel is the
   required python-docx XML dependency. It runs after the hostile OOXML/DTD/
@@ -623,7 +625,8 @@ historical work.
   zero, and cold completion was 5,838 ms against the 10-second readiness gate.
 - The parser bounds slides at 500, shapes per slide at 10,000, table cells per
   slide at 50,000, slide text at 100,000 code points, total text at 2,000,000
-  code points, and the disposable Worker at ten seconds. Image/font access,
+  code points, and each parser proof attempt at thirty seconds; hostile
+  preflight remains ten seconds. Image/font access,
   empty text, malformed structure, schema, asset, native, or runtime failure
   fails closed. It adds no OCR or image-processing claim.
 - Native-code audit note: no vulnerable Pillow native wheel is present. The
@@ -653,8 +656,8 @@ historical work.
   10-second readiness gate.
 - The parser bounds sheets at 200, rows at 100,000, columns at 16,384, visited
   cells at 200,000, returned sources at 100,000, each source at 100,000 code
-  points, total text at 2,000,000 code points, and the disposable Worker at ten
-  seconds. Non-finite numbers, unsupported cell values, excessive dimensions,
+  points, total text at 2,000,000 code points, and each parser proof attempt at
+  thirty seconds; hostile preflight remains ten seconds. Non-finite numbers,
   empty text, malformed structure, schema, asset, or runtime failure fail closed.
 - Parser assets total 25,258,264 bytes; the largest individual file remains
   9,597,831 bytes under 25 MiB. Nineteen frontend tests, parser asset hashes,
@@ -680,3 +683,32 @@ historical work.
   No runtime dependency, paid path, persistence, secret, production resource,
   source-data network route, Phase 2 implementation or architecture drift was
   introduced.
+### 30. Phase 1 Task 1.7 — CSV and TXT parsers
+
+- Task 1.7: **PASSED** on 2026-08-29. Added only fixed project-owned Python
+  using the approved Python 3.14 standard-library `csv`, UTF-8 decoding, and
+  line handling. No package, native code, or service was added.
+- CSV is parsed strictly as comma-delimited RFC-style records. Quoted multiline
+  fields retain one logical row, formulas remain inert text, and output uses
+  neutral one-based row/column references. TXT accepts strict UTF-8 with an
+  optional BOM and returns non-empty content with its original one-based line
+  range, including gaps for blank lines.
+- Combined real CSV/TXT proofs passed in disposable Edge and Chrome module
+  Workers. They
+  preserved a multiline CSV field at row 2, an inert formula at row 3, and TXT
+  content at lines 1 and 3, made zero external network requests, and completed
+  cold in at most 3,800 ms against the 10-second readiness gate. Strictly
+  malformed CSV, invalid UTF-8, 1,001 CSV columns, 100,001 CSV rows, and 200,001
+  TXT lines all failed closed in both supported browsers.
+- CSV bounds rows at 100,000, columns at 1,000, fields at 100,000 code points,
+  returned sources at 100,000, and total text at 2,000,000 code points. TXT
+  bounds lines at 200,000 with the same source and text bounds. Both retain the
+  thirty-second parser proof hard stop, while hostile preflight remains ten
+  seconds; both fail closed on encoding, syntax,
+  schema, asset, size, empty-text, or runtime failure.
+- Parser asset bytes remain 25,258,264 with the largest individual file at
+  9,597,831 bytes. Nineteen frontend tests, parser source hashes, the focused
+  CSV/TXT browser regression, TypeScript, strict lint, and static export passed
+  without warnings. Initial JavaScript is 175,331 gzip bytes; the complete lazy
+  parser Worker is 43,321 raw / 14,275 gzip bytes. No paid path, persistence,
+  or source-data network route was added.
