@@ -454,3 +454,37 @@ historical work.
 - Architecture 2.1 remains unchanged. Target operational dependence is now only
   Cloudflare, Groq, OpenRouter, and GitHub, all within the approved exact-zero
   configuration.
+
+### 22. Phase 0 exit gate
+
+- Phase 0 exit gate: **PASSED** on 2026-08-29. Tasks 0.1 through 0.11 passed in
+  order. No Phase 1 document parsing, redaction, NER, AI analysis, report
+  generation, or user-facing workflow was implemented early.
+- The authoritative LF-normalized Architecture 2.1 SHA-256 remains
+  `2798ded6dd80ac81d4e8d83fd8500c77dafdf2f9ba547d105d59cedc7c97c4d0`.
+  Repository hygiene, the Scandinavian design-token shell, named-route edge,
+  direct external Durable Object binding, private-only runtime, Turnstile,
+  Browser Run quota guard, and production no-logging invariants all passed.
+- The isolated deployed chain produced a 17,934-byte PDF in 1,366 ms, hashed
+  its exact final bytes, independently verified Ed25519 and ML-DSA-65, and
+  rejected both signatures after one byte changed. The private bundle was
+  792.62 KiB raw / 131.08 KiB gzip with 27 ms startup and 2 MiB Wasm memory.
+  No public arbitrary-signing path or forbidden storage exists.
+- The final local gate passed Doctor, license and lock integrity, audits,
+  TypeScript, strict lint, 41 root tests, eight frontend tests, Worker builds,
+  static export, and the initial-JavaScript limit without warnings. Hosted
+  GitHub run `33245071127` passed the clean-install Phase 0 CI gate on exact
+  implementation commit `ca5f305e26f5b23861ce88caa9f433267cf6e1d1`.
+- The active branch has zero known dependency-audit findings. Eleven historical
+  Dependabot alerts remain visible only against protected `main` until the
+  Phase 0 pull request merges. No dependency or approved technology changed in
+  Tasks 0.10 or 0.11.
+- Raw source files, unredacted extracted text, private signing keys, and provider
+  credentials were not persisted or exposed. The public edge remains
+  secret-free, the private runtime has only the five approved secret slots, and
+  obsolete Google, Sentry, Resend, generic-encryption, and local secret paths
+  are no longer operational dependencies.
+- The target uses only approved free allocations and has no paid fallback,
+  storage service, logging product, or superseded Google runtime. The next
+  human-only action is review and merge of the single Phase 0 pull request;
+  Phase 1 remains unauthorized.
