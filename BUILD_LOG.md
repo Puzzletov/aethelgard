@@ -12,7 +12,7 @@ historical work.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 1** on `phase/1-core-mission`.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
-- Phase 1 status: **IN PROGRESS — TASK 1.8 PASSED**.
+- Phase 1 status: **IN PROGRESS — TASK 1.9 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Architecture execution-hardening EDR 37: **APPROVED**.
@@ -735,3 +735,17 @@ historical work.
   Worker dry-runs, static export, and the 175,333-byte gzip initial-JavaScript
   gate passed without warnings. No dependency, paid path, persistence,
   secret, production resource, or source-data network route was added.
+
+### 32. Phase 1 Task 1.9 — 8,000-word enforcement
+
+- Task 1.9: **PASSED** on 2026-08-30. A local Unicode letter/number-run
+  counter returns the unchanged immutable normalized records and exact integer
+  word count through 8,000 words. At 8,001 it returns the fixed document Safe
+  Mode result before redaction or network work; it never truncates or performs
+  partial analysis.
+- Exact 0, 1, 7,999, 8,000, 8,001 and multi-record Unicode fixtures passed.
+  The over-limit proof made zero network requests. Five focused tests, all 29
+  frontend regressions, TypeScript, strict lint, Doctor, license checks,
+  static export, and the 175,333-byte gzip initial-JavaScript gate passed.
+  No dependency, persistence, service, secret, paid path, or network route was
+  added.
