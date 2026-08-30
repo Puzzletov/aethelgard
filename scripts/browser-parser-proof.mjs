@@ -67,7 +67,7 @@ async function serveStatic(response, pathname) {
   }
 }
 
-function startServer(fixture, workerSource) {
+function startServer(fixture, workerSource, additionalSources) {
   const server = createServer(async (request, response) => {
     const pathname = new URL(request.url ?? "/", "http://127.0.0.1").pathname;
     if (pathname === "/proof") response.writeHead(200, { "content-type": "text/html" }).end(proofPage());
@@ -75,6 +75,9 @@ function startServer(fixture, workerSource) {
       response.writeHead(200, { "content-type": "text/javascript" }).end(workerSource);
     } else if (pathname === "/fixture") {
       response.writeHead(200, { "content-type": "application/octet-stream" }).end(fixture);
+    } else if (Object.hasOwn(additionalSources, pathname)) {
+      response.writeHead(200, { "content-type": "text/javascript", "cache-control": "no-store" })
+        .end(additionalSources[pathname]);
     } else await serveStatic(response, pathname);
   });
   return new Promise((resolve, reject) => {
@@ -157,9 +160,11 @@ async function closeBrowser(browser) {
   }
 }
 
-export async function runBrowserParserProof(fixture, workerSource, executable = browserPath()) {
+export async function runBrowserParserProof(
+  fixture, workerSource, executable = browserPath(), additionalSources = Object.freeze({}),
+) {
   const profile = await mkdtemp(path.join(tmpdir(), "aethelgard-parser-proof-"));
-  const server = await startServer(fixture, workerSource);
+  const server = await startServer(fixture, workerSource, additionalSources);
   try {
     const address = server.address();
     if (address === null || typeof address === "string") throw new Error("Parser proof server did not start.");

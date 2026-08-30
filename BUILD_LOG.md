@@ -12,7 +12,7 @@ historical work.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 1** on `phase/1-core-mission`.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
-- Phase 1 status: **IN PROGRESS — TASK 1.9 PASSED**.
+- Phase 1 status: **IN PROGRESS — TASK 1.10 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Architecture execution-hardening EDR 37: **APPROVED**.
@@ -763,3 +763,21 @@ historical work.
   phase scope. Architecture lint and eight tooling regressions passed.
 - The authoritative exact Git-blob SHA-256 is
   `56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2`.
+
+### 34. Phase 1 Task 1.10 — English-language gate
+
+- Task 1.10: **PASSED** on 2026-08-30. Added exact pinned offline
+  `franc-min` 6.2.0 and a local gate that normalizes whitespace, takes the
+  leading 20,000 Unicode code points, requires 40 letters and eight
+  letter-bearing tokens, and applies the EDR 38 score-margin contract.
+- Frozen clear-English and English-with-international-names cases passed with
+  margins of 2,402 and 2,277 basis points. French, mixed English/French, and
+  insufficient-text cases failed locally as `non_english`,
+  `mixed_or_uncertain`, and `insufficient` in both Edge and Chrome with zero
+  external requests.
+- Four focused local tests, the two-browser proof, 57 root tests, 33 frontend
+  tests, TypeScript, strict lint, architecture lint, Doctor, both npm audits
+  with zero vulnerabilities, 176-package license checks, both Worker dry-runs,
+  static export, and the 175,333-byte gzip initial-JavaScript gate passed.
+  No translation, multilingual model, persistence, paid path, service, secret,
+  production resource, or document-data network route was added.
