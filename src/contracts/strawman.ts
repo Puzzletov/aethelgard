@@ -15,23 +15,23 @@ export const MAX_QUANTITATIVE_CANDIDATES = 24;
 export const MAX_STRAWMAN_RISKS = 16;
 export const MAX_STRAWMAN_ASSUMPTIONS = 16;
 
-const confidenceSchema = z.enum(["high", "medium", "low"]);
+export const confidenceSchema = z.enum(["high", "medium", "low"]);
 const sourceEvidenceSchema = evidenceSchema(1);
 
-const findingSchema = z.strictObject({
+export const findingSchema = z.strictObject({
   id: modelTextSchema,
   title: modelTextSchema,
   analysis: modelTextSchema,
   confidence: confidenceSchema,
   evidence: sourceEvidenceSchema,
 });
-const evidenceItemSchema = z.strictObject({
+export const evidenceItemSchema = z.strictObject({
   id: modelTextSchema,
   text: modelTextSchema,
   confidence: confidenceSchema,
   evidence: sourceEvidenceSchema,
 });
-const candidateSchema = z.strictObject({
+export const candidateSchema = z.strictObject({
   id: modelTextSchema,
   label: modelTextSchema,
   value: z.number().finite(),

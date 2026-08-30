@@ -12,7 +12,7 @@ historical work.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 1** on `phase/1-core-mission`.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
-- Phase 1 status: **IN PROGRESS — TASK 1.17 PASSED**.
+- Phase 1 status: **IN PROGRESS — TASK 1.18 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Architecture execution-hardening EDR 37: **APPROVED**.
@@ -919,4 +919,24 @@ historical work.
   regressions passed (17 tests total), together with TypeScript, strict lint,
   architecture lint, Doctor, both Worker dry-runs, and static export. No AI
   call, unvalidated stage input, dependency, persistence, route, paid path,
+  production mutation, report generation, or Phase 2 work occurred.
+
+### 42. Phase 1 Task 1.18 — Oracle schema and prompt
+
+- Task 1.18: **PASSED** on 2026-08-30. Added the exact strict
+  `S-ORACLE-OUTPUT` contract and one deterministic synthesis request builder.
+  Every Steelman item must have exactly one resolved/unresolved entry; missing,
+  duplicate, invented, or invalid resolutions fail. Findings,
+  recommendations, risks, and finite quantitative candidates require valid
+  source references, and all item, evidence, response, HTML, numeric, and
+  unknown-field gates fail closed.
+- The fixed two-message prompt accepts only validated redacted sources,
+  Strawman, and Steelman inputs; treats all as untrusted evidence data; and
+  requires every critique to be resolved or explicitly left unresolved. It
+  forbids tools, external knowledge, invented evidence, HTML, report/PDF
+  rendering, and prose outside JSON.
+- Six focused golden/adversarial tests plus affected Strawman and Steelman
+  regressions passed (18 tests total), together with TypeScript, strict lint,
+  architecture lint, Doctor, both Worker dry-runs, and static export. No AI
+  call, unchecked intermediate, dependency, persistence, route, paid path,
   production mutation, report generation, or Phase 2 work occurred.
