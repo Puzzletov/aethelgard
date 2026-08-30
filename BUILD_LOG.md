@@ -12,7 +12,7 @@ historical work.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 1** on `phase/1-core-mission`.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
-- Phase 1 status: **IN PROGRESS — TASK 1.14 PASSED**.
+- Phase 1 status: **IN PROGRESS — TASK 1.15 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Architecture execution-hardening EDR 37: **APPROVED**.
@@ -863,3 +863,22 @@ historical work.
   passed. Public/trusted Worker uploads were 741.59/795.50 KiB
   (114.97/131.94 KiB gzip), below the approved 3 MiB limit. No dependency,
   persistence, secret, paid path, service, route, or Phase 2 work was added.
+
+### 39. Phase 1 Task 1.15 — Groq/OpenRouter router
+
+- Task 1.15: **PASSED** on 2026-08-30. Added one project-owned direct HTTPS
+  adapter inside TrustedRuntime with strict request/result schemas, fixed
+  provider endpoints, 524,288-byte requests, 262,144-byte responses,
+  30-second attempts, and 4,096 output tokens. It has no SDK, arbitrary URL,
+  logging, persistence, retry, BYOK, browser call, or caller-selected model.
+- Reviewed provider configuration pins Groq Free to current production model
+  `openai/gpt-oss-20b` and OpenRouter to `openrouter/free`. OpenRouter requests
+  require ZDR, deny data collection, require parameters, disable provider
+  fallback, and set prompt/completion maximum prices to zero. Groq production
+  release remains gated on the architecture-required account ZDR control.
+- Five focused tests prove exact requests, private bearer placement, approved
+  models and endpoints, OpenRouter privacy/free controls, bounds, timeout,
+  HTTP/network failures, invalid JSON, and absence of logs/retries. TypeScript,
+  strict lint, architecture lint, Doctor, both Worker dry-runs, and static
+  export passed. No provider inference call, dependency, secret access,
+  persistence, paid path, route, production mutation, or Phase 2 work occurred.
