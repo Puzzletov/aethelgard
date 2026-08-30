@@ -2,9 +2,16 @@ import type { SelectedDocument } from "../document-input";
 import { failedPreflight, isPreflightResult, type PreflightResult } from "./result";
 
 export const PREFLIGHT_TIMEOUT_MS = 10_000;
+type WorkerFactory = () => Worker;
 
-function executeWorker(document: SelectedDocument, buffer: ArrayBuffer): Promise<PreflightResult> {
-  const worker = new Worker(new URL("../../workers/parser.worker.ts", import.meta.url), { type: "module" });
+function defaultWorker(): Worker {
+  return new Worker(new URL("../../workers/parser.worker.ts", import.meta.url), { type: "module" });
+}
+
+function executeWorker(
+  document: SelectedDocument, buffer: ArrayBuffer, createWorker: WorkerFactory,
+): Promise<PreflightResult> {
+  const worker = createWorker();
   return new Promise((resolve) => {
     let settled = false;
     const finish = (result: PreflightResult) => {
@@ -30,7 +37,9 @@ function executeWorker(document: SelectedDocument, buffer: ArrayBuffer): Promise
   });
 }
 
-export async function runDocumentPreflight(document: SelectedDocument): Promise<PreflightResult> {
+export async function runDocumentPreflight(
+  document: SelectedDocument, createWorker: WorkerFactory = defaultWorker,
+): Promise<PreflightResult> {
   let buffer: ArrayBuffer;
   try {
     buffer = await document.file.arrayBuffer();
@@ -39,7 +48,7 @@ export async function runDocumentPreflight(document: SelectedDocument): Promise<
   }
   if (buffer.byteLength !== document.byteLength) return failedPreflight("size_invalid");
   try {
-    return await executeWorker(document, buffer);
+    return await executeWorker(document, buffer, createWorker);
   } catch {
     return failedPreflight("archive_malformed");
   }

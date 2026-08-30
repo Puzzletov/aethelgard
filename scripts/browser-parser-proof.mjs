@@ -12,7 +12,17 @@ const maxOutputBytes = 1024 * 1024;
 const resultPrefix = "AETHELGARD:";
 const errorPrefix = "AETHELGARD-ERROR:";
 
-function proofPage() {
+function proofPage(pageMode = false) {
+  if (pageMode) return `<!doctype html><html><head><title>AETHELGARD:PENDING</title></head><body>
+<script type="module">
+const proofError = (value) => document.title = "AETHELGARD-ERROR:" + btoa(String(value));
+addEventListener("error", (event) => proofError(event.error ?? event.message));
+addEventListener("unhandledrejection", (event) => proofError(event.reason));
+const timer = setTimeout(() => proofError("page_proof_timeout"), 30000);
+import("/proof-script.js").then(({ runProof }) => runProof()).then((value) => {
+  clearTimeout(timer); document.title = "AETHELGARD:" + btoa(JSON.stringify(value));
+}).catch(proofError);
+</script></body></html>`;
   return `<!doctype html><html><head><title>AETHELGARD:PENDING</title></head><body>
 <script>
 const proofError = (value) => document.title = "AETHELGARD-ERROR:" + btoa(String(value));
@@ -67,12 +77,14 @@ async function serveStatic(response, pathname) {
   }
 }
 
-function startServer(fixture, workerSource, additionalSources) {
+function startServer(fixture, workerSource, additionalSources, pageSource) {
   const server = createServer(async (request, response) => {
     const pathname = new URL(request.url ?? "/", "http://127.0.0.1").pathname;
-    if (pathname === "/proof") response.writeHead(200, { "content-type": "text/html" }).end(proofPage());
+    if (pathname === "/proof") response.writeHead(200, { "content-type": "text/html" }).end(proofPage(pageSource !== undefined));
     else if (pathname === "/proof-worker.js") {
       response.writeHead(200, { "content-type": "text/javascript" }).end(workerSource);
+    } else if (pathname === "/proof-script.js" && pageSource !== undefined) {
+      response.writeHead(200, { "content-type": "text/javascript" }).end(pageSource);
     } else if (pathname === "/fixture") {
       response.writeHead(200, { "content-type": "application/octet-stream" }).end(fixture);
     } else if (Object.hasOwn(additionalSources, pathname)) {
@@ -163,8 +175,16 @@ async function closeBrowser(browser) {
 export async function runBrowserParserProof(
   fixture, workerSource, executable = browserPath(), additionalSources = Object.freeze({}),
 ) {
+  return runBrowserProof(fixture, workerSource, executable, additionalSources);
+}
+
+export async function runBrowserPageProof(pageSource, executable = browserPath(), additionalSources = Object.freeze({})) {
+  return runBrowserProof(Buffer.alloc(0), "", executable, additionalSources, pageSource);
+}
+
+async function runBrowserProof(fixture, workerSource, executable, additionalSources, pageSource) {
   const profile = await mkdtemp(path.join(tmpdir(), "aethelgard-parser-proof-"));
-  const server = await startServer(fixture, workerSource, additionalSources);
+  const server = await startServer(fixture, workerSource, additionalSources, pageSource);
   try {
     const address = server.address();
     if (address === null || typeof address === "string") throw new Error("Parser proof server did not start.");

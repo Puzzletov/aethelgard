@@ -12,7 +12,7 @@ historical work.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 1** on `phase/1-core-mission`.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
-- Phase 1 status: **IN PROGRESS — TASK 1.12 PASSED**.
+- Phase 1 status: **IN PROGRESS — TASK 1.13 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Architecture execution-hardening EDR 37: **APPROVED**.
@@ -820,3 +820,27 @@ historical work.
   lint, and unchanged privacy/cost checks passed. No case was replaced,
   removed, or added, and no universal PII-accuracy claim, runtime dependency,
   network path, persistence, service, secret, or paid path was introduced.
+
+### 37. Phase 1 Task 1.13 — network-boundary proof
+
+- Task 1.13: **PASSED** on 2026-08-30. Instrumented Edge and Chrome page
+  journeys processed synthetic PDF, DOCX, PPTX, XLSX, CSV, and TXT fixtures
+  through the production hostile-preflight controller and production
+  Redaction Worker, then emitted the first document-derived request only after
+  successful local redaction.
+- The first document-derived egress matched the exact bounded analyze shape.
+  Asset and synthetic Turnstile requests contained no document material.
+  Across 11 observed Edge requests and 10 Chrome requests, raw-source,
+  unredacted-text, filename, object-URL, raw-label, and mapping egress were all
+  zero; instrumented browser storage writes were zero; every created parser or
+  redaction Worker terminated.
+- The preflight-only proof stubs only the unreachable Pyodide parse import; it
+  executes the production parser-worker preflight path and does not repeat or
+  replace the already-passing six parser execution proofs. Raw byte markers
+  and complete fixture encodings, private filenames, synthetic PII, mappings,
+  storage APIs, request bodies, and resource URLs are all asserted.
+- The two-browser boundary regression, 60 root tests, 41 frontend tests,
+  TypeScript, strict lint, architecture lint, Doctor, both Worker dry-runs,
+  static export, and the 175,338-byte gzip initial-JavaScript gate passed. No
+  runtime dependency, persistence, service, secret, production resource,
+  paid path, or additional application route was added.
