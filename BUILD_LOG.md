@@ -12,7 +12,7 @@ historical work.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 1** on `phase/1-core-mission`.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
-- Phase 1 status: **IN PROGRESS — TASK 1.16 PASSED**.
+- Phase 1 status: **IN PROGRESS — TASK 1.17 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Architecture execution-hardening EDR 37: **APPROVED**.
@@ -901,3 +901,22 @@ historical work.
   architecture lint, Doctor, both Worker dry-runs, and static export. No AI
   call, dependency, secret access, persistence, route, paid path, specialist,
   router call, production mutation, or Phase 2 work occurred.
+
+### 41. Phase 1 Task 1.17 — Steelman schema and prompt
+
+- Task 1.17: **PASSED** on 2026-08-30. Added the exact strict
+  `S-STEELMAN-OUTPUT` contract and one deterministic critic request builder.
+  Critique kinds are limited to the six approved values; item IDs, linked
+  Strawman finding IDs, and evidence references must be unique and valid.
+  Unknown/status/report fields, HTML, invented links/references, and item,
+  evidence, or response-bound violations fail closed.
+- The fixed two-message prompt accepts only validated redacted sources and a
+  validated Strawman, treats both as untrusted evidence data, and directs one
+  critic call to find omissions, contradictions, counter-evidence,
+  unsupported claims, nuance, and missed connections. It forbids tools,
+  external knowledge, report generation, HTML, and prose outside JSON.
+- Six focused golden/adversarial tests plus affected Strawman and transport
+  regressions passed (17 tests total), together with TypeScript, strict lint,
+  architecture lint, Doctor, both Worker dry-runs, and static export. No AI
+  call, unvalidated stage input, dependency, persistence, route, paid path,
+  production mutation, report generation, or Phase 2 work occurred.

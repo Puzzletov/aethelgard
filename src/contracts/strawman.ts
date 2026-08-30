@@ -1,46 +1,43 @@
 import { z } from "zod";
 
-import { AI_RESPONSE_MAX_BYTES } from "./ai-transport.ts";
 import {
   type NormalizedSourceRecord,
-  sourceReferenceSchema,
 } from "./analyze.ts";
+import {
+  evidenceSchema,
+  modelTextSchema,
+  referencesExist,
+  withinAiResponseBound,
+} from "./ai-output.ts";
 
 export const MAX_STRAWMAN_FINDINGS = 24;
-export const MAX_EVIDENCE_REFERENCES = 8;
 export const MAX_QUANTITATIVE_CANDIDATES = 24;
 export const MAX_STRAWMAN_RISKS = 16;
 export const MAX_STRAWMAN_ASSUMPTIONS = 16;
 
 const confidenceSchema = z.enum(["high", "medium", "low"]);
-const safeTextSchema = z.string().min(1).refine(
-  (value) => !/<\/?[A-Za-z][^>]*>/u.test(value),
-  "html_forbidden",
-);
-const evidenceSchema = z.array(sourceReferenceSchema).min(1).max(MAX_EVIDENCE_REFERENCES)
-  .refine((values) => new Set(values.map((value) => JSON.stringify(value))).size === values.length,
-    "duplicate_evidence");
+const sourceEvidenceSchema = evidenceSchema(1);
 
 const findingSchema = z.strictObject({
-  id: safeTextSchema,
-  title: safeTextSchema,
-  analysis: safeTextSchema,
+  id: modelTextSchema,
+  title: modelTextSchema,
+  analysis: modelTextSchema,
   confidence: confidenceSchema,
-  evidence: evidenceSchema,
+  evidence: sourceEvidenceSchema,
 });
 const evidenceItemSchema = z.strictObject({
-  id: safeTextSchema,
-  text: safeTextSchema,
+  id: modelTextSchema,
+  text: modelTextSchema,
   confidence: confidenceSchema,
-  evidence: evidenceSchema,
+  evidence: sourceEvidenceSchema,
 });
 const candidateSchema = z.strictObject({
-  id: safeTextSchema,
-  label: safeTextSchema,
+  id: modelTextSchema,
+  label: modelTextSchema,
   value: z.number().finite(),
-  unit: safeTextSchema,
-  context: safeTextSchema,
-  evidence: evidenceSchema,
+  unit: modelTextSchema,
+  context: modelTextSchema,
+  evidence: sourceEvidenceSchema,
 });
 
 const strawmanOutputBaseSchema = z.strictObject({
@@ -66,28 +63,17 @@ function allIdsAreUnique(value: StrawmanOutput): boolean {
 export const strawmanOutputSchema = strawmanOutputBaseSchema
   .refine(allIdsAreUnique, "duplicate_id");
 
-function withinResponseBound(value: unknown): boolean {
-  try {
-    const encoded = new TextEncoder().encode(JSON.stringify(value));
-    return encoded.byteLength <= AI_RESPONSE_MAX_BYTES;
-  } catch {
-    return false;
-  }
-}
-
 function evidenceExists(output: StrawmanOutput, sources: readonly NormalizedSourceRecord[]): boolean {
-  const allowed = new Set(sources.map((source) => JSON.stringify(source.reference)));
   const items = [...output.findings, ...output.risks, ...output.assumptions,
     ...output.quantitative_candidates];
-  return items.every((item) => item.evidence.every((reference) =>
-    allowed.has(JSON.stringify(reference))));
+  return referencesExist(items.map((item) => item.evidence), sources);
 }
 
 export function parseStrawmanOutput(
   value: unknown,
   sources: readonly NormalizedSourceRecord[],
 ): StrawmanOutput | undefined {
-  if (!withinResponseBound(value)) return undefined;
+  if (!withinAiResponseBound(value)) return undefined;
   const parsed = strawmanOutputSchema.safeParse(value);
   if (!parsed.success || !evidenceExists(parsed.data, sources)) return undefined;
   return parsed.data;
