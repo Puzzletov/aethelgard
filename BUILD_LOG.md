@@ -12,7 +12,7 @@ historical work.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 1** on `phase/1-core-mission`.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
-- Phase 1 status: **IN PROGRESS — TASK 1.11 PASSED**.
+- Phase 1 status: **IN PROGRESS — TASK 1.12 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Architecture execution-hardening EDR 37: **APPROVED**.
@@ -804,3 +804,19 @@ historical work.
   static export, and the 175,333-byte gzip initial-JavaScript gate passed. No
   server redaction, mapping egress, rehydration, persistence, paid path,
   service, secret, or document-data network route was added.
+
+### 36. Phase 1 Task 1.12 — frozen PII corpus integration
+
+- Task 1.12: **PASSED** on 2026-08-30. The unchanged owner-approved corpus
+  serializes to SHA-256
+  `0c777c5fc3300eb0b00a29cf583b23ea6455a12a43d990531b88990d1d679467`
+  and contains exactly 84 cases and 576 labelled entities across the six
+  supported formats.
+- The production redactor achieved 100% structured recall, 100% named-entity
+  recall, 99.08% named-entity precision, 100% overall recall, 99.65% overall
+  precision, and zero must-redact leaks. Every approved Section 12.4 floor
+  passes; the runner exits nonzero on any hash, count, floor, or leak failure.
+- The deterministic corpus regression, TypeScript, strict lint, architecture
+  lint, and unchanged privacy/cost checks passed. No case was replaced,
+  removed, or added, and no universal PII-accuracy claim, runtime dependency,
+  network path, persistence, service, secret, or paid path was introduced.
