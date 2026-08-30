@@ -12,7 +12,7 @@ historical work.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 1** on `phase/1-core-mission`.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
-- Phase 1 status: **IN PROGRESS — TASK 1.15 PASSED**.
+- Phase 1 status: **IN PROGRESS — TASK 1.16 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Architecture execution-hardening EDR 37: **APPROVED**.
@@ -882,3 +882,22 @@ historical work.
   strict lint, architecture lint, Doctor, both Worker dry-runs, and static
   export passed. No provider inference call, dependency, secret access,
   persistence, paid path, route, production mutation, or Phase 2 work occurred.
+
+### 40. Phase 1 Task 1.16 — Strawman schema and prompt
+
+- Task 1.16: **PASSED** on 2026-08-30. Added the exact strict
+  `S-STRAWMAN-OUTPUT` Zod contract and one deterministic Strawman request
+  builder. Findings are non-empty and every finding, risk, assumption, and
+  quantitative candidate carries one to eight valid source references;
+  invented and duplicate references, duplicate IDs, HTML, non-finite numbers,
+  unknown fields, and all collection/response-bound violations fail closed.
+- The fixed two-message prompt labels redacted sources as untrusted evidence
+  data and forbids obeying embedded commands, tools, external knowledge,
+  invented references, HTML, and prose outside JSON. `full` covers financial
+  and operational, strategic and competitive, and security and compliance in
+  one call; each narrower focus is selected by ordinary typed code.
+- Six focused golden/adversarial tests plus the affected analyze and transport
+  regressions passed (17 tests total), together with TypeScript, strict lint,
+  architecture lint, Doctor, both Worker dry-runs, and static export. No AI
+  call, dependency, secret access, persistence, route, paid path, specialist,
+  router call, production mutation, or Phase 2 work occurred.

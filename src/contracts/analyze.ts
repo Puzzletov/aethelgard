@@ -43,7 +43,7 @@ function containsStructuredPii(value: string): boolean {
   return false;
 }
 
-const sourceReferenceSchema = z.discriminatedUnion("kind", [
+export const sourceReferenceSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("pdf_page"), page: POSITIVE_INTEGER }),
   z.strictObject({ kind: z.literal("docx_paragraph"), paragraph: POSITIVE_INTEGER }),
   z.strictObject({ kind: z.literal("docx_table_cell"), table: POSITIVE_INTEGER,
@@ -69,6 +69,8 @@ export const normalizedSourceRecordSchema = z.strictObject({
   content: boundedRedactedText,
 });
 
+export type NormalizedSourceRecord = z.output<typeof normalizedSourceRecordSchema>;
+
 function sourcesAreCanonical(sources: readonly z.infer<typeof normalizedSourceRecordSchema>[]): boolean {
   const references = new Set<string>();
   for (let index = 0; index < sources.length; index += 1) {
@@ -86,23 +88,25 @@ const requestedOutputsSchema = z.array(z.enum(ALLOWED_OUTPUTS))
   .refine((values) => values.every((value, index) => ALLOWED_OUTPUTS.indexOf(value)
     > (index === 0 ? -1 : ALLOWED_OUTPUTS.indexOf(values[index - 1]))), "output_order");
 
-const sourcesSchema = z.array(normalizedSourceRecordSchema)
+export const normalizedSourcesSchema = z.array(normalizedSourceRecordSchema)
   .min(1).max(MAX_SOURCE_RECORDS)
   .refine(sourcesAreCanonical, "noncanonical_sources");
+
+export const focusSchema = z.enum(ALLOWED_FOCUS);
 
 export const analyzeRequestSchema = z.strictObject({
   schema_version: z.literal(ANALYSIS_SCHEMA_VERSION),
   turnstile_token: z.string().min(1).max(MAX_TURNSTILE_TOKEN_CHARS),
-  focus: z.enum(ALLOWED_FOCUS),
+  focus: focusSchema,
   requested_outputs: requestedOutputsSchema,
-  sources: sourcesSchema,
+  sources: normalizedSourcesSchema,
 });
 
 export const trustedAnalyzeRequestSchema = analyzeRequestSchema;
 
 const redactionResultSchema = z.strictObject({
   schema_version: z.literal(ANALYSIS_SCHEMA_VERSION),
-  sources: sourcesSchema,
+  sources: normalizedSourcesSchema,
   placeholder_count: z.number().int().nonnegative().safe(),
   must_redact_leaks: z.literal(0),
 });
