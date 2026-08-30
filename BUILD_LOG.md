@@ -12,7 +12,7 @@ historical work.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 1** on `phase/1-core-mission`.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
-- Phase 1 status: **IN PROGRESS — TASK 1.22 PASSED; EXIT GATE IN PROGRESS**.
+- Phase 1 status: **PASSED — AWAITING OWNER REVIEW/MERGE**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Architecture execution-hardening EDR 37: **APPROVED**.
@@ -1029,3 +1029,28 @@ historical work.
   vulnerability audit. No extra retry, persistence, dependency, production
   mutation, paid path, partial output, Phase 2 behavior, or architecture drift
   was introduced.
+
+### 47. Phase 1 exit gate
+
+- **PHASE 1 — PASSED** on 2026-08-31. All Tasks 1.1–1.22 and the complete
+  Phase 0/1 regression set passed. The gate covered all six formats, 15 MiB
+  and 8,000-word boundaries, hostile containers, the exact English decision,
+  the frozen 84-case/576-entity PII corpus with zero must-redact leaks, strict
+  schemas, bounded provider failover, and fixed fault reflexes.
+- A canonical supported-browser journey used a real TXT `File` containing
+  clear English and structured PII. In both Edge and Chrome it traversed the
+  production disposable parser Worker, language gate, disposable Redaction
+  Worker, strict analyze boundary, and production orchestrator. It produced a
+  valid source-linked Oracle through exactly one analyze request and exactly
+  `strawman:groq`, `steelman:groq`, `oracle:groq`; both created Workers were
+  terminated, raw/PII/filename egress was zero, and browser storage writes
+  were zero.
+- Final evidence: 106 root tests and 54 frontend tests passed; TypeScript and
+  warnings-as-errors lint passed; architecture lint and Doctor passed; all 180
+  package licenses and three vendored assets passed; both npm trees reported
+  zero vulnerabilities; both Worker dry-runs and the static Pages export
+  passed; initial JavaScript was 179,328 gzip bytes against 307,200. Exact-zero
+  and privacy boundaries are unchanged. No production resource, secret, live
+  provider call, persistence, new dependency, paid path, Phase 2 behavior, or
+  architecture drift was introduced. Phase 2 remains unauthorized pending
+  explicit owner approval after review and merge of the Phase 1 pull request.
