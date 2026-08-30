@@ -7,7 +7,7 @@ historical work.
 
 - Architecture: **2.1 — APPROVED FOR BUILD**, execution-hardened under EDR 37.
 - Authoritative exact Git-blob SHA-256:
-  `ccf4897db878f27a49aa609dc6cdb523890a1980e303996f8ccecbf873d5d053`.
+  `56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2`.
 - Phase -1: **CLOSED**.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 1** on `phase/1-core-mission`.
@@ -16,6 +16,7 @@ historical work.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Architecture execution-hardening EDR 37: **APPROVED**.
+- Task 1.10 normalized-score correction EDR 38: **APPROVED**.
 - Frozen PII baseline: **APPROVED**.
 - Trusted PDF and hybrid-signing feasibility: **PASSED**.
 - External Durable Object direct binding: **PASSED**.
@@ -749,3 +750,16 @@ historical work.
   static export, and the 175,333-byte gzip initial-JavaScript gate passed.
   No dependency, persistence, service, secret, paid path, or network route was
   added.
+
+### 33. Architecture 2.1 Task 1.10 contract correction
+
+- Owner-approved EDR 38: **PASSED** on 2026-08-30. Pinned `franc-min`
+  returns normalized scores rather than integer distances. The language margin
+  is now exactly `round((eng_score - runner_up_score) * 10,000)` integer basis
+  points, and English must rank first with a margin of at least 2,000.
+- This corrects an impossible implementation contract without changing
+  English-only behavior, evidence thresholds, local-only classification,
+  fail-closed handling, topology, privacy, cost, providers, cryptography, or
+  phase scope. Architecture lint and eight tooling regressions passed.
+- The authoritative exact Git-blob SHA-256 is
+  `56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2`.

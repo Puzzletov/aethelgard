@@ -3,13 +3,13 @@
 **Project name:** Aethelgard
 **Document type:** Build Guide, System Architecture, and Project Tracker
 **Version:** 2.1
-**Date:** 2026-08-29
+**Date:** 2026-08-30
 **Status:** Approved for build
 **Language:** Simplified Technical English
 **Purpose:** Final system architecture, build guide, and phase authority
 **Supersedes:** Architecture 2.0 and all earlier architecture proposals and handoffs
 
-**Revision:** Execution hardening revision — 2026-08-29
+**Revision:** Execution hardening revision; Task 1.10 score-contract correction — 2026-08-30
 
 ---
 
@@ -606,8 +606,11 @@ fail closed before document-derived content crosses the network.
 Apply Schema `S-LANGUAGE-DECISION`: normalize whitespace; take the leading
 `B-LANGUAGE-SAMPLE-CHARS`; require at least 40 alphabetic Unicode letters and
 at least 8 whitespace-separated letter-bearing tokens in that sample; then run
-pinned offline `francAll` from `franc-min`. Accept only when the first result is
-exactly `eng` and `(runner_up_distance - eng_distance) >= 20`.
+pinned offline `francAll` from `franc-min`. Treat tuple values as normalized
+scores. Let `eng_score` be the first tuple's score and `runner_up_score` be the
+second tuple's score. Calculate the integer basis-point margin exactly as
+`round((eng_score - runner_up_score) * 10,000)`. Accept only when the first
+result is exactly `eng` and the margin is at least `B-LANGUAGE-MARGIN`.
 Reject every other, tied, mixed, uncertain, or insufficient-evidence result
 locally. Freeze clear English, English with international names, non-English,
 mixed-language, and short-text cases in tests.
@@ -2692,10 +2695,12 @@ preserved but Architecture 2.1 no longer follows that target.
 | 35 | Active | Turnstile Siteverify inside `TrustedRuntime` | Verification requires a secret. The existing private runtime preserves a genuinely secret-free edge without a new component. |
 | 36 | Active | Sequential one-task and one-phase governance | Prevents architecture drift, speculative scaffolding, and partially verified implementation. Every task has a signed logical commit and every phase stops at review. |
 | 37 | Active | Architecture 2.1 execution hardening | Canonical task contracts and Bounds, Schema, and Failure registries make implementation deterministic without changing topology, mission, privacy, cost, providers, or cryptography. Reject repeated architecture inference during implementation. |
+| 38 | Active | Task 1.10 normalized-score margin correction | Interpret `francAll` tuple values as normalized scores and require English to lead the runner-up by at least 2,000 integer basis points. Reject the incompatible distance terminology and subtraction order. |
 
 Detailed active EDR artifacts are
 `docs/EDR_BROWSER_LOCAL_TRUST_BOUNDARY.md` and
-`docs/EDR_ARCHITECTURE_EXECUTION_HARDENING.md`.
+`docs/EDR_ARCHITECTURE_EXECUTION_HARDENING.md`, and
+`docs/EDR_LANGUAGE_SCORE_MARGIN.md`.
 
 ---
 
@@ -4655,7 +4660,7 @@ implementation may silently truncate to satisfy a bound.
 | B-EXTRACTED-WORDS | 8,000 | Unicode word runs | Extracted document | `F-OVERSIZED-DOCUMENT` |
 | B-LANGUAGE-MIN-LETTERS | 40 | Unicode alphabetic letters | Language evidence | `F-UNSUPPORTED-LANGUAGE` below |
 | B-LANGUAGE-MIN-TOKENS | 8 | letter-bearing tokens | Language evidence | `F-UNSUPPORTED-LANGUAGE` below |
-| B-LANGUAGE-MARGIN | 20 | franc distance points | Winner over runner-up | `F-UNSUPPORTED-LANGUAGE` below |
+| B-LANGUAGE-MARGIN | 2,000 | integer basis points | English normalized-score lead over runner-up | `F-UNSUPPORTED-LANGUAGE` below |
 | B-LANGUAGE-SAMPLE-CHARS | 20,000 | Unicode code points | Deterministic leading normalized sample | `F-UNSUPPORTED-LANGUAGE` if inconclusive |
 | B-PII-MAPPINGS | 10,000 | placeholders | One redaction operation | `F-PII-GATE-FAILURE` |
 | B-PLACEHOLDER-CHARS | 64 | ASCII chars | One placeholder | `F-PII-GATE-FAILURE` |
@@ -4796,7 +4801,8 @@ deliberately absent and must be destroyed inside the Worker.
 Union `{schema_version:"1",accepted:true,language:"eng",letters:int,tokens:int,
 margin:int}` or `{schema_version:"1",accepted:false,reason:"insufficient"|
 "non_english"|"mixed_or_uncertain"}`. It applies the exact Section 5.3 rule.
-`margin` is exactly `runner_up_distance - eng_distance`.
+`margin` is exactly `round((eng_score - runner_up_score) * 10,000)` integer
+basis points, where the named scores are the first two `francAll` tuple values.
 
 ### S-FOCUS
 String enum `full|financial|strategic|security`.

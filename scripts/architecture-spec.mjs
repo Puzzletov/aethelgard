@@ -44,7 +44,7 @@ function checkSections(text, errors) {
 function checkEdrs(text, errors) {
   const section = text.match(/^# 35\.[\s\S]*?(?=^# 36\.)/m)?.[0] ?? "";
   const ids = idsFromMatches(section, /^\| (\d+) \|/gm);
-  numericSequence(ids, 1, 37, "EDR", errors);
+  numericSequence(ids, 1, 38, "EDR", errors);
 }
 
 function checkTaskSequence(blocks, errors) {
