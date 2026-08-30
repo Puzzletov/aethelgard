@@ -12,7 +12,7 @@ historical work.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 1** on `phase/1-core-mission`.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
-- Phase 1 status: **IN PROGRESS — TASK 1.19 PASSED**.
+- Phase 1 status: **IN PROGRESS — TASK 1.20 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Architecture execution-hardening EDR 37: **APPROVED**.
@@ -960,3 +960,23 @@ historical work.
   failure permutation, hard invalid-schema failover, terminal-stage stopping,
   no persistence/logging/retry loop, and no paid provider. No live AI call,
   dependency, production mutation, route, persistence, or Phase 2 work occurred.
+
+### 44. Phase 1 Task 1.20 — prompt-injection controls
+
+- Task 1.20: **PASSED** on 2026-08-30. Added one shared fixed prompt boundary
+  for all three stages. Only the developer-authored system message has
+  instruction authority; each bounded JSON payload is held in one user message
+  between fixed untrusted-data markers, and quoted marker/role/system text
+  remains inert. The prompt explicitly grants no tool, route, network, file,
+  storage, signing, email, or deployment capability.
+- Froze five direct, indirect/delimiter, secret-exfiltration, tool/control, and
+  HTML/schema attacks under canonical corpus SHA-256
+  `41b2fb352e67266ce56563ce1ee242d880c94e79c8eba625c8e499d2d838238f`.
+  None changed message roles/count, fixed system prompts, provider destination,
+  transport fields, stage order, output schema, or application control.
+  Malicious tool/HTML model outputs hard-failed both providers to Safe Mode.
+- Five focused corpus/boundary tests plus every affected stage and orchestrator
+  regression passed (30 tests total), together with TypeScript, strict lint,
+  architecture lint, Doctor, both Worker dry-runs, and static export. No live
+  model call, dynamic system prompt, tool, new capability, dependency,
+  persistence, route, production mutation, paid path, or Phase 2 work occurred.

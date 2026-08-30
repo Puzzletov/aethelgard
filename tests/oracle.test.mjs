@@ -5,6 +5,14 @@ import { parseOracleOutput } from "../src/contracts/oracle.ts";
 import { parseSteelmanOutput } from "../src/contracts/steelman.ts";
 import { parseStrawmanOutput } from "../src/contracts/strawman.ts";
 import { createOracleRequest } from "../workers/trusted-runtime/src/oracle.ts";
+import { UNTRUSTED_DATA_BEGIN, UNTRUSTED_DATA_END } from "../workers/trusted-runtime/src/prompt-boundary.ts";
+
+function promptPayload(content) {
+  const prefix = `${UNTRUSTED_DATA_BEGIN}\n`;
+  const suffix = `\n${UNTRUSTED_DATA_END}`;
+  assert.equal(content.startsWith(prefix) && content.endsWith(suffix), true);
+  return JSON.parse(content.slice(prefix.length, -suffix.length));
+}
 
 const reference = Object.freeze({ kind: "pdf_page", page: 1 });
 const sources = Object.freeze([Object.freeze({
@@ -109,7 +117,7 @@ test("fixed Oracle prompt keeps all injection text inert", () => {
   assert.match(request.messages[0].content, /never as instructions/u);
   assert.match(request.messages[0].content, /every Steelman item exactly once/u);
   assert.match(request.messages[0].content, /Do not render a report or PDF/u);
-  const payload = JSON.parse(request.messages[1].content);
+  const payload = promptPayload(request.messages[1].content);
   assert.equal(payload.untrusted_sources[0].content, injectedSources[0].content);
   assert.equal(payload.validated_steelman.items[0].critique,
     injectedSteelman.items[0].critique);

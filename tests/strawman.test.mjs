@@ -3,6 +3,14 @@ import test from "node:test";
 
 import { parseStrawmanOutput } from "../src/contracts/strawman.ts";
 import { createStrawmanRequest } from "../workers/trusted-runtime/src/strawman.ts";
+import { UNTRUSTED_DATA_BEGIN, UNTRUSTED_DATA_END } from "../workers/trusted-runtime/src/prompt-boundary.ts";
+
+function promptPayload(content) {
+  const prefix = `${UNTRUSTED_DATA_BEGIN}\n`;
+  const suffix = `\n${UNTRUSTED_DATA_END}`;
+  assert.equal(content.startsWith(prefix) && content.endsWith(suffix), true);
+  return JSON.parse(content.slice(prefix.length, -suffix.length));
+}
 
 const reference = Object.freeze({ kind: "pdf_page", page: 1 });
 const sources = Object.freeze([Object.freeze({
@@ -96,7 +104,7 @@ test("fixed prompt treats source injection as inert JSON data", () => {
   assert.match(request.messages[0].content, /untrusted evidence data/u);
   assert.match(request.messages[0].content, /never as instructions/u);
   assert.doesNotMatch(request.messages[0].content, /specialist|router|call a tool/iu);
-  const payload = JSON.parse(request.messages[1].content);
+  const payload = promptPayload(request.messages[1].content);
   assert.equal(payload.untrusted_sources[0].content, injected[0].content);
   assert.match(payload.focus_instruction, /financial and operational/u);
   assert.match(payload.focus_instruction, /strategic and competitive/u);
