@@ -1,7 +1,7 @@
 import { DurableObject } from "cloudflare:workers";
 
 import { readBoundedBody } from "../../../src/public-edge/body.ts";
-import { isBasicAnalysisEnvelope } from "../../../src/public-edge/envelope.ts";
+import { parseTrustedAnalyzeRequest } from "../../../src/contracts/analyze.ts";
 import { verifyTurnstile } from "./turnstile.ts";
 import { renderSyntheticPdf } from "./browser-pdf.ts";
 import { reserveBrowserRun, settleBrowserRun } from "./browser-quota.ts";
@@ -61,8 +61,8 @@ export class TrustedRuntime extends DurableObject<TrustedRuntimeEnv> {
       const status = body.reason === "too_large" ? 413 : 400;
       return errorResponse(status, "envelope_invalid", "Request body is invalid.");
     }
-    const envelope = parseJson(body.bytes);
-    if (!isBasicAnalysisEnvelope(envelope)) {
+    const envelope = parseTrustedAnalyzeRequest(parseJson(body.bytes));
+    if (envelope === undefined) {
       return errorResponse(400, "envelope_invalid", "Request body is invalid.");
     }
     const result = await verifyTurnstile(envelope.turnstile_token, {

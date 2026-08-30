@@ -12,7 +12,7 @@ historical work.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 1** on `phase/1-core-mission`.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
-- Phase 1 status: **IN PROGRESS — TASK 1.13 PASSED**.
+- Phase 1 status: **IN PROGRESS — TASK 1.14 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Architecture execution-hardening EDR 37: **APPROVED**.
@@ -844,3 +844,22 @@ historical work.
   static export, and the 175,338-byte gzip initial-JavaScript gate passed. No
   runtime dependency, persistence, service, secret, production resource,
   paid path, or additional application route was added.
+
+### 38. Phase 1 Task 1.14 — redacted analysis request schema
+
+- Task 1.14: **PASSED** on 2026-08-30. One shared strict Zod contract now
+  defines browser serialization, public-edge validation, and a fresh
+  TrustedRuntime validation for the exact redacted request shape. Unknown
+  fields, invalid or duplicate references, non-canonical or duplicate output
+  requests, invalid enums, unredacted structured PII, and every named request
+  bound fail closed.
+- Serialization accepts only a successful redaction result with zero declared
+  leaks, emits only the five approved network fields, and enforces the
+  524,288-byte UTF-8 body limit. Raw binary, filename, mapping, prompt,
+  provider, URL, key, email, and extra fields cannot enter the contract.
+- Six focused contract tests, the public-edge regressions, all 66 root and 41
+  frontend tests including Edge/Chrome proofs, TypeScript, strict lint,
+  architecture lint, Doctor, both Worker dry-runs, and the static export
+  passed. Public/trusted Worker uploads were 741.59/795.50 KiB
+  (114.97/131.94 KiB gzip), below the approved 3 MiB limit. No dependency,
+  persistence, secret, paid path, service, route, or Phase 2 work was added.

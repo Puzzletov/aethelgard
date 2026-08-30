@@ -4,7 +4,7 @@ import {
   type PublicEdgeEnv,
 } from "./public-edge/config.ts";
 import { readBoundedBody } from "./public-edge/body.ts";
-import { isBasicAnalysisEnvelope } from "./public-edge/envelope.ts";
+import { parseAnalyzeRequest } from "./public-edge/envelope.ts";
 import {
   jsonResponse,
   methodNotAllowed,
@@ -101,7 +101,7 @@ async function handleAnalyze(request: Request, env: PublicEdgeEnv): Promise<Resp
     const status = body.reason === "too_large" ? 413 : 400;
     return safeError(status, body.reason, "Request body is invalid.", origin);
   }
-  if (!isBasicAnalysisEnvelope(parseJson(body.bytes))) {
+  if (parseAnalyzeRequest(parseJson(body.bytes)) === undefined) {
     return safeError(400, "envelope_invalid", "Request body is invalid.", origin);
   }
   return callTrustedRuntime(body.bytes, env, origin);
