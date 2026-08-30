@@ -12,7 +12,7 @@ historical work.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 1** on `phase/1-core-mission`.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
-- Phase 1 status: **IN PROGRESS — TASK 1.7 PASSED**.
+- Phase 1 status: **IN PROGRESS — TASK 1.8 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Architecture execution-hardening EDR 37: **APPROVED**.
@@ -712,3 +712,26 @@ historical work.
   without warnings. Initial JavaScript is 175,331 gzip bytes; the complete lazy
   parser Worker is 43,321 raw / 14,275 gzip bytes. No paid path, persistence,
   or source-data network route was added.
+
+### 31. Phase 1 Task 1.8 — source-reference normalization
+
+- Task 1.8: **PASSED** on 2026-08-30. All six strict parser-success
+  envelopes now normalize locally into immutable schema-versioned records with
+  contiguous ordinals and exact neutral PDF, DOCX, PPTX, XLSX, CSV, or TXT
+  structural references.
+- Normalization preserves source order and content and fails closed on unknown
+  fields or formats, missing schema versions, gaps, duplicates, non-monotonic
+  or invalid indices, empty content, or the canonical source-count,
+  per-source, reference-byte, and total-text bounds. It emits no filename,
+  sheet name, document metadata, network request, or stored state.
+- The task exposed and corrected one prerequisite contract defect: validated
+  parser-success results now retain `schema_version:"1"`. Textless PDFs also
+  fail closed; the pinned parser source is 1,649 bytes with SHA-256
+  `d6d30c0ffd379bb2f392a36e5fc8410366c0d7bd89da8e6f667fa553dbb16437`,
+  and its supported-browser proof verifies both extraction and empty-PDF
+  rejection with zero external requests.
+- Five focused normalization tests, 55 root tests, 24 frontend tests,
+  TypeScript, strict lint, architecture lint, Doctor, license checks, both
+  Worker dry-runs, static export, and the 175,333-byte gzip initial-JavaScript
+  gate passed without warnings. No dependency, paid path, persistence,
+  secret, production resource, or source-data network route was added.

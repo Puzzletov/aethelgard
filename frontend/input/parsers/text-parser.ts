@@ -30,10 +30,10 @@ export interface TxtSource {
 }
 
 export type CsvParserResult =
-  | Readonly<{ ok: true; format: "csv"; sources: readonly CsvSource[] }>
+  | Readonly<{ ok: true; schema_version: "1"; format: "csv"; sources: readonly CsvSource[] }>
   | Readonly<{ ok: false; code: "csv_parse_failed"; message: string }>;
 export type TxtParserResult =
-  | Readonly<{ ok: true; format: "txt"; sources: readonly TxtSource[] }>
+  | Readonly<{ ok: true; schema_version: "1"; format: "txt"; sources: readonly TxtSource[] }>
   | Readonly<{ ok: false; code: "txt_parse_failed"; message: string }>;
 
 function failedCsvParse(): CsvParserResult {
@@ -95,7 +95,7 @@ function validateCsvOutput(value: unknown): CsvParserResult {
     if (total > MAX_TEXT_DOCUMENT_CODE_POINTS) return failedCsvParse();
     checked.push(source);
   }
-  return Object.freeze({ ok: true, format: "csv", sources: Object.freeze(checked) });
+  return Object.freeze({ ok: true, schema_version: "1", format: "csv", sources: Object.freeze(checked) });
 }
 
 function validateTxtOutput(value: unknown): TxtParserResult {
@@ -110,7 +110,7 @@ function validateTxtOutput(value: unknown): TxtParserResult {
     if (total > MAX_TEXT_DOCUMENT_CODE_POINTS) return failedTxtParse();
     checked.push(source);
   }
-  return Object.freeze({ ok: true, format: "txt", sources: Object.freeze(checked) });
+  return Object.freeze({ ok: true, schema_version: "1", format: "txt", sources: Object.freeze(checked) });
 }
 
 async function runTextParser(format: "csv" | "txt", buffer: ArrayBuffer): Promise<unknown> {

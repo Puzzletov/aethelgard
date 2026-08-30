@@ -48,6 +48,7 @@ test("the pinned Pyodide runtime executes pdfminer in a browser module Worker wi
     python: report.python,
     pdfminer: report.pdfminer,
     pages: report.pages,
+    empty_pdf_rejected: report.empty_pdf_rejected,
     external_network_requests: report.external_network_requests,
   }, {
     status: "ok",
@@ -55,6 +56,7 @@ test("the pinned Pyodide runtime executes pdfminer in a browser module Worker wi
     python: "3.14.2",
     pdfminer: "20260107",
     pages: 1,
+    empty_pdf_rejected: true,
     external_network_requests: 0,
   });
   assert.ok(report.elapsed_ms > 0 && report.elapsed_ms <= 30_000);

@@ -31,7 +31,7 @@ export interface PptxSource {
 }
 
 export type PptxParserResult =
-  | Readonly<{ ok: true; format: "pptx"; sources: readonly PptxSource[] }>
+  | Readonly<{ ok: true; schema_version: "1"; format: "pptx"; sources: readonly PptxSource[] }>
   | Readonly<{ ok: false; code: "pptx_parse_failed"; message: string }>;
 
 function failedPptxParse(): PptxParserResult {
@@ -69,7 +69,7 @@ function validatePptxOutput(value: unknown): PptxParserResult {
     previousSlide = source.slide;
     checked.push(source);
   }
-  return Object.freeze({ ok: true, format: "pptx", sources: Object.freeze(checked) });
+  return Object.freeze({ ok: true, schema_version: "1", format: "pptx", sources: Object.freeze(checked) });
 }
 
 function pruneUnusedPackageData(pyodide: PyodideInterface): void {

@@ -6,8 +6,8 @@ function pdfObject(identifier, body) {
   return Buffer.from(`${identifier} 0 obj\n${body}\nendobj\n`, "ascii");
 }
 
-function syntheticPdf() {
-  const stream = `BT /F1 12 Tf 72 720 Td (${expectedText}) Tj ET`;
+function syntheticPdf(text = expectedText) {
+  const stream = text.length === 0 ? "" : `BT /F1 12 Tf 72 720 Td (${text}) Tj ET`;
   const objects = [
     pdfObject(1, "<</Type/Catalog/Pages 2 0 R>>"),
     pdfObject(2, "<</Type/Pages/Kids[3 0 R]/Count 1>>"),
@@ -40,22 +40,31 @@ const [wheelResponse, parserResponse, sourceResponse] = await Promise.all([
 if (!wheelResponse.ok || !parserResponse.ok || !sourceResponse.ok) throw new Error("asset_fetch_failed");
 const wheel = new Uint8Array(await wheelResponse.arrayBuffer());
 const source = await parserResponse.text();
-const documentBytes = new Uint8Array(await sourceResponse.arrayBuffer());
+const fixtures = await sourceResponse.json();
+const decode = (value) => Uint8Array.from(atob(value), (character) => character.charCodeAt(0));
+const parse = async (bytes) => {
+  pyodide.FS.writeFile("/tmp/aethelgard-source.pdf", bytes);
+  try { return JSON.parse(await pyodide.runPythonAsync(source)); }
+  finally { pyodide.FS.unlink("/tmp/aethelgard-source.pdf"); bytes.fill(0); }
+};
 pyodide.unpackArchive(wheel, "wheel");
-pyodide.FS.writeFile("/tmp/aethelgard-source.pdf", documentBytes);
-const parsed = JSON.parse(await pyodide.runPythonAsync(source));
+const parsed = await parse(decode(fixtures.text_pdf));
+let emptyRejected = false;
+try { await parse(decode(fixtures.empty_pdf)); } catch { emptyRejected = true; }
 const versions = JSON.parse(await pyodide.runPythonAsync(
   'import importlib.metadata, json, platform\\njson.dumps({"python": platform.python_version(), "pdfminer": importlib.metadata.version("pdfminer.six")})'));
-pyodide.FS.unlink("/tmp/aethelgard-source.pdf");
 wheel.fill(0);
-documentBytes.fill(0);
 const valid = parsed.schema_version === "1" && parsed.format === "pdf" && parsed.pages?.length === 1
-  && parsed.pages[0].page === 1 && parsed.pages[0].content.includes(${JSON.stringify(expectedText)});
+  && parsed.pages[0].page === 1 && parsed.pages[0].content.includes(${JSON.stringify(expectedText)}) && emptyRejected;
 if (!valid) throw new Error("parser_result_invalid");
 self.postMessage({ status: "ok", pyodide: pyodide.version, python: versions.python,
-  pdfminer: versions.pdfminer, pages: parsed.pages.length,
+  pdfminer: versions.pdfminer, pages: parsed.pages.length, empty_pdf_rejected: emptyRejected,
   elapsed_ms: Math.ceil(performance.now() - started), external_network_requests: 0 });
 `;
 }
 
-process.stdout.write(`${JSON.stringify(await runBrowserParserProof(syntheticPdf(), proofWorker()))}\n`);
+const fixtures = Buffer.from(JSON.stringify({
+  text_pdf: syntheticPdf().toString("base64"),
+  empty_pdf: syntheticPdf("").toString("base64"),
+}));
+process.stdout.write(`${JSON.stringify(await runBrowserParserProof(fixtures, proofWorker()))}\n`);

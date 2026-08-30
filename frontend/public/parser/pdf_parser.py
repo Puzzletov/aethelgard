@@ -41,6 +41,8 @@ def parse_pdf(path):
             pages.append({"page": page_index, "content": text})
     if not pages:
         raise ValueError("no_pages")
+    if total_points == 0:
+        raise ValueError("no_text")
     return json.dumps(
         {"schema_version": "1", "format": "pdf", "pages": pages},
         ensure_ascii=False,

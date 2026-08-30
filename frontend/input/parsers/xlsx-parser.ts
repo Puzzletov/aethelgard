@@ -34,7 +34,7 @@ export interface XlsxSource {
 }
 
 export type XlsxParserResult =
-  | Readonly<{ ok: true; format: "xlsx"; sources: readonly XlsxSource[] }>
+  | Readonly<{ ok: true; schema_version: "1"; format: "xlsx"; sources: readonly XlsxSource[] }>
   | Readonly<{ ok: false; code: "xlsx_parse_failed"; message: string }>;
 
 function failedXlsxParse(): XlsxParserResult {
@@ -72,7 +72,7 @@ function validateXlsxOutput(value: unknown): XlsxParserResult {
     if (total > MAX_XLSX_DOCUMENT_CODE_POINTS) return failedXlsxParse();
     checked.push(source);
   }
-  return Object.freeze({ ok: true, format: "xlsx", sources: Object.freeze(checked) });
+  return Object.freeze({ ok: true, schema_version: "1", format: "xlsx", sources: Object.freeze(checked) });
 }
 
 export async function parseXlsx(buffer: ArrayBuffer): Promise<XlsxParserResult> {

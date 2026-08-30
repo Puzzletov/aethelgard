@@ -26,7 +26,7 @@ export type DocxSource =
   | Readonly<{ kind: "table_cell"; table: number; row: number; column: number; content: string }>;
 
 export type DocxParserResult =
-  | Readonly<{ ok: true; format: "docx"; sources: readonly DocxSource[] }>
+  | Readonly<{ ok: true; schema_version: "1"; format: "docx"; sources: readonly DocxSource[] }>
   | Readonly<{ ok: false; code: "docx_parse_failed"; message: string }>;
 
 function failedDocxParse(): DocxParserResult {
@@ -82,7 +82,7 @@ function validateDocxOutput(value: unknown): DocxParserResult {
     if (total > MAX_DOCX_DOCUMENT_CODE_POINTS) return failedDocxParse();
     checked.push(source);
   }
-  return Object.freeze({ ok: true, format: "docx", sources: Object.freeze(checked) });
+  return Object.freeze({ ok: true, schema_version: "1", format: "docx", sources: Object.freeze(checked) });
 }
 
 export async function parseDocx(buffer: ArrayBuffer): Promise<DocxParserResult> {
