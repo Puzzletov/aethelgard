@@ -42,10 +42,13 @@ test("fonts are local, licensed, and pinned", async () => {
   await readText("public/fonts/LICENSE-Public-Sans.txt");
 });
 
-test("the shell has no dashboard, parser, or AI control", async () => {
+test("the shell exposes only the approved browser mission control", async () => {
   const page = await readText("app/page.tsx");
-  assert.doesNotMatch(page, /fetch\(|dashboard|chat/i);
+  const picker = await readText("components/document-picker.tsx");
+  assert.doesNotMatch(`${page}\n${picker}`, /chat|email|BYOK|dangerouslySetInnerHTML/i);
   assert.match(page, /DocumentPicker/);
   assert.match(page, /Skip to main content/);
   assert.match(page, /Operating principles/);
+  assert.match(picker, /AnalysisDashboard/);
+  assert.match(picker, /TurnstileWidget/);
 });

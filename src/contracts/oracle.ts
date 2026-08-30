@@ -58,7 +58,9 @@ function outputIdsAreUnique(value: OracleOutput): boolean {
 }
 
 export const oracleOutputSchema = oracleOutputBaseSchema
-  .refine(outputIdsAreUnique, "duplicate_id");
+  .refine(outputIdsAreUnique, "duplicate_id")
+  .refine((value) => uniqueJson(value.critique_resolutions
+    .map((item) => item.steelman_item_id)), "duplicate_resolution");
 
 function resolutionsAreComplete(output: OracleOutput, steelman: SteelmanOutput): boolean {
   const actual = output.critique_resolutions.map((item) => item.steelman_item_id);
@@ -85,5 +87,22 @@ export function parseOracleOutput(
     || parseSteelmanOutput(steelman, sources, checkedStrawman) === undefined) return undefined;
   const parsed = oracleOutputSchema.safeParse(value);
   if (!parsed.success || !resolutionsAreComplete(parsed.data, steelman)) return undefined;
+  return oracleEvidenceExists(parsed.data, sources) ? parsed.data : undefined;
+}
+
+function renderedCodePoints(value: unknown): number {
+  if (typeof value === "string") return [...value].length;
+  if (Array.isArray(value)) return value.reduce((total, item) => total + renderedCodePoints(item), 0);
+  if (typeof value !== "object" || value === null) return 0;
+  return Object.values(value).reduce((total, item) => total + renderedCodePoints(item), 0);
+}
+
+export function parseDashboardOracle(
+  value: unknown,
+  sources: readonly NormalizedSourceRecord[],
+): OracleOutput | undefined {
+  if (!withinAiResponseBound(value)) return undefined;
+  const parsed = oracleOutputSchema.safeParse(value);
+  if (!parsed.success || renderedCodePoints(parsed.data) > 200_000) return undefined;
   return oracleEvidenceExists(parsed.data, sources) ? parsed.data : undefined;
 }

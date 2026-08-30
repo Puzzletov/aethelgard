@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { parseOracleOutput } from "../src/contracts/oracle.ts";
+import { parseDashboardOracle, parseOracleOutput } from "../src/contracts/oracle.ts";
 import { parseSteelmanOutput } from "../src/contracts/steelman.ts";
 import { parseStrawmanOutput } from "../src/contracts/strawman.ts";
 import { createOracleRequest } from "../workers/trusted-runtime/src/oracle.ts";
@@ -100,6 +100,17 @@ test("collection, evidence, and complete response bounds are exact", () => {
   }] }), sources, strawman, steelman), undefined);
   assert.equal(parseOracleOutput(validOutput({ executive_summary: "x".repeat(262_144) }),
     sources, strawman, steelman), undefined);
+});
+
+test("dashboard accepts only bounded strict Oracle output with existing references", () => {
+  assert.deepEqual(parseDashboardOracle(validOutput(), sources), validOutput());
+  assert.equal(parseDashboardOracle(validOutput({ findings: [{
+    ...validOutput().findings[0], evidence: [{ kind: "pdf_page", page: 2 }],
+  }] }), sources), undefined);
+  assert.equal(parseDashboardOracle(validOutput({ critique_resolutions: [
+    ...validOutput().critique_resolutions, ...validOutput().critique_resolutions,
+  ] }), sources), undefined);
+  assert.equal(parseDashboardOracle(validOutput({ executive_summary: "x".repeat(200_001) }), sources), undefined);
 });
 
 test("fixed Oracle prompt keeps all injection text inert", () => {

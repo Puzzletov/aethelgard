@@ -12,7 +12,7 @@ historical work.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 1** on `phase/1-core-mission`.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
-- Phase 1 status: **IN PROGRESS — TASK 1.20 PASSED**.
+- Phase 1 status: **IN PROGRESS — TASK 1.21 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Architecture execution-hardening EDR 37: **APPROVED**.
@@ -980,3 +980,27 @@ historical work.
   architecture lint, Doctor, both Worker dry-runs, and static export. No live
   model call, dynamic system prompt, tool, new capability, dependency,
   persistence, route, production mutation, paid path, or Phase 2 work occurred.
+
+### 45. Phase 1 Task 1.21 — plain functional dashboard
+
+- Task 1.21: **PASSED** on 2026-08-31. Connected the existing browser-local
+  preflight/parser, normalization, 8,000-word, exact English, disposable
+  Redaction Worker, fresh Turnstile, and private TrustedRuntime analysis path.
+  Only the strict redacted request crosses the network; the private runtime
+  returns either the fully validated Oracle or fixed Safe Mode. The attempt
+  always consumes and resets its Turnstile challenge.
+- Added a semantic browser-only dashboard with progress, fixed fault states,
+  confidence, structural evidence links, critique resolutions, and neutral
+  source-reference anchors. React text rendering is used exclusively; model
+  HTML is neither accepted nor interpreted. The view has no download, report,
+  result route, persistence, chat, email, BYOK, upload fallback, or Phase 2
+  output behavior.
+- Desktop Edge and Chrome passed keyboard/semantic success and fault proofs,
+  escaped-text checks, and zero instrumented storage writes. All 105 root and
+  45 frontend regressions passed, together with TypeScript, strict lint,
+  architecture lint, Doctor, two Worker dry-runs, static export, and zero-
+  vulnerability audits. Public/trusted Worker uploads were 741.65/764.76 KiB
+  (114.98/119.57 KiB gzip). Lazy local-engine loading reduced initial
+  JavaScript from the failing 321,128-byte measurement to 179,261 gzip bytes,
+  below the 307,200-byte bound. No dependency, production mutation, paid path,
+  persistence, new application route, or architecture drift was introduced.
