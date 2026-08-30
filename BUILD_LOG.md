@@ -12,7 +12,7 @@ historical work.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 1** on `phase/1-core-mission`.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
-- Phase 1 status: **IN PROGRESS — TASK 1.10 PASSED**.
+- Phase 1 status: **IN PROGRESS — TASK 1.11 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Architecture execution-hardening EDR 37: **APPROVED**.
@@ -781,3 +781,26 @@ historical work.
   static export, and the 175,333-byte gzip initial-JavaScript gate passed.
   No translation, multilingual model, persistence, paid path, service, secret,
   production resource, or document-data network route was added.
+
+### 35. Phase 1 Task 1.11 — Redaction Worker
+
+- Task 1.11: **PASSED** on 2026-08-30. Added pinned offline Compromise
+  14.16.0 behind structured PII rules and local context rules in a separate
+  disposable module Worker. Exact/containing higher-priority spans suppress
+  nested NER spans; stable typed ASCII placeholders are capped at 10,000 and
+  64 characters.
+- Strict local request/result validation preserves neutral source references
+  and canonical source/text bounds. The PII mapping is absent from output,
+  cleared on every core exit, and destroyed with Worker termination. Invalid
+  input/output, startup, crash, allocation/limit, or the fixed 10-second
+  deadline fails to privacy Safe Mode with zero retry and forbids later work.
+- Real Edge and Chrome proofs replaced eight structured/context/NER entities,
+  exposed no mapping, made zero external requests and storage writes, rejected
+  an injected crash, and stopped injected loops at 10,005 and 10,012 ms. The
+  complete lazy Redaction Worker bundle is 654,436 bytes, below 3 MiB.
+- Eight focused local tests, the two-browser proof, 58 root tests, 41 frontend
+  tests, TypeScript, strict lint, architecture lint, Doctor, both npm audits
+  with zero vulnerabilities, 180-package license checks, both Worker dry-runs,
+  static export, and the 175,333-byte gzip initial-JavaScript gate passed. No
+  server redaction, mapping egress, rehydration, persistence, paid path,
+  service, secret, or document-data network route was added.

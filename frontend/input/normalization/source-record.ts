@@ -113,6 +113,28 @@ function cellRank(value: unknown): readonly [number, number] | undefined {
   return [row, column];
 }
 
+export function isSourceReference(value: unknown): value is SourceReference {
+  if (!isRecord(value) || typeof value.kind !== "string") return false;
+  if (value.kind === "pdf_page") return exactFields(value, ["kind", "page"]) && positive(value.page);
+  if (value.kind === "docx_paragraph") {
+    return exactFields(value, ["kind", "paragraph"]) && positive(value.paragraph);
+  }
+  if (value.kind === "docx_table_cell") {
+    return exactFields(value, ["kind", "table", "row", "column"])
+      && positive(value.table) && positive(value.row) && positive(value.column);
+  }
+  if (value.kind === "pptx_slide") return exactFields(value, ["kind", "slide"]) && positive(value.slide);
+  if (value.kind === "xlsx_cell") {
+    return exactFields(value, ["kind", "sheet", "cell"]) && positive(value.sheet)
+      && cellRank(value.cell) !== undefined;
+  }
+  if (value.kind === "csv_field") {
+    return exactFields(value, ["kind", "row", "column"]) && positive(value.row) && positive(value.column);
+  }
+  return value.kind === "txt_lines" && exactFields(value, ["kind", "line_start", "line_end"])
+    && positive(value.line_start) && positive(value.line_end) && value.line_end >= value.line_start;
+}
+
 function tupleAfter(current: readonly number[], previous: readonly number[]): boolean {
   for (let index = 0; index < current.length; index += 1) {
     if (current[index] !== previous[index]) return current[index] > previous[index];
