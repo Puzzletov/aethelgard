@@ -79,6 +79,7 @@ export async function callAiProvider(
   value: unknown,
   apiKey: string,
   fetcher: typeof fetch = fetch,
+  wallSignal?: AbortSignal,
 ): Promise<AiTransportResult> {
   const request = parseAiTransportRequest(value);
   if (request === undefined || apiKey.length === 0) {
@@ -87,11 +88,14 @@ export async function callAiProvider(
   const body = JSON.stringify(providerBody(request));
   if (new TextEncoder().encode(body).byteLength > AI_REQUEST_MAX_BYTES) return failure(request.provider, "too_large");
   try {
+    const attemptSignal = AbortSignal.timeout(AI_TIMEOUT_MS);
+    const signal = wallSignal === undefined ? attemptSignal
+      : AbortSignal.any([attemptSignal, wallSignal]);
     const response = await fetcher(ENDPOINTS[request.provider], {
       method: "POST",
       headers: { authorization: `Bearer ${apiKey}`, "content-type": "application/json" },
       body,
-      signal: AbortSignal.timeout(AI_TIMEOUT_MS),
+      signal,
     });
     if (!response.ok) return httpFailure(request, response.status);
     if (response.headers.get("content-type")?.split(";", 1)[0] !== "application/json") {

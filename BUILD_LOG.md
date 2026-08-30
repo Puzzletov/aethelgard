@@ -12,7 +12,7 @@ historical work.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 1** on `phase/1-core-mission`.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
-- Phase 1 status: **IN PROGRESS — TASK 1.18 PASSED**.
+- Phase 1 status: **IN PROGRESS — TASK 1.19 PASSED**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Architecture execution-hardening EDR 37: **APPROVED**.
@@ -940,3 +940,23 @@ historical work.
   architecture lint, Doctor, both Worker dry-runs, and static export. No AI
   call, unchecked intermediate, dependency, persistence, route, paid path,
   production mutation, report generation, or Phase 2 work occurred.
+
+### 43. Phase 1 Task 1.19 — bounded provider failover
+
+- Task 1.19: **PASSED** on 2026-08-30. Added a request-local three-stage
+  orchestrator with explicit Groq-then-OpenRouter-Free execution, at most two
+  provider attempts per stage and six overall, 30-second transport attempts,
+  and one 180-second wall cancellation signal. Normal success makes exactly
+  three calls and returns only the fully validated Oracle.
+- Any transport, timeout, provider-envelope, JSON, or stage-schema failure
+  permanently retires that provider for the remainder of the request. Groq is
+  never resurrected after fallback; a terminal OpenRouter failure or wall stop
+  returns a fixed analysis Safe Mode and forbids later stages, partial Oracle,
+  PDF, and signing. Turnstile tokens and provider keys never enter prompts.
+- Seven focused permutation/cancellation tests plus affected transport and
+  Oracle regressions passed (18 tests total), together with TypeScript, strict
+  lint, architecture lint, Doctor, both Worker dry-runs, and static export.
+  Tests proved three normal calls, no more than six under every exercised
+  failure permutation, hard invalid-schema failover, terminal-stage stopping,
+  no persistence/logging/retry loop, and no paid provider. No live AI call,
+  dependency, production mutation, route, persistence, or Phase 2 work occurred.

@@ -38,9 +38,25 @@ export const aiTransportResultSchema = z.discriminatedUnion("ok", [
 export type AiTransportRequest = z.output<typeof aiTransportRequestSchema>;
 export type AiTransportResult = z.output<typeof aiTransportResultSchema>;
 
+const providerEnvelopeSchema = z.object({
+  choices: z.tuple([z.object({
+    message: z.object({ content: z.string().min(1) }).passthrough(),
+  }).passthrough()]),
+}).passthrough();
+
 export function parseAiTransportRequest(value: unknown): AiTransportRequest | undefined {
   const parsed = aiTransportRequestSchema.safeParse(value);
   if (!parsed.success) return undefined;
   const bytes = new TextEncoder().encode(JSON.stringify(parsed.data)).byteLength;
   return bytes <= AI_REQUEST_MAX_BYTES ? parsed.data : undefined;
+}
+
+export function extractAiOutput(value: unknown): unknown | undefined {
+  const envelope = providerEnvelopeSchema.safeParse(value);
+  if (!envelope.success) return undefined;
+  try {
+    return JSON.parse(envelope.data.choices[0].message.content);
+  } catch {
+    return undefined;
+  }
 }
