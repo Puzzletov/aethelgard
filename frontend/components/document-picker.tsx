@@ -21,6 +21,9 @@ const STAGE_TEXT: Readonly<Record<MissionStage, string>> = Object.freeze({
 const VERIFICATION_FAILURE = Object.freeze({ schema_version: "1", ok: false,
   category: "verification", code: "turnstile_required", message: "Complete a fresh verification challenge.",
   retry: "fresh_turnstile" } as const satisfies SafeMode);
+const CLIENT_FAILURE = Object.freeze({ schema_version: "1", ok: false,
+  category: "client_resource", code: "client_runtime_failed",
+  message: "This browser could not start local analysis safely.", retry: "fresh_document" } as const satisfies SafeMode);
 
 function selectionText(result: BrowserInputResult): string {
   if (!result.ok) return result.message;
@@ -111,6 +114,8 @@ export function DocumentPicker() {
       const { runBrowserMission } = await import("../analysis/browser-mission");
       setOutcome(await runBrowserMission(state.result.document, focus, outputs, token,
         (stage) => setProgress(STAGE_TEXT[stage])));
+    } catch {
+      setOutcome({ result: CLIENT_FAILURE, sources: [] });
     } finally {
       controller.current?.resetAfterAttempt(); setVerified(false); setRunning(false);
     }

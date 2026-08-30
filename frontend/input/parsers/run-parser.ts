@@ -16,18 +16,25 @@ function parseKind(format: DocumentFormat) {
   return `parse_${format}` as const;
 }
 
+function wipe(buffer: ArrayBuffer): void {
+  try { new Uint8Array(buffer).fill(0); } catch { /* A transferred buffer is already inaccessible. */ }
+}
+
 function executeParser(
   document: SelectedDocument, buffer: ArrayBuffer, createWorker: WorkerFactory,
 ): Promise<ParserOperationResult> {
   return new Promise((resolve) => {
     let worker: Worker;
-    try { worker = createWorker(); } catch { resolve({ ok: false, reason: "allocation" }); return; }
+    try { worker = createWorker(); } catch {
+      wipe(buffer); resolve({ ok: false, reason: "allocation" }); return;
+    }
     let settled = false;
     const finish = (result: ParserOperationResult): void => {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
       worker.terminate();
+      wipe(buffer);
       resolve(Object.freeze(result));
     };
     const timer = setTimeout(() => finish({ ok: false, reason: "timeout" }), PARSER_TIMEOUT_MS);
@@ -44,7 +51,7 @@ export async function runParserWorker(
 ): Promise<ParserOperationResult> {
   let buffer: ArrayBuffer;
   try { buffer = await document.file.arrayBuffer(); } catch { return { ok: false, reason: "allocation" }; }
-  if (buffer.byteLength !== document.byteLength) return { ok: false, reason: "invalid" };
+  if (buffer.byteLength !== document.byteLength) { wipe(buffer); return { ok: false, reason: "invalid" }; }
   try { return await executeParser(document, buffer, createWorker); }
   catch { return { ok: false, reason: "crash" }; }
 }

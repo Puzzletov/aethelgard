@@ -12,7 +12,7 @@ historical work.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation phase: **PHASE 1** on `phase/1-core-mission`.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
-- Phase 1 status: **IN PROGRESS — TASK 1.21 PASSED**.
+- Phase 1 status: **IN PROGRESS — TASK 1.22 PASSED; EXIT GATE IN PROGRESS**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Architecture execution-hardening EDR 37: **APPROVED**.
@@ -1004,3 +1004,28 @@ historical work.
   JavaScript from the failing 321,128-byte measurement to 179,261 gzip bytes,
   below the 307,200-byte bound. No dependency, production mutation, paid path,
   persistence, new application route, or architecture drift was introduced.
+
+### 46. Phase 1 Task 1.22 — parser/redactor/AI fault reflexes
+
+- Task 1.22: **PASSED** on 2026-08-31. Parser crash, timeout, and allocation
+  faults receive exactly one new parser-controller invocation and therefore
+  one fresh disposable module Worker. A successful second attempt continues;
+  a second fault returns fixed labelled client-resource Safe Mode. Invalid
+  documents do not use the resource retry. Every parser completion terminates
+  its Worker and wipes any locally accessible source buffer.
+- Redaction has zero retry: error, timeout, invalid result, or thrown failure
+  terminates locally in fixed privacy Safe Mode with no network or AI work.
+  Provider failure remains solely under the already-passing bounded Task 1.19
+  Groq-to-OpenRouter-Free orchestrator: at most six attempts, no provider
+  resurrection, no partial output, and the 180-second wall signal forbids later
+  stages. Every UI attempt consumes and resets Turnstile, including local
+  runtime-load failure.
+- The injected fault matrix passed all recovery counts, fresh-parser success,
+  terminal labels, cleanup, zero forbidden downstream calls, and fixed-message
+  checks. All 105 root and 54 frontend Phase 0/1 regressions passed, together
+  with TypeScript, strict lint, architecture lint, Doctor, both Worker dry-runs,
+  and static export. Initial JavaScript was 179,328 gzip bytes against the
+  307,200-byte bound. Dependencies were unchanged from Task 1.21's zero-
+  vulnerability audit. No extra retry, persistence, dependency, production
+  mutation, paid path, partial output, Phase 2 behavior, or architecture drift
+  was introduced.

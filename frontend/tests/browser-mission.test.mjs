@@ -54,7 +54,7 @@ test("local document and privacy failures forbid the network", async () => {
   const common = { redact: async () => { throw new Error("unreached"); },
     send: async () => { sends += 1; return oracle(); } };
   const invalid = await runBrowserMission(document, "full", ["pdf"], "token", () => undefined,
-    { ...common, parseDocument: async () => ({ ok: false, reason: "crash" }) });
+    { ...common, parseDocument: async () => ({ ok: false, reason: "invalid" }) });
   assert.equal(invalid.result.category, "document");
   const privacy = await runBrowserMission(document, "full", ["pdf"], "token", () => undefined, {
     parseDocument: async () => parsed,
@@ -64,4 +64,70 @@ test("local document and privacy failures forbid the network", async () => {
   });
   assert.equal(privacy.result.category, "privacy");
   assert.equal(sends, 0);
+});
+
+for (const reason of ["crash", "timeout", "allocation"]) {
+  test(`one fresh parser Worker recovers after ${reason}`, async () => {
+    let attempts = 0;
+    let sends = 0;
+    const result = await runBrowserMission(document, "full", ["pdf"], "token", () => undefined, {
+      parseDocument: async () => (++attempts === 1 ? { ok: false, reason } : parsed),
+      redact: async ({ sources }) => ({ schema_version: "1", sources,
+        placeholder_count: 0, must_redact_leaks: 0 }),
+      send: async () => { sends += 1; return oracle(); },
+    });
+    assert.equal(result.result.executive_summary, "A careful result.");
+    assert.equal(attempts, 2);
+    assert.equal(sends, 1);
+  });
+}
+
+for (const reason of ["crash", "timeout", "allocation"]) {
+  test(`a second ${reason} stops in labelled client-resource Safe Mode`, async () => {
+    let attempts = 0;
+    let redactions = 0;
+    let sends = 0;
+    const result = await runBrowserMission(document, "full", ["pdf"], "token", () => undefined, {
+      parseDocument: async () => { attempts += 1; return { ok: false, reason }; },
+      redact: async () => { redactions += 1; throw new Error("forbidden"); },
+      send: async () => { sends += 1; return oracle(); },
+    });
+    assert.equal(result.result.category, "client_resource");
+    assert.equal(result.result.code, "parser_resource_failed");
+    assert.equal(attempts, 2);
+    assert.equal(redactions, 0);
+    assert.equal(sends, 0);
+  });
+}
+
+test("invalid documents do not consume the resource retry", async () => {
+  let attempts = 0;
+  const result = await runBrowserMission(document, "full", ["pdf"], "token", () => undefined, {
+    parseDocument: async () => { attempts += 1; return { ok: false, reason: "invalid" }; },
+    redact: async () => { throw new Error("forbidden"); }, send: async () => oracle(),
+  });
+  assert.equal(result.result.category, "document");
+  assert.equal(attempts, 1);
+});
+
+test("redaction and analysis exceptions have zero local retry and fixed Safe Mode", async () => {
+  let redactions = 0;
+  let sends = 0;
+  const privacy = await runBrowserMission(document, "full", ["pdf"], "token", () => undefined, {
+    parseDocument: async () => parsed,
+    redact: async () => { redactions += 1; throw new Error("private value"); },
+    send: async () => { sends += 1; return oracle(); },
+  });
+  assert.equal(privacy.result.category, "privacy");
+  assert.equal(redactions, 1);
+  assert.equal(sends, 0);
+  const analysis = await runBrowserMission(document, "full", ["pdf"], "token", () => undefined, {
+    parseDocument: async () => parsed,
+    redact: async ({ sources }) => ({ schema_version: "1", sources,
+      placeholder_count: 0, must_redact_leaks: 0 }),
+    send: async () => { sends += 1; throw new Error("provider secret"); },
+  });
+  assert.equal(analysis.result.category, "analysis");
+  assert.equal(analysis.result.message, "Analysis is unavailable. Try again later.");
+  assert.equal(sends, 1);
 });

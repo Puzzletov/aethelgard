@@ -33,8 +33,11 @@ const LANGUAGE_FAILURE = Object.freeze({ schema_version: "1", ok: false, categor
   code: "unsupported_language", message: "Use a clearly English document.", retry: "fresh_document" } as const);
 const PRIVACY_FAILURE = Object.freeze({ schema_version: "1", ok: false, category: "privacy",
   code: "redaction_failed", message: "Private information could not be removed safely.", retry: "fresh_document" } as const);
-const SERVICE_FAILURE = Object.freeze({ schema_version: "1", ok: false, category: "service",
-  code: "service_unavailable", message: "Analysis is unavailable. Try again later.", retry: "later" } as const);
+const PARSER_RESOURCE_FAILURE = Object.freeze({ schema_version: "1", ok: false, category: "client_resource",
+  code: "parser_resource_failed", message: "This browser could not process the document safely.",
+  retry: "fresh_document" } as const);
+const ANALYSIS_FAILURE = Object.freeze({ schema_version: "1", ok: false, category: "analysis",
+  code: "analysis_unavailable", message: "Analysis is unavailable. Try again later.", retry: "later" } as const);
 
 async function defaultSend(
   body: Uint8Array, sources: Parameters<typeof parseDashboardOracle>[1],
@@ -43,14 +46,14 @@ async function defaultSend(
     const response = await fetch("/analyze", { method: "POST", headers: { "content-type": "application/json" },
       body: new TextDecoder().decode(body), signal: AbortSignal.timeout(ANALYSIS_WALL_MS) });
     const declared = Number(response.headers.get("content-length") ?? "0");
-    if (!response.ok || declared > MAX_ANALYSIS_RESPONSE_BYTES) return SERVICE_FAILURE;
+    if (!response.ok || declared > MAX_ANALYSIS_RESPONSE_BYTES) return ANALYSIS_FAILURE;
     const bytes = new Uint8Array(await response.arrayBuffer());
-    if (bytes.byteLength > MAX_ANALYSIS_RESPONSE_BYTES) return SERVICE_FAILURE;
+    if (bytes.byteLength > MAX_ANALYSIS_RESPONSE_BYTES) return ANALYSIS_FAILURE;
     const value: unknown = JSON.parse(new TextDecoder().decode(bytes));
     const safe = safeModeSchema.safeParse(value);
     if (safe.success) return safe.data;
-    return parseDashboardOracle(value, sources) ?? SERVICE_FAILURE;
-  } catch { return SERVICE_FAILURE; }
+    return parseDashboardOracle(value, sources) ?? ANALYSIS_FAILURE;
+  } catch { return ANALYSIS_FAILURE; }
 }
 
 const DEFAULT_DEPENDENCIES: MissionDependencies = Object.freeze({
@@ -69,24 +72,39 @@ function isLocalSources(value: ReturnType<typeof localDocument>): value is reado
   return Array.isArray(value);
 }
 
+async function parseWithRecovery(
+  document: SelectedDocument, parseDocument: MissionDependencies["parseDocument"],
+): Promise<ParserOperationResult> {
+  let first: ParserOperationResult;
+  try { first = await parseDocument(document); } catch { first = { ok: false, reason: "crash" }; }
+  if (first.ok || first.reason === "invalid") return first;
+  try { return await parseDocument(document); } catch { return { ok: false, reason: "crash" }; }
+}
+
 export async function runBrowserMission(
   document: SelectedDocument, focus: Focus, outputs: readonly Output[], token: string,
   onStage: (stage: MissionStage) => void, dependencies: MissionDependencies = DEFAULT_DEPENDENCIES,
 ): Promise<MissionOutcome> {
   onStage("local_parse");
-  const local = localDocument(await dependencies.parseDocument(document));
+  const parsed = await parseWithRecovery(document, dependencies.parseDocument);
+  if (!parsed.ok && parsed.reason !== "invalid") return { result: PARSER_RESOURCE_FAILURE, sources: [] };
+  const local = localDocument(parsed);
   if (!isLocalSources(local)) return { result: local, sources: [] };
   onStage("language");
   if (!evaluateEnglishLanguage(local).accepted) return { result: LANGUAGE_FAILURE, sources: [] };
   onStage("redaction");
-  const redaction = await dependencies.redact({ schema_version: "1", sources: local });
+  let redaction: RedactionOperationResult;
+  try { redaction = await dependencies.redact({ schema_version: "1", sources: local }); }
+  catch { return { result: PRIVACY_FAILURE, sources: [] }; }
   if ("ok" in redaction) return { result: PRIVACY_FAILURE, sources: [] };
   onStage("verification");
   let body: Uint8Array;
   try { body = serializeAnalyzeRequest({ redaction_result: redaction, turnstile_token: token,
     focus, requested_outputs: [...outputs] }); } catch { return { result: PRIVACY_FAILURE, sources: [] }; }
   onStage("analysis");
-  const result = await dependencies.send(body, redaction.sources);
+  let result: MissionResult;
+  try { result = await dependencies.send(body, redaction.sources); }
+  catch { result = ANALYSIS_FAILURE; }
   onStage("complete");
   return { result, sources: redaction.sources };
 }
