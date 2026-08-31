@@ -17,9 +17,9 @@
     "typecheck": "tsc --noEmit && npm --prefix frontend run typecheck"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "5.20260825.1",
-    "typescript": "5.9.3",
-    "wrangler": "4.126.0"
+    "@cloudflare/workers-types": "5.20260827.1",
+    "typescript": "7.0.2",
+    "wrangler": "4.127.0"
   },
   "dependencies": {
     "zod": "4.5.1"
