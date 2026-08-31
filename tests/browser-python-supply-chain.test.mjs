@@ -4,6 +4,8 @@ import { createHash } from "node:crypto";
 import { readFile, readdir, stat } from "node:fs/promises";
 import test from "node:test";
 
+import { requiredProofBrowserNames } from "../scripts/browser-parser-proof.mjs";
+
 const root = new URL("../", import.meta.url);
 const frontend = new URL("../frontend/", import.meta.url);
 const maxPagesFileBytes = 25 * 1024 * 1024;
@@ -184,7 +186,7 @@ test("Python standard-library CSV and TXT parsers preserve structural references
     blank_txt_line_preserved: true,
     malformed_rejected: true,
     boundary_rejected: true,
-    browsers: ["edge", "chrome"],
+    browsers: requiredProofBrowserNames(),
     external_network_requests: 0,
   });
   assert.ok(report.elapsed_ms > 0 && report.elapsed_ms <= 30_000);

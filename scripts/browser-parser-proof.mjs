@@ -50,6 +50,10 @@ export function supportedBrowserExecutables() {
   return Object.freeze([...unique].map(([name, executable]) => Object.freeze({ name, executable })));
 }
 
+export function requiredProofBrowserNames() {
+  return process.platform === "win32" ? ["edge", "chrome"] : ["chrome"];
+}
+
 function browserPath() {
   return supportedBrowserExecutables()[0].executable;
 }
@@ -115,7 +119,7 @@ const delay = (milliseconds) => new Promise((resolve) => setTimeout(resolve, mil
 
 async function devToolsPort(profile, browser) {
   const file = path.join(profile, "DevToolsActivePort");
-  for (let attempt = 0; attempt < 100; attempt += 1) {
+  for (let attempt = 0; attempt < 300; attempt += 1) {
     if (browser.startupError() !== undefined) throw browser.startupError();
     if (browser.child.exitCode !== null) throw new Error(`Browser exited before the proof started (${browser.child.exitCode}).`);
     try {

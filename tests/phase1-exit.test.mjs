@@ -3,6 +3,8 @@ import { execFile } from "node:child_process";
 import test from "node:test";
 import { promisify } from "node:util";
 
+import { requiredProofBrowserNames } from "../scripts/browser-parser-proof.mjs";
+
 const execute = promisify(execFile);
 
 test("real browser document reaches a valid Oracle in exactly three calls", { timeout: 90_000 }, async () => {
@@ -11,7 +13,8 @@ test("real browser document reaches a valid Oracle in exactly three calls", { ti
   });
   const proof = JSON.parse(stdout);
   assert.equal(proof.status, "ok");
-  assert.deepEqual(proof.results.map((result) => result.browser).sort(), ["chrome", "edge"]);
+  assert.deepEqual(proof.results.map((result) => result.browser).sort(),
+    [...requiredProofBrowserNames()].sort());
   for (const result of proof.results) {
     assert.equal(result.valid_oracle, true);
     assert.equal(result.analyze_requests, 1);

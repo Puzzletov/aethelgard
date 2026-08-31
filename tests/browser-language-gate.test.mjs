@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
 
+import { requiredProofBrowserNames } from "../scripts/browser-parser-proof.mjs";
+
 test("the pinned local language gate passes its frozen corpus in Chrome and Edge", () => {
   const result = spawnSync(process.execPath, ["scripts/verify-language-gate.mjs"], {
     cwd: new URL("..", import.meta.url), encoding: "utf8", timeout: 60_000, maxBuffer: 1024 * 1024,
@@ -10,7 +12,7 @@ test("the pinned local language gate passes its frozen corpus in Chrome and Edge
   assert.equal(result.stderr, "");
   const report = JSON.parse(result.stdout);
   assert.equal(report.status, "ok");
-  assert.deepEqual(report.results.map((item) => item.browser), ["edge", "chrome"]);
+  assert.deepEqual(report.results.map((item) => item.browser), requiredProofBrowserNames());
   for (const item of report.results) {
     assert.equal(item.status, "ok");
     assert.ok(item.english_margin >= 2_000);

@@ -1063,10 +1063,12 @@ historical work.
   expression or production behavior changed.
 - GitHub's Ubuntu runner could not start its headless browser because the
   shared proof launcher lacked Linux CI container flags. The one launcher now
-  adds `--no-sandbox` and `--disable-dev-shm-usage` only when `CI=true`.
-  Local Chrome/Edge keeps its existing sandbox behavior. The redactor tests,
-  the Chrome/Edge dashboard proof under the CI flag, strict lint, and diff
-  checks passed locally.
+  adds `--no-sandbox` and `--disable-dev-shm-usage` only when `CI=true`, and
+  allows a bounded 30-second cold-start window. Proof assertions require both
+  Chrome and Edge on the Windows release host and Chrome on GitHub's Linux
+  host, where Edge is not installed. Local CI-mode proofs passed for the
+  language gate, all six parsers, redaction, the network boundary, dashboard,
+  and complete Phase 1 journey; strict lint and diff checks also passed.
 - The unrelated Cloudflare Workers Builds status is the previously documented
   non-production branch deployment attempt, not the required GitHub-native CI
   job. Architecture 2.1's Durable Object has no Worker preview URL, production

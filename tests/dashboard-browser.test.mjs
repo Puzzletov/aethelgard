@@ -3,6 +3,8 @@ import { execFile } from "node:child_process";
 import test from "node:test";
 import { promisify } from "node:util";
 
+import { requiredProofBrowserNames } from "../scripts/browser-parser-proof.mjs";
+
 const execute = promisify(execFile);
 
 test("dashboard success and Safe Mode states pass supported Chrome and Edge", { timeout: 90_000 }, async () => {
@@ -11,7 +13,8 @@ test("dashboard success and Safe Mode states pass supported Chrome and Edge", { 
   });
   const proof = JSON.parse(stdout);
   assert.equal(proof.status, "ok");
-  assert.deepEqual(proof.results.map((result) => result.browser).sort(), ["chrome", "edge"]);
+  assert.deepEqual(proof.results.map((result) => result.browser).sort(),
+    [...requiredProofBrowserNames()].sort());
   for (const result of proof.results) {
     assert.equal(result.semantic_success, true);
     assert.equal(result.semantic_fault, true);
