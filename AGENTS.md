@@ -22,9 +22,7 @@ runtime beyond proving the failure is runtime-specific.
 ## Current authority
 
 - Phase 0 is complete and merged.
-- Phase 1 is owner-authorized on `phase/1-core-mission`, one task at a time.
-- Tasks 1.1–1.6 are passed; Task 1.7 is the current implementation task after
-  the approved execution-hardening revision is committed.
+- Phase 1 Tasks 1.1–1.22 and its exit gate are complete and merged in PR #11.
 - Phase 2 and later implementation are not authorized.
 
 ## Task protocol

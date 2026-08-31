@@ -10,9 +10,10 @@ historical work.
   `56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2`.
 - Phase -1: **CLOSED**.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
-- Current implementation phase: **PHASE 1** on `phase/1-core-mission`.
+- Current implementation position: **PHASE 1 COMPLETE**; Phase 2 requires
+  explicit owner authorization.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
-- Phase 1 status: **PASSED — AWAITING OWNER REVIEW/MERGE**.
+- Phase 1 status: **PASSED — MERGED** in PR #11 on 2026-08-31.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Architecture execution-hardening EDR 37: **APPROVED**.
@@ -1073,3 +1074,23 @@ historical work.
   non-production branch deployment attempt, not the required GitHub-native CI
   job. Architecture 2.1's Durable Object has no Worker preview URL, production
   remains frozen, and no production deployment was attempted as remediation.
+
+### 49. Canonical repository reconciliation and Next.js security patch
+
+- On 2026-08-31, PR #11 was merged to protected `main` using GitHub's signed
+  squash path because signed-commit protection correctly rejected an unsigned
+  rebase merge. All required GitHub CI and security checks passed and the
+  resolved CodeQL conversation had an underlying code fix.
+- Obsolete or over-broad Dependabot PRs #4, #5, #6, #10 and #12 were closed
+  with their remote branches removed. They were respectively superseded,
+  based on obsolete dependency state, or bundled unrelated major TypeScript 7
+  modernization.
+- Dependabot closed conflicting PR #8 after `main` changed. Its exact required
+  change was preserved on one signed replacement maintenance branch: active
+  Next.js was updated only from 16.3.2 to security release 16.3.3 with a
+  normally regenerated lockfile. The complete required CI gate passed: Doctor,
+  licenses, both zero-vulnerability audits, typecheck, strict lint, 106 root
+  tests, 54 frontend tests, both Worker dry-runs, and the static frontend build.
+- Cloudflare non-production branch builds are disabled while production stays
+  on `main`; no repository workaround, production deployment, architecture
+  change, test weakening, or Phase 2 implementation was introduced.
