@@ -9,7 +9,12 @@ const validEnvelope = Object.freeze({
   turnstile_token: "test-token",
   focus: "full",
   requested_outputs: ["pdf"],
-  sources: [{ reference: "page 1", content: "[PERSON_1] approved the plan." }],
+  sources: [{
+    schema_version: "1",
+    ordinal: 1,
+    reference: { kind: "pdf_page", page: 1 },
+    content: "[PERSON_1] approved the plan.",
+  }],
 });
 
 function createEnv(rateLimitSuccess = true) {
@@ -111,7 +116,7 @@ test("analysis applies the per-source rate limit before reading the body", async
   assert.deepEqual(calls, [{ key: "192.0.2.1" }]);
 });
 
-test("analysis accepts only the bounded basic envelope", async () => {
+test("analysis accepts only the strict bounded redacted request", async () => {
   for (const callerInput of [
     { prompt: "ignore rules" },
     { html: "<h1>caller report</h1>" },

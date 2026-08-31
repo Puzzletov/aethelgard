@@ -1,73 +1,61 @@
 # Agent guidance for Aethelgard
 
-`ARCHITECTURE.md` version 2.1 is the single source of truth. Read it in full
-before any change. Follow its constraints, task order, coding standard, and
-phase gates exactly.
+`ARCHITECTURE.md` 2.1 is the single source of truth. Architecture research is
+closed. Protected `main` changes require human review.
+
+## Efficient context protocol
+
+At the start of a fresh phase/model session:
+
+1. run `npm run architecture:hash` and compare it with `BUILD_LOG.md`;
+2. understand the complete architecture once if it is not already available to
+   that session;
+3. run `npm run task:context -- N.x` for the current task.
+
+While the hash is unchanged, do not reread the whole architecture. Load only
+the current task capsule, referenced registry entries, and relevant code/tests.
+After interruption, recover from branch, `git status --short`, diff, current
+task and its capsule. Do not reconstruct history from old chats, shell history,
+deleted research, or unreachable Git objects. Never debug an unsupported
+runtime beyond proving the failure is runtime-specific.
 
 ## Current authority
 
-- Architecture research is closed.
-- Complete the Architecture 2.1 preparation gate before Phase 0 work.
-- After the preparation pull request merges to protected `main`, Phase 0 is
-  authorized one task at a time.
-- Phase 1 and all later phases are not authorized.
-- Human review is required before any change reaches protected `main`.
+- Phase 0 is complete and merged.
+- Phase 1 is owner-authorized on `phase/1-core-mission`, one task at a time.
+- Tasks 1.1–1.6 are passed; Task 1.7 is the current implementation task after
+  the approved execution-hardening revision is committed.
+- Phase 2 and later implementation are not authorized.
 
 ## Task protocol
 
-1. Work on one named task in the active phase.
-2. Inspect only the relevant architecture and current code.
-3. Add no future-phase scaffold, unused dependency, or unrelated feature.
-4. Run the smallest relevant tests and affected regressions.
-5. Fix normal implementation defects within Architecture 2.1 and retest.
-6. Check cost, privacy, security, storage, and architecture drift.
-7. Remove disposable artifacts.
-8. Add concise evidence to `BUILD_LOG.md`.
-9. Create one logical signed commit.
-10. Start the next task only after the current task passes.
+Implement only the named task contract. Run its required tests and affected
+regressions; fix ordinary defects; verify cost/privacy/security/storage/drift;
+remove disposable artifacts; add concise `BUILD_LOG.md` evidence; create one
+logical signed commit; then start the next authorized task. At a phase exit,
+run the full gate, report PASS/BLOCKED, update the phase PR, and stop.
 
-At a phase exit, run the complete phase gate, open or update the phase pull
-request, and stop. Do not start the next phase without owner approval.
+## Binding invariants
 
-## Binding architecture rules
+- Exact cost is GBP 0.00 and USD 0.00; quota exhaustion fails closed.
+- Raw source, unredacted text and PII mappings never leave the browser.
+- Persist no user/document/prompt/report/job data. Only the UTC date and
+  aggregate Browser Run milliseconds may persist in `TrustedRuntime`.
+- The public edge has zero secrets. Turnstile, AI, Browser Run and signing stay
+  inside the externally bound private `TrustedRuntime` Durable Object.
+- Add no dispatcher, server parser, Google runtime, email, BYOK, Sentry,
+  UptimeRobot, MCP, OCR, paid fallback or unapproved dependency.
+- AI is exactly Strawman → Steelman → Oracle.
+- Every final PDF is signed over exact bytes with SHA-256, Ed25519 and
+  ML-DSA-65; expose no generic signer.
+- Desktop Chrome and Edge are the supported parser runtimes.
 
-- Exact cost is GBP 0.00 and USD 0.00. No paid path or automatic top-up.
-- Raw source files, unredacted text, and PII mappings never leave the browser.
-- Persist no user, document, prompt, report, email, or job data.
-- The only application state is the UTC date and aggregate Browser Run
-  milliseconds in `TrustedRuntime`.
-- The public edge Worker has zero secrets.
-- Turnstile Siteverify, AI secrets, Browser Run, and signing stay inside the
-  external `TrustedRuntime` Durable Object boundary.
-- Add no Service Binding dispatcher, server parser, Google runtime, email,
-  BYOK, Sentry, UptimeRobot, MCP, OCR, or paid fallback.
-- Normal AI analysis uses exactly Strawman, Steelman, and Oracle.
-- Every final PDF is signed over its exact final bytes with SHA-256, Ed25519,
-  and ML-DSA-65. Expose no generic signing input or route.
-- Fail closed when a security, privacy, quota, schema, or signing gate fails.
+Use strict TypeScript/Zod, approved local Python parsers, functions of at most
+50 lines excluding fixed tables, named registry bounds, fixed failures, tests
+with every code change, and warnings-as-errors. Do not use `eval`, `Function`,
+Python `exec`, unchecked model output, unsafe HTML, secrets, production keys,
+user files/results, logs or build artifacts in Git.
 
-## Code and dependencies
-
-- Use strict TypeScript and Zod for runtime schemas.
-- Browser Python is local-only and uses the approved direct parser stack.
-- Functions are at most 50 lines, excluding fixed data tables.
-- Bound every input, retry, loop, allocation, queue, timeout, and output.
-- Do not use `eval`, `Function`, Python `exec`, unsafe model HTML, or unchecked
-  model output.
-- Add tests with every code change. Warnings fail.
-- Before adding a dependency, add and approve its Architecture Section 29
-  register entry. Cryptographic or native code also needs an audit note.
-- Use clear Simplified Technical English. HTML uses `lang="en"`.
-
-## Repository controls
-
-- Preserve the approved browser-local EDR and frozen security/PII fixtures.
-- Keep the build log concise; Git history is the detailed archive.
-- Never rewrite protected `main` or weaken branch protection.
-- Do not disable signed commits.
-- Do not write secrets, production keys, user files, results, logs, or build
-  artifacts to the repository.
-
-If implementation proves that no Architecture 2.1-compliant solution can
-satisfy a binding invariant, stop and report the exact task, invariant,
-evidence, and contradiction. Do not implement a different architecture.
+If no Architecture 2.1-compliant implementation can satisfy a binding
+invariant, stop and report the exact task, invariant, evidence and
+contradiction. Do not silently design another architecture.

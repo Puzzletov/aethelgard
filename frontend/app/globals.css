@@ -154,6 +154,92 @@ a:focus-visible {
   border-top: 1px solid var(--color-rule);
 }
 
+.document-intake {
+  padding-block: var(--space-section);
+  border-top: 1px solid var(--color-rule);
+}
+
+.document-intake h2 {
+  max-width: 12ch;
+  margin: var(--space-md) 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 4rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.document-control {
+  max-width: var(--measure-reading);
+}
+
+.document-control > p {
+  margin: 0 0 var(--space-xl);
+  color: var(--color-charcoal-soft);
+}
+
+.file-label,
+.clear-selection {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  border: 1px solid var(--color-charcoal);
+  background: transparent;
+  color: var(--color-charcoal);
+  cursor: pointer;
+  font: 600 0.78rem/1 var(--font-body);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.file-label {
+  padding-inline: var(--space-lg);
+  background: var(--color-charcoal);
+  color: var(--color-paper);
+}
+
+.clear-selection {
+  min-height: auto;
+  padding: var(--space-xs) 0;
+  border-width: 0 0 1px;
+}
+
+.file-label:focus-within,
+.clear-selection:focus-visible {
+  outline: 0.2rem solid var(--color-terracotta);
+  outline-offset: 0.25rem;
+}
+
+.file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.selection-row {
+  display: flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  margin-top: var(--space-lg);
+  border-top: 1px solid var(--color-rule);
+}
+
+.selection-status {
+  margin: 0;
+  color: var(--color-charcoal-soft);
+  font-size: 0.85rem;
+}
+
+.selection-error {
+  color: var(--color-terracotta-dark);
+}
+
 .section-grid {
   display: grid;
   grid-template-columns: minmax(10rem, 1fr) minmax(0, 3fr);

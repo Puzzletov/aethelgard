@@ -14,9 +14,11 @@
     "moduleResolution": "Bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
     "incremental": true,
     "esModuleInterop": true,
+    "types": ["node", "react", "react-dom", "@cloudflare/workers-types"],
     "plugins": [
       {
         "name": "next"
@@ -31,6 +33,7 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "out"
   ]
 }

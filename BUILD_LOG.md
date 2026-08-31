@@ -5,14 +5,18 @@ historical work.
 
 ## Current State
 
-- Architecture: **2.1 — APPROVED FOR BUILD**. Protected `main` receives this
-  authority when the preparation pull request is reviewed and merged.
+- Architecture: **2.1 — APPROVED FOR BUILD**, execution-hardened under EDR 37.
+- Authoritative exact Git-blob SHA-256:
+  `56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2`.
 - Phase -1: **CLOSED**.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
-- Current implementation phase: **PHASE 0** on `phase/0-foundation`.
-- Phase 0 status: **IN PROGRESS — TASK 0.10 PASSED**.
+- Current implementation phase: **PHASE 1** on `phase/1-core-mission`.
+- Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
+- Phase 1 status: **PASSED — AWAITING OWNER REVIEW/MERGE**.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
+- Architecture execution-hardening EDR 37: **APPROVED**.
+- Task 1.10 normalized-score correction EDR 38: **APPROVED**.
 - Frozen PII baseline: **APPROVED**.
 - Trusted PDF and hybrid-signing feasibility: **PASSED**.
 - External Durable Object direct binding: **PASSED**.
@@ -141,7 +145,7 @@ historical work.
 - Gate Task A3 build-log compaction: **PASSED** on 2026-08-28.
 - Gate Task A4 Architecture 2.1 promotion and EDR/agent alignment: **PASSED**
   on 2026-08-28.
-- Authoritative `ARCHITECTURE.md` SHA-256:
+- Historical initial Architecture 2.1 promotion SHA-256:
   `2798ded6dd80ac81d4e8d83fd8500c77dafdf2f9ba547d105d59cedc7c97c4d0`.
 - Gate Task A5 preparation verification: **PASSED** on 2026-08-28.
 - Architecture sections 0-52 and EDR decisions 1-36 are complete and ordered.
@@ -460,7 +464,7 @@ historical work.
 - Phase 0 exit gate: **PASSED** on 2026-08-29. Tasks 0.1 through 0.11 passed in
   order. No Phase 1 document parsing, redaction, NER, AI analysis, report
   generation, or user-facing workflow was implemented early.
-- The authoritative LF-normalized Architecture 2.1 SHA-256 remains
+- The historical initial Architecture 2.1 Git-blob SHA-256 was
   `2798ded6dd80ac81d4e8d83fd8500c77dafdf2f9ba547d105d59cedc7c97c4d0`.
   Repository hygiene, the Scandinavian design-token shell, named-route edge,
   direct external Durable Object binding, private-only runtime, Turnstile,
@@ -488,3 +492,584 @@ historical work.
   storage service, logging product, or superseded Google runtime. The next
   human-only action is review and merge of the single Phase 0 pull request;
   Phase 1 remains unauthorized.
+
+### 23. Phase 1 Task 1.1 — browser input contract and early file bound
+
+- Task 1.1: **PASSED** on 2026-08-29 from protected-main merge `6c36e14`.
+  The shared build/Doctor phase marker is now Phase 1.
+- Added one local single-file contract for exactly PDF, DOCX, PPTX, XLSX, CSV,
+  and TXT. The extension is only an initial format choice; MIME and extension
+  are not treated as trusted content evidence. Task 1.2 retains responsibility
+  for magic and hostile-container validation.
+- The browser rejects zero, invalid, multi-file, unsupported, overlong-name,
+  and oversized selections before reading file bytes. Exactly 15 MiB is
+  accepted; 15 MiB plus one byte fails closed with a fixed safe error.
+- Added an accessible file-selection control that reports only neutral format
+  and size status. It performs no parse, network request, browser persistence,
+  or content read, and it exposes no raw filename outside local browser memory.
+- Twelve frontend tests, frontend TypeScript, strict lint, static export,
+  Doctor, its regression test, and root strict TypeScript passed without
+  warnings. Initial frontend JavaScript measured 173,769 gzip bytes against the
+  307,200-byte limit. No dependency, paid path, storage, or external processor
+  was added.
+
+### 24. Phase 1 Task 1.2 — hostile-container prevalidation
+
+- Task 1.2: **PASSED** on 2026-08-29. Selected bytes now enter one disposable
+  module Web Worker through transferable memory, pass strict prevalidation,
+  return only a bounded result, and terminate on success, rejection, crash, or
+  the ten-second wall stop. No source byte crosses the network or enters browser
+  persistence.
+- Added real-magic and false-extension checks for PDF, OOXML Office containers,
+  and UTF-8 CSV/TXT. PDF checks reject missing terminal structure, encryption,
+  JavaScript/actions, rich media, XFA, file attachments, and embedded files.
+- The ZIP boundary accepts only stored/deflate single-disk non-ZIP64 packages.
+  It validates central/local records, CRC-32, real expansion length, duplicate
+  names, overlapping data, and traversal paths. Named limits are 512 entries,
+  16 MiB per entry, 64 MiB total expansion, 100:1 compression ratio, 512-byte
+  entry names, and 8 MiB per inspected XML part.
+- DOCX, PPTX, and XLSX require their exact package parts and main content type.
+  Every XML/relationship part is decoded as strict UTF-8 before parsing and
+  rejects doctypes, entities, external relationships, macros, ActiveX, OLE,
+  nested packages, and embedded content.
+- The frozen regressions cover all three valid Office formats plus false magic,
+  malformed/truncated ZIP, encryption, traversal, entry/total/per-entry/ratio
+  bombs, XML entities, external relationships, macros, ActiveX, OLE, embedded
+  PDF, encrypted/active PDF, and binary text. Nineteen frontend tests,
+  TypeScript before and after static export, strict lint, static export, Doctor,
+  and the initial-JavaScript gate passed without warnings.
+- Initial JavaScript remains 175,298 gzip bytes under 307,200 bytes. The lazy
+  preflight Worker is 11,979 raw / 3,969 gzip bytes. No dependency, parser,
+  provider, paid path, storage, or malware-scanning claim was added.
+
+### 25. Phase 1 Task 1.3 — PDF parser
+
+- Task 1.3: **PASSED** on 2026-08-29. Added the approved direct
+  `pdfminer.six` 20260107 parser on Pyodide 314.0.5 / Python 3.14.2. It runs
+  only inside the disposable browser module Worker after Task 1.2 prevalidation
+  and returns bounded page text with one-based page source references.
+- All runtime files are same-origin, locally served, version-pinned, and
+  SHA-256-pinned. The reproducible asset manifest covers Pyodide core, Python
+  standard library, pdfminer and its exact transitive wheels, parser source,
+  and required license texts. The self-hosted parser assets total 22,580,055
+  bytes; no file exceeds the Cloudflare Pages 25 MiB file limit.
+- A bounded headless Edge proof executed the exact self-hosted runtime and
+  fixed parser source in a module Web Worker with external name resolution
+  blocked. It extracted the expected text from a real PDF, preserved page 1 as
+  its source reference, made zero external network requests, wiped disposable
+  byte buffers, and completed cold in 4,221 ms against the 10-second engine
+  readiness gate.
+- The parser bounds pages at 500, layout elements at 10,000 per page, page text
+  at 100,000 code points, total text at 2,000,000 code points, asset chunks at
+  4,096, and each parser proof attempt at thirty seconds; the separate hostile
+  preflight Worker remains ten seconds. Asset, schema, parse, or
+  runtime failures return one fixed safe failure and persist nothing.
+- Native-code audit note: Pyodide core, `cryptography` 47.0.0, and `cffi` 2.0.0
+  are exact official Pyodide Wasm wheels required by the approved runtime and
+  pdfminer dependency graph. Their bytes and licenses are pinned; they execute
+  only inside the disposable parser Worker, receive no key or remote data, and
+  are not used for Aethelgard signing. Task 1.2 rejects encrypted PDFs before
+  parsing, and any unexpected native/import failure fails closed.
+- Forty-four root and nineteen frontend tests, Doctor, license integrity,
+  zero-vulnerability audits, strict TypeScript, lint, and static export passed
+  without warnings. Initial JavaScript is 175,319 gzip bytes under 307,200;
+  the lazy parser Worker bundle is 34,966 raw / 12,406 gzip bytes. No paid path,
+  remote parser, source-data network route, or browser storage was added.
+
+### 26. Phase 1 Task 1.4 — DOCX parser
+
+- Task 1.4: **PASSED** on 2026-08-29. Added the approved direct `python-docx`
+  1.2.0 parser with exact Pyodide `lxml` 6.0.2 and `typing-extensions` 4.15.0
+  dependencies. The common asset verifier/runtime is shared with PDF without
+  changing the PDF contract.
+- DOCX output contains text only and neutral one-based paragraph or
+  table/row/column references. Body paragraphs and tables retain document
+  order. No filename, relationship target, style, author, or other source
+  metadata is returned.
+- A real DOCX with a table before a paragraph passed in a disposable Edge
+  module Worker. The exact self-hosted packages and fixed parser source kept
+  both structural references in order, made zero external network requests,
+  and completed cold in 6,179 ms against the 10-second readiness gate.
+- The parser bounds structural units at 100,000, paragraphs at 20,000, tables
+  at 2,000, rows per table at 5,000, cells per row at 256, returned sources at
+  20,000, each source at 100,000 code points, total text at 2,000,000 code
+  points, and each parser proof attempt at thirty seconds; hostile preflight
+  remains ten seconds. Empty, malformed, schema,
+  asset, native, and runtime failures fail closed with fixed safe output.
+- Native-code audit note: the exact official Pyodide `lxml` Wasm wheel is the
+  required python-docx XML dependency. It runs after the hostile OOXML/DTD/
+  entity/external-content gate, only inside the disposable parser Worker, and
+  receives no secret or network data. Its bytes and license are pinned.
+- Parser assets now total 24,516,507 bytes; the largest individual Pages file
+  is 9,597,831 bytes under 25 MiB. Nineteen frontend tests, the PDF regression,
+  the DOCX browser proof, manifest hashes, strict TypeScript, lint, licenses,
+  and static export passed without warnings. Initial JavaScript is 175,321
+  gzip bytes; the lazy parser Worker is 37,293 raw / 13,003 gzip bytes. No npm
+  dependency, paid path, persistence, or source-data network route was added.
+
+### 27. Phase 1 Task 1.5 — PPTX parser
+
+- Task 1.5: **PASSED** on 2026-08-29. Added the approved direct `python-pptx`
+  1.0.2 parser, reusing the exact pinned `lxml` and `typing-extensions` runtime.
+  It returns bounded slide text with neutral one-based slide references and
+  includes visible text-frame and table-cell content in slide order.
+- Pillow 12.2.0 was not added: its current official advisory record contains
+  applicable memory, denial-of-service, and native-memory issues fixed in
+  12.3.0, which is not in the approved Pyodide 314.0.5 package set. The fixed
+  parser installs a fail-closed image/font-decoder import stub. XlsxWriter is
+  also omitted because it is reachable only through presentation/chart-writing
+  code, not the read-only text extraction path.
+- A real text-bearing PPTX containing a text shape, table cell, and PNG passed
+  in a disposable Edge module Worker. Text and table content retained slide 1;
+  the image was not decoded, Pillow and XlsxWriter remained absent, two
+  write-only package-data files were pruned, external network requests were
+  zero, and cold completion was 5,838 ms against the 10-second readiness gate.
+- The parser bounds slides at 500, shapes per slide at 10,000, table cells per
+  slide at 50,000, slide text at 100,000 code points, total text at 2,000,000
+  code points, and each parser proof attempt at thirty seconds; hostile
+  preflight remains ten seconds. Image/font access,
+  empty text, malformed structure, schema, asset, native, or runtime failure
+  fails closed. It adds no OCR or image-processing claim.
+- Native-code audit note: no vulnerable Pillow native wheel is present. The
+  exact `python-pptx` wheel uses the already-audited pinned `lxml` Wasm only
+  after hostile OOXML prevalidation and inside the disposable parser Worker.
+  The proof and manifest regressions enforce the Pillow/XlsxWriter absence.
+- Parser assets total 24,989,295 bytes; the largest individual file remains
+  9,597,831 bytes under 25 MiB. Nineteen frontend tests, parser asset hashes,
+  the focused PPTX browser regression, TypeScript, strict lint, licenses, and
+  static export passed without warnings. Initial JavaScript is 175,334 gzip
+  bytes; the lazy parser Worker is 38,678 raw / 13,242 gzip bytes. No npm
+  dependency, paid path, persistence, or source-data network route was added.
+
+### 28. Phase 1 Task 1.6 — XLSX parser
+
+- Task 1.6: **PASSED** on 2026-08-29. Added the approved direct `openpyxl`
+  3.1.5 reader with its exact pure-Python `et-xmlfile` 2.0.0 dependency. The
+  workbook is opened read-only with links disabled and formulas returned as
+  inert source text, never calculated or executed.
+- Output contains only bounded cell text plus neutral one-based sheet indexes
+  and cell coordinates. Raw sheet names, workbook metadata, relationship
+  targets, filenames, styles, and links are not returned.
+- A real XLSX with a deliberately sensitive sheet name, inline text, and a
+  formula passed in a disposable Edge module Worker. It returned `A1` and the
+  inert `B2` formula under sheet index 1, exposed no sheet name, made zero
+  external network requests, and completed cold in 3,962 ms against the
+  10-second readiness gate.
+- The parser bounds sheets at 200, rows at 100,000, columns at 16,384, visited
+  cells at 200,000, returned sources at 100,000, each source at 100,000 code
+  points, total text at 2,000,000 code points, and each parser proof attempt at
+  thirty seconds; hostile preflight remains ten seconds. Non-finite numbers,
+  empty text, malformed structure, schema, asset, or runtime failure fail closed.
+- Parser assets total 25,258,264 bytes; the largest individual file remains
+  9,597,831 bytes under 25 MiB. Nineteen frontend tests, parser asset hashes,
+  the focused XLSX browser regression, TypeScript, strict lint, licenses, and
+  static export passed without warnings. Initial JavaScript is 175,333 gzip
+  bytes; the lazy parser Worker is 40,573 raw / 13,669 gzip bytes. No native or
+  npm dependency, paid path, persistence, or source-data network route was added.
+
+### 29. Architecture 2.1 execution hardening
+
+- Owner-approved execution hardening: **PASSED** on 2026-08-29 under EDR 37.
+  Runtime topology, mission, privacy boundary, exact-zero policy, providers,
+  cryptography, supported browsers and visual direction are unchanged.
+- Canonical tasks are Phase 1: 22, Phase 2: 14, Phase 3: 26 and Phase 4: 12.
+  Phase exits are separate gates; Task 4.12 is the reviewed production release.
+- Registries contain 118 Bounds, 37 Schemas and 28 Failures. Every Phase 1–4
+  task has a complete execution contract and only known registry references.
+- `architecture:lint` and seven tooling/consistency tests pass. Task-context
+  extraction returns only the requested task and referenced registry entries.
+  The exact staged Git-blob hash is
+  `ccf4897db878f27a49aa609dc6cdb523890a1980e303996f8ccecbf873d5d053`.
+- Consistency regressions preserve completed Phase 0 and Tasks 1.1–1.6 values.
+  No runtime dependency, paid path, persistence, secret, production resource,
+  source-data network route, Phase 2 implementation or architecture drift was
+  introduced.
+### 30. Phase 1 Task 1.7 — CSV and TXT parsers
+
+- Task 1.7: **PASSED** on 2026-08-29. Added only fixed project-owned Python
+  using the approved Python 3.14 standard-library `csv`, UTF-8 decoding, and
+  line handling. No package, native code, or service was added.
+- CSV is parsed strictly as comma-delimited RFC-style records. Quoted multiline
+  fields retain one logical row, formulas remain inert text, and output uses
+  neutral one-based row/column references. TXT accepts strict UTF-8 with an
+  optional BOM and returns non-empty content with its original one-based line
+  range, including gaps for blank lines.
+- Combined real CSV/TXT proofs passed in disposable Edge and Chrome module
+  Workers. They
+  preserved a multiline CSV field at row 2, an inert formula at row 3, and TXT
+  content at lines 1 and 3, made zero external network requests, and completed
+  cold in at most 3,800 ms against the 10-second readiness gate. Strictly
+  malformed CSV, invalid UTF-8, 1,001 CSV columns, 100,001 CSV rows, and 200,001
+  TXT lines all failed closed in both supported browsers.
+- CSV bounds rows at 100,000, columns at 1,000, fields at 100,000 code points,
+  returned sources at 100,000, and total text at 2,000,000 code points. TXT
+  bounds lines at 200,000 with the same source and text bounds. Both retain the
+  thirty-second parser proof hard stop, while hostile preflight remains ten
+  seconds; both fail closed on encoding, syntax,
+  schema, asset, size, empty-text, or runtime failure.
+- Parser asset bytes remain 25,258,264 with the largest individual file at
+  9,597,831 bytes. Nineteen frontend tests, parser source hashes, the focused
+  CSV/TXT browser regression, TypeScript, strict lint, and static export passed
+  without warnings. Initial JavaScript is 175,331 gzip bytes; the complete lazy
+  parser Worker is 43,321 raw / 14,275 gzip bytes. No paid path, persistence,
+  or source-data network route was added.
+
+### 31. Phase 1 Task 1.8 — source-reference normalization
+
+- Task 1.8: **PASSED** on 2026-08-30. All six strict parser-success
+  envelopes now normalize locally into immutable schema-versioned records with
+  contiguous ordinals and exact neutral PDF, DOCX, PPTX, XLSX, CSV, or TXT
+  structural references.
+- Normalization preserves source order and content and fails closed on unknown
+  fields or formats, missing schema versions, gaps, duplicates, non-monotonic
+  or invalid indices, empty content, or the canonical source-count,
+  per-source, reference-byte, and total-text bounds. It emits no filename,
+  sheet name, document metadata, network request, or stored state.
+- The task exposed and corrected one prerequisite contract defect: validated
+  parser-success results now retain `schema_version:"1"`. Textless PDFs also
+  fail closed; the pinned parser source is 1,649 bytes with SHA-256
+  `d6d30c0ffd379bb2f392a36e5fc8410366c0d7bd89da8e6f667fa553dbb16437`,
+  and its supported-browser proof verifies both extraction and empty-PDF
+  rejection with zero external requests.
+- Five focused normalization tests, 55 root tests, 24 frontend tests,
+  TypeScript, strict lint, architecture lint, Doctor, license checks, both
+  Worker dry-runs, static export, and the 175,333-byte gzip initial-JavaScript
+  gate passed without warnings. No dependency, paid path, persistence,
+  secret, production resource, or source-data network route was added.
+
+### 32. Phase 1 Task 1.9 — 8,000-word enforcement
+
+- Task 1.9: **PASSED** on 2026-08-30. A local Unicode letter/number-run
+  counter returns the unchanged immutable normalized records and exact integer
+  word count through 8,000 words. At 8,001 it returns the fixed document Safe
+  Mode result before redaction or network work; it never truncates or performs
+  partial analysis.
+- Exact 0, 1, 7,999, 8,000, 8,001 and multi-record Unicode fixtures passed.
+  The over-limit proof made zero network requests. Five focused tests, all 29
+  frontend regressions, TypeScript, strict lint, Doctor, license checks,
+  static export, and the 175,333-byte gzip initial-JavaScript gate passed.
+  No dependency, persistence, service, secret, paid path, or network route was
+  added.
+
+### 33. Architecture 2.1 Task 1.10 contract correction
+
+- Owner-approved EDR 38: **PASSED** on 2026-08-30. Pinned `franc-min`
+  returns normalized scores rather than integer distances. The language margin
+  is now exactly `round((eng_score - runner_up_score) * 10,000)` integer basis
+  points, and English must rank first with a margin of at least 2,000.
+- This corrects an impossible implementation contract without changing
+  English-only behavior, evidence thresholds, local-only classification,
+  fail-closed handling, topology, privacy, cost, providers, cryptography, or
+  phase scope. Architecture lint and eight tooling regressions passed.
+- The authoritative exact Git-blob SHA-256 is
+  `56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2`.
+
+### 34. Phase 1 Task 1.10 — English-language gate
+
+- Task 1.10: **PASSED** on 2026-08-30. Added exact pinned offline
+  `franc-min` 6.2.0 and a local gate that normalizes whitespace, takes the
+  leading 20,000 Unicode code points, requires 40 letters and eight
+  letter-bearing tokens, and applies the EDR 38 score-margin contract.
+- Frozen clear-English and English-with-international-names cases passed with
+  margins of 2,402 and 2,277 basis points. French, mixed English/French, and
+  insufficient-text cases failed locally as `non_english`,
+  `mixed_or_uncertain`, and `insufficient` in both Edge and Chrome with zero
+  external requests.
+- Four focused local tests, the two-browser proof, 57 root tests, 33 frontend
+  tests, TypeScript, strict lint, architecture lint, Doctor, both npm audits
+  with zero vulnerabilities, 176-package license checks, both Worker dry-runs,
+  static export, and the 175,333-byte gzip initial-JavaScript gate passed.
+  No translation, multilingual model, persistence, paid path, service, secret,
+  production resource, or document-data network route was added.
+
+### 35. Phase 1 Task 1.11 — Redaction Worker
+
+- Task 1.11: **PASSED** on 2026-08-30. Added pinned offline Compromise
+  14.16.0 behind structured PII rules and local context rules in a separate
+  disposable module Worker. Exact/containing higher-priority spans suppress
+  nested NER spans; stable typed ASCII placeholders are capped at 10,000 and
+  64 characters.
+- Strict local request/result validation preserves neutral source references
+  and canonical source/text bounds. The PII mapping is absent from output,
+  cleared on every core exit, and destroyed with Worker termination. Invalid
+  input/output, startup, crash, allocation/limit, or the fixed 10-second
+  deadline fails to privacy Safe Mode with zero retry and forbids later work.
+- Real Edge and Chrome proofs replaced eight structured/context/NER entities,
+  exposed no mapping, made zero external requests and storage writes, rejected
+  an injected crash, and stopped injected loops at 10,005 and 10,012 ms. The
+  complete lazy Redaction Worker bundle is 654,436 bytes, below 3 MiB.
+- Eight focused local tests, the two-browser proof, 58 root tests, 41 frontend
+  tests, TypeScript, strict lint, architecture lint, Doctor, both npm audits
+  with zero vulnerabilities, 180-package license checks, both Worker dry-runs,
+  static export, and the 175,333-byte gzip initial-JavaScript gate passed. No
+  server redaction, mapping egress, rehydration, persistence, paid path,
+  service, secret, or document-data network route was added.
+
+### 36. Phase 1 Task 1.12 — frozen PII corpus integration
+
+- Task 1.12: **PASSED** on 2026-08-30. The unchanged owner-approved corpus
+  serializes to SHA-256
+  `0c777c5fc3300eb0b00a29cf583b23ea6455a12a43d990531b88990d1d679467`
+  and contains exactly 84 cases and 576 labelled entities across the six
+  supported formats.
+- The production redactor achieved 100% structured recall, 100% named-entity
+  recall, 99.08% named-entity precision, 100% overall recall, 99.65% overall
+  precision, and zero must-redact leaks. Every approved Section 12.4 floor
+  passes; the runner exits nonzero on any hash, count, floor, or leak failure.
+- The deterministic corpus regression, TypeScript, strict lint, architecture
+  lint, and unchanged privacy/cost checks passed. No case was replaced,
+  removed, or added, and no universal PII-accuracy claim, runtime dependency,
+  network path, persistence, service, secret, or paid path was introduced.
+
+### 37. Phase 1 Task 1.13 — network-boundary proof
+
+- Task 1.13: **PASSED** on 2026-08-30. Instrumented Edge and Chrome page
+  journeys processed synthetic PDF, DOCX, PPTX, XLSX, CSV, and TXT fixtures
+  through the production hostile-preflight controller and production
+  Redaction Worker, then emitted the first document-derived request only after
+  successful local redaction.
+- The first document-derived egress matched the exact bounded analyze shape.
+  Asset and synthetic Turnstile requests contained no document material.
+  Across 11 observed Edge requests and 10 Chrome requests, raw-source,
+  unredacted-text, filename, object-URL, raw-label, and mapping egress were all
+  zero; instrumented browser storage writes were zero; every created parser or
+  redaction Worker terminated.
+- The preflight-only proof stubs only the unreachable Pyodide parse import; it
+  executes the production parser-worker preflight path and does not repeat or
+  replace the already-passing six parser execution proofs. Raw byte markers
+  and complete fixture encodings, private filenames, synthetic PII, mappings,
+  storage APIs, request bodies, and resource URLs are all asserted.
+- The two-browser boundary regression, 60 root tests, 41 frontend tests,
+  TypeScript, strict lint, architecture lint, Doctor, both Worker dry-runs,
+  static export, and the 175,338-byte gzip initial-JavaScript gate passed. No
+  runtime dependency, persistence, service, secret, production resource,
+  paid path, or additional application route was added.
+
+### 38. Phase 1 Task 1.14 — redacted analysis request schema
+
+- Task 1.14: **PASSED** on 2026-08-30. One shared strict Zod contract now
+  defines browser serialization, public-edge validation, and a fresh
+  TrustedRuntime validation for the exact redacted request shape. Unknown
+  fields, invalid or duplicate references, non-canonical or duplicate output
+  requests, invalid enums, unredacted structured PII, and every named request
+  bound fail closed.
+- Serialization accepts only a successful redaction result with zero declared
+  leaks, emits only the five approved network fields, and enforces the
+  524,288-byte UTF-8 body limit. Raw binary, filename, mapping, prompt,
+  provider, URL, key, email, and extra fields cannot enter the contract.
+- Six focused contract tests, the public-edge regressions, all 66 root and 41
+  frontend tests including Edge/Chrome proofs, TypeScript, strict lint,
+  architecture lint, Doctor, both Worker dry-runs, and the static export
+  passed. Public/trusted Worker uploads were 741.59/795.50 KiB
+  (114.97/131.94 KiB gzip), below the approved 3 MiB limit. No dependency,
+  persistence, secret, paid path, service, route, or Phase 2 work was added.
+
+### 39. Phase 1 Task 1.15 — Groq/OpenRouter router
+
+- Task 1.15: **PASSED** on 2026-08-30. Added one project-owned direct HTTPS
+  adapter inside TrustedRuntime with strict request/result schemas, fixed
+  provider endpoints, 524,288-byte requests, 262,144-byte responses,
+  30-second attempts, and 4,096 output tokens. It has no SDK, arbitrary URL,
+  logging, persistence, retry, BYOK, browser call, or caller-selected model.
+- Reviewed provider configuration pins Groq Free to current production model
+  `openai/gpt-oss-20b` and OpenRouter to `openrouter/free`. OpenRouter requests
+  require ZDR, deny data collection, require parameters, disable provider
+  fallback, and set prompt/completion maximum prices to zero. Groq production
+  release remains gated on the architecture-required account ZDR control.
+- Five focused tests prove exact requests, private bearer placement, approved
+  models and endpoints, OpenRouter privacy/free controls, bounds, timeout,
+  HTTP/network failures, invalid JSON, and absence of logs/retries. TypeScript,
+  strict lint, architecture lint, Doctor, both Worker dry-runs, and static
+  export passed. No provider inference call, dependency, secret access,
+  persistence, paid path, route, production mutation, or Phase 2 work occurred.
+
+### 40. Phase 1 Task 1.16 — Strawman schema and prompt
+
+- Task 1.16: **PASSED** on 2026-08-30. Added the exact strict
+  `S-STRAWMAN-OUTPUT` Zod contract and one deterministic Strawman request
+  builder. Findings are non-empty and every finding, risk, assumption, and
+  quantitative candidate carries one to eight valid source references;
+  invented and duplicate references, duplicate IDs, HTML, non-finite numbers,
+  unknown fields, and all collection/response-bound violations fail closed.
+- The fixed two-message prompt labels redacted sources as untrusted evidence
+  data and forbids obeying embedded commands, tools, external knowledge,
+  invented references, HTML, and prose outside JSON. `full` covers financial
+  and operational, strategic and competitive, and security and compliance in
+  one call; each narrower focus is selected by ordinary typed code.
+- Six focused golden/adversarial tests plus the affected analyze and transport
+  regressions passed (17 tests total), together with TypeScript, strict lint,
+  architecture lint, Doctor, both Worker dry-runs, and static export. No AI
+  call, dependency, secret access, persistence, route, paid path, specialist,
+  router call, production mutation, or Phase 2 work occurred.
+
+### 41. Phase 1 Task 1.17 — Steelman schema and prompt
+
+- Task 1.17: **PASSED** on 2026-08-30. Added the exact strict
+  `S-STEELMAN-OUTPUT` contract and one deterministic critic request builder.
+  Critique kinds are limited to the six approved values; item IDs, linked
+  Strawman finding IDs, and evidence references must be unique and valid.
+  Unknown/status/report fields, HTML, invented links/references, and item,
+  evidence, or response-bound violations fail closed.
+- The fixed two-message prompt accepts only validated redacted sources and a
+  validated Strawman, treats both as untrusted evidence data, and directs one
+  critic call to find omissions, contradictions, counter-evidence,
+  unsupported claims, nuance, and missed connections. It forbids tools,
+  external knowledge, report generation, HTML, and prose outside JSON.
+- Six focused golden/adversarial tests plus affected Strawman and transport
+  regressions passed (17 tests total), together with TypeScript, strict lint,
+  architecture lint, Doctor, both Worker dry-runs, and static export. No AI
+  call, unvalidated stage input, dependency, persistence, route, paid path,
+  production mutation, report generation, or Phase 2 work occurred.
+
+### 42. Phase 1 Task 1.18 — Oracle schema and prompt
+
+- Task 1.18: **PASSED** on 2026-08-30. Added the exact strict
+  `S-ORACLE-OUTPUT` contract and one deterministic synthesis request builder.
+  Every Steelman item must have exactly one resolved/unresolved entry; missing,
+  duplicate, invented, or invalid resolutions fail. Findings,
+  recommendations, risks, and finite quantitative candidates require valid
+  source references, and all item, evidence, response, HTML, numeric, and
+  unknown-field gates fail closed.
+- The fixed two-message prompt accepts only validated redacted sources,
+  Strawman, and Steelman inputs; treats all as untrusted evidence data; and
+  requires every critique to be resolved or explicitly left unresolved. It
+  forbids tools, external knowledge, invented evidence, HTML, report/PDF
+  rendering, and prose outside JSON.
+- Six focused golden/adversarial tests plus affected Strawman and Steelman
+  regressions passed (18 tests total), together with TypeScript, strict lint,
+  architecture lint, Doctor, both Worker dry-runs, and static export. No AI
+  call, unchecked intermediate, dependency, persistence, route, paid path,
+  production mutation, report generation, or Phase 2 work occurred.
+
+### 43. Phase 1 Task 1.19 — bounded provider failover
+
+- Task 1.19: **PASSED** on 2026-08-30. Added a request-local three-stage
+  orchestrator with explicit Groq-then-OpenRouter-Free execution, at most two
+  provider attempts per stage and six overall, 30-second transport attempts,
+  and one 180-second wall cancellation signal. Normal success makes exactly
+  three calls and returns only the fully validated Oracle.
+- Any transport, timeout, provider-envelope, JSON, or stage-schema failure
+  permanently retires that provider for the remainder of the request. Groq is
+  never resurrected after fallback; a terminal OpenRouter failure or wall stop
+  returns a fixed analysis Safe Mode and forbids later stages, partial Oracle,
+  PDF, and signing. Turnstile tokens and provider keys never enter prompts.
+- Seven focused permutation/cancellation tests plus affected transport and
+  Oracle regressions passed (18 tests total), together with TypeScript, strict
+  lint, architecture lint, Doctor, both Worker dry-runs, and static export.
+  Tests proved three normal calls, no more than six under every exercised
+  failure permutation, hard invalid-schema failover, terminal-stage stopping,
+  no persistence/logging/retry loop, and no paid provider. No live AI call,
+  dependency, production mutation, route, persistence, or Phase 2 work occurred.
+
+### 44. Phase 1 Task 1.20 — prompt-injection controls
+
+- Task 1.20: **PASSED** on 2026-08-30. Added one shared fixed prompt boundary
+  for all three stages. Only the developer-authored system message has
+  instruction authority; each bounded JSON payload is held in one user message
+  between fixed untrusted-data markers, and quoted marker/role/system text
+  remains inert. The prompt explicitly grants no tool, route, network, file,
+  storage, signing, email, or deployment capability.
+- Froze five direct, indirect/delimiter, secret-exfiltration, tool/control, and
+  HTML/schema attacks under canonical corpus SHA-256
+  `41b2fb352e67266ce56563ce1ee242d880c94e79c8eba625c8e499d2d838238f`.
+  None changed message roles/count, fixed system prompts, provider destination,
+  transport fields, stage order, output schema, or application control.
+  Malicious tool/HTML model outputs hard-failed both providers to Safe Mode.
+- Five focused corpus/boundary tests plus every affected stage and orchestrator
+  regression passed (30 tests total), together with TypeScript, strict lint,
+  architecture lint, Doctor, both Worker dry-runs, and static export. No live
+  model call, dynamic system prompt, tool, new capability, dependency,
+  persistence, route, production mutation, paid path, or Phase 2 work occurred.
+
+### 45. Phase 1 Task 1.21 — plain functional dashboard
+
+- Task 1.21: **PASSED** on 2026-08-31. Connected the existing browser-local
+  preflight/parser, normalization, 8,000-word, exact English, disposable
+  Redaction Worker, fresh Turnstile, and private TrustedRuntime analysis path.
+  Only the strict redacted request crosses the network; the private runtime
+  returns either the fully validated Oracle or fixed Safe Mode. The attempt
+  always consumes and resets its Turnstile challenge.
+- Added a semantic browser-only dashboard with progress, fixed fault states,
+  confidence, structural evidence links, critique resolutions, and neutral
+  source-reference anchors. React text rendering is used exclusively; model
+  HTML is neither accepted nor interpreted. The view has no download, report,
+  result route, persistence, chat, email, BYOK, upload fallback, or Phase 2
+  output behavior.
+- Desktop Edge and Chrome passed keyboard/semantic success and fault proofs,
+  escaped-text checks, and zero instrumented storage writes. All 105 root and
+  45 frontend regressions passed, together with TypeScript, strict lint,
+  architecture lint, Doctor, two Worker dry-runs, static export, and zero-
+  vulnerability audits. Public/trusted Worker uploads were 741.65/764.76 KiB
+  (114.98/119.57 KiB gzip). Lazy local-engine loading reduced initial
+  JavaScript from the failing 321,128-byte measurement to 179,261 gzip bytes,
+  below the 307,200-byte bound. No dependency, production mutation, paid path,
+  persistence, new application route, or architecture drift was introduced.
+
+### 46. Phase 1 Task 1.22 — parser/redactor/AI fault reflexes
+
+- Task 1.22: **PASSED** on 2026-08-31. Parser crash, timeout, and allocation
+  faults receive exactly one new parser-controller invocation and therefore
+  one fresh disposable module Worker. A successful second attempt continues;
+  a second fault returns fixed labelled client-resource Safe Mode. Invalid
+  documents do not use the resource retry. Every parser completion terminates
+  its Worker and wipes any locally accessible source buffer.
+- Redaction has zero retry: error, timeout, invalid result, or thrown failure
+  terminates locally in fixed privacy Safe Mode with no network or AI work.
+  Provider failure remains solely under the already-passing bounded Task 1.19
+  Groq-to-OpenRouter-Free orchestrator: at most six attempts, no provider
+  resurrection, no partial output, and the 180-second wall signal forbids later
+  stages. Every UI attempt consumes and resets Turnstile, including local
+  runtime-load failure.
+- The injected fault matrix passed all recovery counts, fresh-parser success,
+  terminal labels, cleanup, zero forbidden downstream calls, and fixed-message
+  checks. All 105 root and 54 frontend Phase 0/1 regressions passed, together
+  with TypeScript, strict lint, architecture lint, Doctor, both Worker dry-runs,
+  and static export. Initial JavaScript was 179,328 gzip bytes against the
+  307,200-byte bound. Dependencies were unchanged from Task 1.21's zero-
+  vulnerability audit. No extra retry, persistence, dependency, production
+  mutation, paid path, partial output, Phase 2 behavior, or architecture drift
+  was introduced.
+
+### 47. Phase 1 exit gate
+
+- **PHASE 1 — PASSED** on 2026-08-31. All Tasks 1.1–1.22 and the complete
+  Phase 0/1 regression set passed. The gate covered all six formats, 15 MiB
+  and 8,000-word boundaries, hostile containers, the exact English decision,
+  the frozen 84-case/576-entity PII corpus with zero must-redact leaks, strict
+  schemas, bounded provider failover, and fixed fault reflexes.
+- A canonical supported-browser journey used a real TXT `File` containing
+  clear English and structured PII. In both Edge and Chrome it traversed the
+  production disposable parser Worker, language gate, disposable Redaction
+  Worker, strict analyze boundary, and production orchestrator. It produced a
+  valid source-linked Oracle through exactly one analyze request and exactly
+  `strawman:groq`, `steelman:groq`, `oracle:groq`; both created Workers were
+  terminated, raw/PII/filename egress was zero, and browser storage writes
+  were zero.
+- Final evidence: 106 root tests and 54 frontend tests passed; TypeScript and
+  warnings-as-errors lint passed; architecture lint and Doctor passed; all 180
+  package licenses and three vendored assets passed; both npm trees reported
+  zero vulnerabilities; both Worker dry-runs and the static Pages export
+  passed; initial JavaScript was 179,328 gzip bytes against 307,200. Exact-zero
+  and privacy boundaries are unchanged. No production resource, secret, live
+  provider call, persistence, new dependency, paid path, Phase 2 behavior, or
+  architecture drift was introduced. Phase 2 remains unauthorized pending
+  explicit owner approval after review and merge of the Phase 1 pull request.
+
+### 48. PR #11 check remediation
+
+- On 2026-08-31, GitHub CodeQL correctly identified unnecessary incomplete
+  regular-expression escaping in a redactor test. The test now checks the
+  fixed literal placeholders with `String.includes`; no dynamic regular
+  expression or production behavior changed.
+- GitHub's Ubuntu runner could not start its headless browser because the
+  shared proof launcher lacked Linux CI container flags. The one launcher now
+  adds `--no-sandbox` and `--disable-dev-shm-usage` only when `CI=true`, and
+  allows a bounded 30-second cold-start window. Proof assertions require both
+  Chrome and Edge on the Windows release host and Chrome on GitHub's Linux
+  host, where Edge is not installed. Local CI-mode proofs passed for the
+  language gate, all six parsers, redaction, the network boundary, dashboard,
+  and complete Phase 1 journey; strict lint and diff checks also passed.
+- The unrelated Cloudflare Workers Builds status is the previously documented
+  non-production branch deployment attempt, not the required GitHub-native CI
+  job. Architecture 2.1's Durable Object has no Worker preview URL, production
+  remains frozen, and no production deployment was attempted as remediation.

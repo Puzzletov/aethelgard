@@ -1,10 +1,12 @@
 import { readFile, readdir } from "node:fs/promises";
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
   ARCHITECTURE_VERSION,
+  AUTHORITATIVE_ARCHITECTURE_SHA256,
   BUILD_PHASE,
   EXPECTED_ALLOWED_ORIGIN,
   EXPECTED_PRIVATE_BROWSER_BINDING,
@@ -23,6 +25,12 @@ let checkCount = 0;
 function check(id, condition) {
   checkCount += 1;
   if (!condition) failures.push(id);
+}
+
+function gitBlob(revision) {
+  return execFileSync("git", ["cat-file", "blob", revision], {
+    cwd: root, encoding: "buffer", maxBuffer: 16 * 1024 * 1024,
+  });
 }
 
 async function text(relativePath) {
@@ -68,7 +76,8 @@ const [rootPackage, frontendPackage, publicConfig, privateConfig, publicSource, 
 ]);
 
 check("architecture_version", ARCHITECTURE_VERSION === "2.1");
-check("build_phase", BUILD_PHASE === "0");
+check("architecture_hash", createHash("sha256").update(gitBlob(":ARCHITECTURE.md")).digest("hex") === AUTHORITATIVE_ARCHITECTURE_SHA256);
+check("build_phase", BUILD_PHASE === "1");
 check("project_version", rootPackage.version === "0.0.1");
 check("public_origin", hasTomlAssignment(publicConfig, "ALLOWED_ORIGIN", `"${EXPECTED_ALLOWED_ORIGIN}"`));
 check("external_do_binding", [

@@ -12,6 +12,9 @@ const approvedLicenses = new Set([
   "LGPL-3.0-or-later",
   "MIT",
   "MIT OR Apache-2.0",
+  "MPL-2.0",
+  "Apache-2.0 OR BSD-3-Clause",
+  "PSF-2.0",
 ]);
 const lockfiles = ["package-lock.json", "frontend/package-lock.json"];
 const failures = [];
@@ -43,10 +46,23 @@ for (const lockfile of lockfiles) {
   }
 }
 
+const parserAssets = JSON.parse(
+  await readFile(new URL("../frontend/parser/asset-manifest.json", import.meta.url), "utf8"),
+);
+for (const asset of [...parserAssets.packages, ...parserAssets.licenses]) {
+  checkedPackages += 1;
+  if (!approvedLicenses.has(asset.license)) {
+    failures.push(`frontend/parser/asset-manifest.json:${asset.name}:unapproved:${asset.license}`);
+  }
+}
+
 const requiredLicenseText = [
   ["../workers/trusted-runtime/vendor/mldsa-native/LICENSE", "Apache-2.0 license for mldsa-native content"],
   ["../frontend/public/fonts/LICENSE-Fraunces.txt", "SIL OPEN FONT LICENSE Version 1.1"],
   ["../frontend/public/fonts/LICENSE-Public-Sans.txt", "SIL OPEN FONT LICENSE Version 1.1"],
+  ["../frontend/public/pyodide/LICENSE-Pyodide.txt", "Mozilla Public License Version 2.0"],
+  ["../frontend/public/pyodide/LICENSE-pdfminer.six.txt", "Permission is hereby granted"],
+  ["../frontend/public/pyodide/LICENSE-python-docx.txt", "Permission is hereby granted"],
 ];
 for (const [relativePath, requiredText] of requiredLicenseText) {
   const contents = await readFile(new URL(relativePath, import.meta.url), "utf8");

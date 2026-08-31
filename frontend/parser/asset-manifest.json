@@ -1,0 +1,132 @@
+{
+  "schema_version": "1",
+  "pyodide_version": "314.0.5",
+  "python_version": "3.14.2",
+  "sources": [
+    {
+      "name": "../parser/pdf_parser.py",
+      "sha256": "d6d30c0ffd379bb2f392a36e5fc8410366c0d7bd89da8e6f667fa553dbb16437"
+    },
+    {
+      "name": "../parser/docx_parser.py",
+      "sha256": "18a15677cc8b88f4433dc3d4c1388213b0eec3edf943d26105c5a4615f45bc0c"
+    },
+    {
+      "name": "../parser/pptx_parser.py",
+      "sha256": "1ef81ba346d2b8b706846a3430492417a48bd54f46afffaee18b0234f28241d3"
+    },
+    {
+      "name": "../parser/xlsx_parser.py",
+      "sha256": "0f2f1a723e2b1799c5fcaa6df8579fb27c25445301482a552baadeca7837d2bc"
+    },
+    {
+      "name": "../parser/csv_parser.py",
+      "sha256": "a613b9e912609ee2ce8554eb81381e85575ec5794cea6a9833f024cb1ced58ea"
+    },
+    {
+      "name": "../parser/txt_parser.py",
+      "sha256": "708dd2e757084478d7422c0261a493cbeccbd7015e053f8985c64296f2a14e7c"
+    }
+  ],
+  "core": [
+    { "name": "pyodide.mjs", "sha256": "1fec5d63238eff5d099c209c659b88f480c1d854856301596d64e8e6839a3f50" },
+    { "name": "pyodide.asm.mjs", "sha256": "f86edbb66b925ae933ff32ecdcb738ebde2ba926b6be3e485401587de7be89ea" },
+    { "name": "pyodide.asm.wasm", "sha256": "85f66436c802db3dd0caf437134f98af5c69d199c6ffba116ee2bac8be8acf09" },
+    { "name": "python_stdlib.zip", "sha256": "3e7b7affd80aaf35fcff786613eebd0ce885a964dbda56714ccecb7573f57a70" },
+    { "name": "pyodide-lock.json", "sha256": "3fdaef09e9e365c85e002737720f8d0ab8f278c1c244a2dde6a37663cf488ad4" }
+  ],
+  "packages": [
+    {
+      "name": "charset_normalizer-3.4.7-py3-none-any.whl",
+      "sha256": "cf0651de4082d2a16e4c2b594768eca0f589f48891c80a89055ded42f73be7f1",
+      "license": "MIT",
+      "url": "https://cdn.jsdelivr.net/pyodide/v314.0.5/full/charset_normalizer-3.4.7-py3-none-any.whl"
+    },
+    {
+      "name": "cryptography-47.0.0-cp314-abi3-pyemscripten_2026_0_wasm32.whl",
+      "sha256": "024e379cdb8bcd25cfe818ea12da5752074868b02b067f0af9b1e28b98086844",
+      "license": "Apache-2.0 OR BSD-3-Clause",
+      "url": "https://cdn.jsdelivr.net/pyodide/v314.0.5/full/cryptography-47.0.0-cp314-abi3-pyemscripten_2026_0_wasm32.whl"
+    },
+    {
+      "name": "cffi-2.0.0-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+      "sha256": "257317126fa036cd90ad5d14a603cb636127bbdd90a89cd39c7cffbb5f762b30",
+      "license": "MIT",
+      "url": "https://cdn.jsdelivr.net/pyodide/v314.0.5/full/cffi-2.0.0-cp314-cp314-pyemscripten_2026_0_wasm32.whl"
+    },
+    {
+      "name": "pycparser-3.0-py3-none-any.whl",
+      "sha256": "0977ba3a753c001213dccc66c11957d7b0437a0b69885e380376c256cde7759c",
+      "license": "BSD-3-Clause",
+      "url": "https://cdn.jsdelivr.net/pyodide/v314.0.5/full/pycparser-3.0-py3-none-any.whl"
+    },
+    {
+      "name": "six-1.17.0-py2.py3-none-any.whl",
+      "sha256": "29edb1e328c61cad6ac21a2ff92c7d274a2b662eb7c12b2d147f04917b765ad6",
+      "license": "MIT",
+      "url": "https://cdn.jsdelivr.net/pyodide/v314.0.5/full/six-1.17.0-py2.py3-none-any.whl"
+    },
+    {
+      "name": "pdfminer_six-20260107-py3-none-any.whl",
+      "sha256": "366585ba97e80dffa8f00cebe303d2f381884d8637af4ce422f1df3ef38111a9",
+      "license": "MIT",
+      "url": "https://files.pythonhosted.org/packages/20/8b/28c4eaec9d6b036a52cb44720408f26b1a143ca9bce76cc19e8f5de00ab4/pdfminer_six-20260107-py3-none-any.whl"
+    },
+    {
+      "name": "lxml-6.0.2-cp314-cp314-pyemscripten_2026_0_wasm32.whl",
+      "sha256": "13b273a49a4737efb22148af07644fb1b2db6540768b92d14ecdf852ed2d6148",
+      "license": "BSD-3-Clause",
+      "url": "https://cdn.jsdelivr.net/pyodide/v314.0.5/full/lxml-6.0.2-cp314-cp314-pyemscripten_2026_0_wasm32.whl"
+    },
+    {
+      "name": "typing_extensions-4.15.0-py3-none-any.whl",
+      "sha256": "3f122252f0d498d80f7a684cc1d8baa6fa65b75e99447d77a6dd90e0f04302e3",
+      "license": "PSF-2.0",
+      "url": "https://cdn.jsdelivr.net/pyodide/v314.0.5/full/typing_extensions-4.15.0-py3-none-any.whl"
+    },
+    {
+      "name": "python_docx-1.2.0-py3-none-any.whl",
+      "sha256": "3fd478f3250fbbbfd3b94fe1e985955737c145627498896a8a6bf81f4baf66c7",
+      "license": "MIT",
+      "url": "https://files.pythonhosted.org/packages/d0/00/1e03a4989fa5795da308cd774f05b704ace555a70f9bf9d3be057b680bcf/python_docx-1.2.0-py3-none-any.whl"
+    },
+    {
+      "name": "python_pptx-1.0.2-py3-none-any.whl",
+      "sha256": "160838e0b8565a8b1f67947675886e9fea18aa5e795db7ae531606d68e785cba",
+      "license": "MIT",
+      "url": "https://files.pythonhosted.org/packages/d9/4f/00be2196329ebbff56ce564aa94efb0fbc828d00de250b1980de1a34ab49/python_pptx-1.0.2-py3-none-any.whl"
+    },
+    {
+      "name": "openpyxl-3.1.5-py2.py3-none-any.whl",
+      "sha256": "5282c12b107bffeef825f4617dc029afaf41d0ea60823bbb665ef3079dc79de2",
+      "license": "MIT",
+      "url": "https://files.pythonhosted.org/packages/c0/da/977ded879c29cbd04de313843e76868e6e13408a94ed6b987245dc7c8506/openpyxl-3.1.5-py2.py3-none-any.whl"
+    },
+    {
+      "name": "et_xmlfile-2.0.0-py3-none-any.whl",
+      "sha256": "7a91720bc756843502c3b7504c77b8fe44217c85c537d85037f0f536151b2caa",
+      "license": "MIT",
+      "url": "https://files.pythonhosted.org/packages/c1/8b/5fe2cc11fee489817272089c4203e679c63b570a5aaeb18d852ae3cbba6a/et_xmlfile-2.0.0-py3-none-any.whl"
+    }
+  ],
+  "licenses": [
+    {
+      "name": "LICENSE-Pyodide.txt",
+      "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5",
+      "license": "MPL-2.0",
+      "url": "https://raw.githubusercontent.com/pyodide/pyodide/314.0.5/LICENSE"
+    },
+    {
+      "name": "LICENSE-pdfminer.six.txt",
+      "sha256": "f01e5d699a33766b5caf4a5099f2856aba4f3f75ea1df05dc0572b34b4bea8f2",
+      "license": "MIT",
+      "url": "https://raw.githubusercontent.com/pdfminer/pdfminer.six/20260107/LICENSE"
+    },
+    {
+      "name": "LICENSE-python-docx.txt",
+      "sha256": "7652f271e46d0d533e9dc463f3b5fcbdcacf4d6a9c8d6b554d15efd0f37f6132",
+      "license": "MIT",
+      "url": "https://raw.githubusercontent.com/python-openxml/python-docx/v1.2.0/LICENSE"
+    }
+  ]
+}

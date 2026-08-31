@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "audit": "npm audit --audit-level=moderate && npm --prefix frontend audit --audit-level=moderate",
+    "architecture:hash": "node scripts/architecture-hash.mjs",
+    "architecture:lint": "node scripts/architecture-lint.mjs",
     "build": "wrangler deploy --dry-run && wrangler deploy --dry-run --config workers/trusted-runtime/wrangler.toml && npm --prefix frontend run build",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
@@ -13,7 +15,9 @@
     "license:check": "node scripts/check-licenses.mjs",
     "lint": "tsc --noEmit --noUnusedLocals --noUnusedParameters --noImplicitReturns --noFallthroughCasesInSwitch && npm --prefix frontend run lint",
     "measure:js": "node scripts/measure-initial-js.mjs",
-    "test": "node --test tests/*.test.mjs && npm --prefix frontend test",
+    "parser:assets": "node scripts/sync-browser-python-assets.mjs",
+    "task:context": "node scripts/task-context.mjs",
+    "test": "node --test --test-concurrency=1 tests/*.test.mjs && npm --prefix frontend test",
     "typecheck": "tsc --noEmit && npm --prefix frontend run typecheck"
   },
   "devDependencies": {
