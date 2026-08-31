@@ -1094,3 +1094,23 @@ historical work.
 - Cloudflare non-production branch builds are disabled while production stays
   on `main`; no repository workaround, production deployment, architecture
   change, test weakening, or Phase 2 implementation was introduced.
+
+### 50. Cloudflare production deployment ordering correction
+
+- On 2026-08-31, the public production build failed with Cloudflare code 10061
+  because deployed script `aethelgard-trusted-runtime` was still the deliberate
+  Phase 0 secret-holder placeholder. That placeholder exported only a private
+  404 handler; the canonical repository already correctly exported named
+  Durable Object class `TrustedRuntime` and declared `[exports.TrustedRuntime]`.
+- Relevant typecheck, 14 public/private boundary tests, and both Worker dry-runs
+  passed. The canonical private Worker was then deployed first. Cloudflare
+  reported `Created: TrustedRuntime`, no public target, 35 ms startup, and
+  version `dd044786-d5aa-44af-bea1-6867788a12ba`. Its five required secret
+  names remained present; no secret value was read or printed.
+- The unchanged public Worker then deployed successfully with its external
+  `TrustedRuntime` binding resolved, 24 ms startup, and version
+  `fbf4c117-4697-4605-bfde-8bd8f679be2a`. Live `/health` returned HTTP 200 and
+  Architecture 2.1 status `ok`.
+- The correction was deployment order only: private runtime before dependent
+  public edge. No source, architecture, boundary, route, persistence, paid
+  path, secret, test, branch protection, or Phase 2 implementation changed.
