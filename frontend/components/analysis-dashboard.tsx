@@ -24,7 +24,7 @@ function referenceLabel(reference: SourceReference): string {
 }
 
 function Evidence({ items }: Readonly<{ items: readonly SourceReference[] }>) {
-  return <span className="evidence-links">Evidence: {items.map((reference, index) => (
+  return <span className="evidence-links"><strong>Evidence</strong> {items.map((reference, index) => (
     <a key={referenceId(reference)} href={`#${referenceId(reference)}`}>
       {index > 0 ? ", " : ""}{referenceLabel(reference)}
     </a>
@@ -32,23 +32,29 @@ function Evidence({ items }: Readonly<{ items: readonly SourceReference[] }>) {
 }
 
 function AnalysisItems({ result }: Readonly<{ result: OracleOutput }>) {
-  return <>
-    <section aria-labelledby="findings-title"><h3 id="findings-title">Findings</h3><ol>{result.findings.map((item) =>
-      <li key={item.id}><h4>{item.title}</h4><p>{item.analysis}</p><p>Confidence: {item.confidence}</p>
+  return <div className="analysis-sections">
+    <section className="analysis-section" aria-labelledby="findings-title"><h3 id="findings-title">Findings</h3>
+      <ol className="result-list">{result.findings.map((item) =>
+      <li key={item.id}><h4>{item.title}</h4><p>{item.analysis}</p><p className="result-meta">Confidence: {item.confidence}</p>
         <Evidence items={item.evidence} /></li>)}</ol></section>
-    <section aria-labelledby="recommendations-title"><h3 id="recommendations-title">Recommendations</h3><ol>
+    <section className="analysis-section" aria-labelledby="recommendations-title"><h3 id="recommendations-title">Recommendations</h3>
+      <ol className="result-list">
       {result.recommendations.map((item) => <li key={item.id}><h4>{item.title}</h4><p>{item.action}</p>
-        <p>Priority: {item.priority}. Confidence: {item.confidence}.</p><Evidence items={item.evidence} /></li>)}</ol></section>
-    <section aria-labelledby="risks-title"><h3 id="risks-title">Risks</h3><ul>{result.risks.map((item) =>
-      <li key={item.id}><p>{item.text}</p><p>Confidence: {item.confidence}</p><Evidence items={item.evidence} /></li>)}</ul></section>
-    <section aria-labelledby="candidates-title"><h3 id="candidates-title">Quantitative candidates</h3><ul>
+        <p className="result-meta">Priority: {item.priority}. Confidence: {item.confidence}.</p>
+        <Evidence items={item.evidence} /></li>)}</ol></section>
+    <section className="analysis-section" aria-labelledby="risks-title"><h3 id="risks-title">Risks</h3>
+      <ul className="result-list">{result.risks.map((item) =>
+      <li key={item.id}><p>{item.text}</p><p className="result-meta">Confidence: {item.confidence}</p>
+        <Evidence items={item.evidence} /></li>)}</ul></section>
+    <section className="analysis-section" aria-labelledby="candidates-title"><h3 id="candidates-title">Quantitative candidates</h3>
+      <ul className="result-list">
       {result.quantitative_candidates.map((item) => <li key={item.id}><p>{item.label}: {item.value} {item.unit}</p>
         <p>{item.context}</p><Evidence items={item.evidence} /></li>)}</ul></section>
-  </>;
+  </div>;
 }
 
 function SourceIndex({ sources }: Readonly<{ sources: readonly NormalizedSourceRecord[] }>) {
-  return <section aria-labelledby="sources-title"><h3 id="sources-title">Source references</h3><ol>
+  return <section className="source-index" aria-labelledby="sources-title"><h3 id="sources-title">Source references</h3><ol>
     {sources.map((source) => <li id={referenceId(source.reference)} key={source.ordinal} tabIndex={-1}>
       {referenceLabel(source.reference)}</li>)}</ol></section>;
 }
@@ -56,13 +62,15 @@ function SourceIndex({ sources }: Readonly<{ sources: readonly NormalizedSourceR
 export function AnalysisDashboard({ result, sources }: DashboardProps) {
   if (result === null) return null;
   if ("ok" in result) return <section className="analysis-fault" role="alert" aria-labelledby="fault-title">
-    <h2 id="fault-title">Safe Mode</h2><p>{result.message}</p><p>No report was created.</p></section>;
+    <p className="section-label">Protected stop</p><h2 id="fault-title">Safe Mode</h2>
+    <p>{result.message}</p><p className="fault-assurance">No report was created.</p></section>;
   return <section className="analysis-dashboard" aria-labelledby="analysis-title">
-    <h2 id="analysis-title">Analysis</h2>
-    <section aria-labelledby="summary-title"><h3 id="summary-title">Executive summary</h3>
+    <header className="analysis-heading"><p className="section-label">Oracle synthesis</p>
+      <h2 id="analysis-title">Analysis</h2></header>
+    <section className="executive-summary" aria-labelledby="summary-title"><h3 id="summary-title">Executive summary</h3>
       <p>{result.executive_summary}</p></section>
     <AnalysisItems result={result} />
-    <section aria-labelledby="resolutions-title"><h3 id="resolutions-title">Critique resolutions</h3><ul>
+    <section className="analysis-section resolutions" aria-labelledby="resolutions-title"><h3 id="resolutions-title">Critique resolutions</h3><ul>
       {result.critique_resolutions.map((item) => <li key={item.steelman_item_id}>
         <strong>{item.status}</strong>: {item.explanation}</li>)}</ul></section>
     <SourceIndex sources={sources} />

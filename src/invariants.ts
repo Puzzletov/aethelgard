@@ -1,6 +1,6 @@
 export const ARCHITECTURE_VERSION = "2.1";
 export const AUTHORITATIVE_ARCHITECTURE_SHA256 = "56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2";
-export const BUILD_PHASE = "1";
+export const BUILD_PHASE = "2";
 export const PUBLIC_SERVICE_NAME = "aethelgard-edge";
 export const EXPECTED_ALLOWED_ORIGIN = "https://aethelgard-3j9.pages.dev";
 export const EXPECTED_PUBLIC_ROUTES = Object.freeze(["/analyze", "/health"] as const);

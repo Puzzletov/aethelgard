@@ -10,8 +10,8 @@ historical work.
   `56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2`.
 - Phase -1: **CLOSED**.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
-- Current implementation position: **PHASE 1 COMPLETE**; Phase 2 requires
-  explicit owner authorization.
+- Current implementation position: **PHASE 2 — IN PROGRESS** on
+  `phase/2-reporting`; Task 2.1 passed.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
 - Phase 1 status: **PASSED — MERGED** in PR #11 on 2026-08-31.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
@@ -1114,3 +1114,23 @@ historical work.
 - The correction was deployment order only: private runtime before dependent
   public edge. No source, architecture, boundary, route, persistence, paid
   path, secret, test, branch protection, or Phase 2 implementation changed.
+
+### 51. Phase 2 Task 2.1 — complete premium UI system
+
+- Task 2.1: **PASSED** on 2026-08-31. The existing typed Scandinavian token,
+  palette and self-hosted font foundation now styles the complete document,
+  analysis-option, verification, action, Oracle dashboard, evidence, source and
+  Safe Mode surfaces. The implementation retains semantic fieldsets, headings,
+  lists and sections; obvious focus states; restrained radii and transitions;
+  and an explicit reduced-motion override without a theme or UI dependency.
+- The shared build/Doctor phase marker now reports the authorized Phase 2.
+- The deterministic Chrome/Edge proof passed computed palette, typography,
+  divider, evidence, semantic-heading, keyboard-focus, reduced-motion, escaped
+  output, Safe Mode and zero-storage checks. Four design-system tests and all
+  55 frontend regressions passed with strict typecheck and lint.
+- Static export passed. Initial JavaScript measured 179,545 gzip bytes against
+  `B-FRONTEND-JS-GZIP-BYTES` 307,200; the largest static asset was pinned
+  `pyodide.asm.wasm` at 9,597,831 bytes against `B-STATIC-ASSET-BYTES`
+  26,214,400. Fonts remained local, licensed and hash-pinned. No architecture,
+  network boundary, persistence, runtime dependency, production resource,
+  Phase 3 behavior or unsupported-browser claim was introduced.
