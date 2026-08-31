@@ -1054,3 +1054,20 @@ historical work.
   provider call, persistence, new dependency, paid path, Phase 2 behavior, or
   architecture drift was introduced. Phase 2 remains unauthorized pending
   explicit owner approval after review and merge of the Phase 1 pull request.
+
+### 48. PR #11 check remediation
+
+- On 2026-08-31, GitHub CodeQL correctly identified unnecessary incomplete
+  regular-expression escaping in a redactor test. The test now checks the
+  fixed literal placeholders with `String.includes`; no dynamic regular
+  expression or production behavior changed.
+- GitHub's Ubuntu runner could not start its headless browser because the
+  shared proof launcher lacked Linux CI container flags. The one launcher now
+  adds `--no-sandbox` and `--disable-dev-shm-usage` only when `CI=true`.
+  Local Chrome/Edge keeps its existing sandbox behavior. The redactor tests,
+  the Chrome/Edge dashboard proof under the CI flag, strict lint, and diff
+  checks passed locally.
+- The unrelated Cloudflare Workers Builds status is the previously documented
+  non-production branch deployment attempt, not the required GitHub-native CI
+  job. Architecture 2.1's Durable Object has no Worker preview URL, production
+  remains frozen, and no production deployment was attempted as remediation.

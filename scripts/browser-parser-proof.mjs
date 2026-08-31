@@ -102,6 +102,7 @@ function runBrowser(executable, url, profile) {
   const args = ["--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check",
     `--user-data-dir=${profile}`, "--host-resolver-rules=MAP * 0.0.0.0, EXCLUDE 127.0.0.1",
     "--remote-debugging-port=0", url];
+  if (process.env.CI === "true") args.splice(2, 0, "--no-sandbox", "--disable-dev-shm-usage");
   const child = spawn(executable, args, { windowsHide: true });
   let stderr = "";
   let startupError;

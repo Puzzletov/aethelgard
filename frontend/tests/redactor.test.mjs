@@ -35,7 +35,7 @@ test("structured, context, and Compromise matches use typed stable placeholders"
   const content = result.sources[0].content;
   for (const placeholder of ["[PERSON_1]", "[ORGANIZATION_1]", "[LOCATION_1]", "[ADDRESS_1]",
     "[EMAIL_1]", "[PHONE_1]", "[CUSTOMER_ID_1]", "[PAYMENT_CARD_1]"]) {
-    assert.match(content, new RegExp(placeholder.replace(/[\[\]]/gu, "\\$&")));
+    assert.equal(content.includes(placeholder), true);
   }
   assert.equal(result.placeholder_count, 8);
   assert.equal(result.must_redact_leaks, 0);
