@@ -1185,3 +1185,18 @@ historical work.
   finite values, units, evidence, grouping, ordering, invalid omission and all
   relevant bounds. No dependency, architecture, runtime topology, production
   resource or Phase 3 behavior changed.
+
+### 55. Phase 2 Task 2.5 — shared report design tokens
+
+- Task 2.5: **PASSED** on 2026-09-01. The approved web palette,
+  typography, spacing and rule width now have one dependency-free canonical
+  typed authority and one strict readonly `S-REPORT-TOKENS` projection for
+  Browser Run reports. The existing frontend consumes that same authority.
+- The report schema accepts only the fixed paper, charcoal, terracotta, local
+  font stacks, exact spacing scale and rule width; unknown properties, remote
+  font values, altered colors, arbitrary spacing and user styling fail closed.
+  The projection uses 15 scalar/spacing entries against the 64-token bound.
+- Web/report equality snapshots, allowed-property validation, strict
+  typecheck/lint and the static production export passed. Existing local font
+  license/hash checks also remained green. No remote asset, dependency,
+  persistence, architecture, production resource or Phase 3 behavior changed.

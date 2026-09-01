@@ -16,7 +16,7 @@ async function readText(path) {
 test("the static shell uses the shared typed design tokens", async () => {
   const [layout, tokens, styles] = await Promise.all([
     readText("app/layout.tsx"),
-    readText("design/tokens.ts"),
+    readText("../src/design/visual-tokens.ts"),
     readText("app/globals.css"),
   ]);
 
