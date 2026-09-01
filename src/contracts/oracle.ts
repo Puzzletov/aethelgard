@@ -24,7 +24,7 @@ export const MAX_ORACLE_RISKS = 16;
 export const MAX_ORACLE_CANDIDATES = 24;
 const MAX_CRITIQUE_RESOLUTIONS = 24;
 
-const recommendationSchema = z.strictObject({
+export const recommendationSchema = z.strictObject({
   id: modelTextSchema,
   title: modelTextSchema,
   action: modelTextSchema,

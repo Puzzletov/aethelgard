@@ -57,6 +57,8 @@ export const sourceReferenceSchema = z.discriminatedUnion("kind", [
     line_end: POSITIVE_INTEGER }).refine((value) => value.line_end >= value.line_start),
 ]).refine((value) => UTF8.encode(JSON.stringify(value)).byteLength <= MAX_SOURCE_REFERENCE_BYTES);
 
+export type SourceReference = z.output<typeof sourceReferenceSchema>;
+
 const boundedRedactedText = z.string().min(1).refine(
   (value) => [...value].length <= MAX_SOURCE_TEXT_CODE_POINTS,
   "source_text_too_large",

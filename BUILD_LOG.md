@@ -1200,3 +1200,22 @@ historical work.
   typecheck/lint and the static production export passed. Existing local font
   license/hash checks also remained green. No remote asset, dependency,
   persistence, architecture, production resource or Phase 3 behavior changed.
+
+### 56. Phase 2 Task 2.6 — service-owned HTML report template
+
+- Task 2.6: **PASSED** on 2026-09-01. Added strict `S-REPORT-MODEL`
+  validation and a fixed UTF-8 report template owned by TrustedRuntime. It
+  renders executive summary, findings, recommendations, risks, bounded chart
+  tables and verification key IDs in one deterministic A4 print order using
+  the canonical `S-REPORT-TOKENS` projection.
+- Every inserted string and structural evidence label is escaped. Strict input
+  rejects caller HTML and unknown fields; fixed CSP permits no external
+  resource, and the template contains no script, URL, remote font, user CSS or
+  model-controlled markup. Five fixed sections remain below the 32-section
+  bound; UI text and 1,048,576-byte HTML limits fail closed atomically.
+- Golden output SHA-256
+  `7a1eb1a3d91a980b75ddcbaac161eebee2fc1ad062ad7c784c83926033c1c9a7`
+  passed deterministic-repeat, escaping/injection, CSP/resource, schema and
+  bound tests. Strict typecheck/lint and the existing Browser Run/chart/token
+  regressions passed. No dependency, persistence, production resource,
+  architecture or Phase 3 behavior changed.
