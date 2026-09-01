@@ -31,30 +31,47 @@ function Evidence({ items }: Readonly<{ items: readonly SourceReference[] }>) {
   ))}</span>;
 }
 
+function EmptyState({ children }: Readonly<{ children: string }>) {
+  return <p className="empty-state">{children}</p>;
+}
+
+function DashboardIndex() {
+  const sections = [
+    ["summary", "Summary"], ["findings", "Findings"],
+    ["recommendations", "Recommendations"], ["risks", "Risks"],
+    ["candidates", "Quantitative candidates"], ["resolutions", "Critique resolutions"],
+    ["sources", "Sources"],
+  ] as const;
+  return <nav className="analysis-index" aria-label="Analysis sections"><ol>{sections.map(([id, label]) =>
+    <li key={id}><a href={`#${id}`}>{label}</a></li>)}</ol></nav>;
+}
+
 function AnalysisItems({ result }: Readonly<{ result: OracleOutput }>) {
   return <div className="analysis-sections">
-    <section className="analysis-section" aria-labelledby="findings-title"><h3 id="findings-title">Findings</h3>
+    <section className="analysis-section" id="findings" aria-labelledby="findings-title"><h3 id="findings-title">Findings</h3>
       <ol className="result-list">{result.findings.map((item) =>
       <li key={item.id}><h4>{item.title}</h4><p>{item.analysis}</p><p className="result-meta">Confidence: {item.confidence}</p>
         <Evidence items={item.evidence} /></li>)}</ol></section>
-    <section className="analysis-section" aria-labelledby="recommendations-title"><h3 id="recommendations-title">Recommendations</h3>
+    <section className="analysis-section" id="recommendations" aria-labelledby="recommendations-title"><h3 id="recommendations-title">Recommendations</h3>
       <ol className="result-list">
       {result.recommendations.map((item) => <li key={item.id}><h4>{item.title}</h4><p>{item.action}</p>
         <p className="result-meta">Priority: {item.priority}. Confidence: {item.confidence}.</p>
         <Evidence items={item.evidence} /></li>)}</ol></section>
-    <section className="analysis-section" aria-labelledby="risks-title"><h3 id="risks-title">Risks</h3>
-      <ul className="result-list">{result.risks.map((item) =>
+    <section className="analysis-section" id="risks" aria-labelledby="risks-title"><h3 id="risks-title">Risks</h3>
+      {result.risks.length === 0 ? <EmptyState>No risks were identified.</EmptyState>
+        : <ul className="result-list">{result.risks.map((item) =>
       <li key={item.id}><p>{item.text}</p><p className="result-meta">Confidence: {item.confidence}</p>
-        <Evidence items={item.evidence} /></li>)}</ul></section>
-    <section className="analysis-section" aria-labelledby="candidates-title"><h3 id="candidates-title">Quantitative candidates</h3>
-      <ul className="result-list">
+        <Evidence items={item.evidence} /></li>)}</ul>}</section>
+    <section className="analysis-section" id="candidates" aria-labelledby="candidates-title"><h3 id="candidates-title">Quantitative candidates</h3>
+      {result.quantitative_candidates.length === 0
+        ? <EmptyState>No quantitative candidates were identified.</EmptyState> : <ul className="result-list">
       {result.quantitative_candidates.map((item) => <li key={item.id}><p>{item.label}: {item.value} {item.unit}</p>
-        <p>{item.context}</p><Evidence items={item.evidence} /></li>)}</ul></section>
+        <p>{item.context}</p><Evidence items={item.evidence} /></li>)}</ul>}</section>
   </div>;
 }
 
 function SourceIndex({ sources }: Readonly<{ sources: readonly NormalizedSourceRecord[] }>) {
-  return <section className="source-index" aria-labelledby="sources-title"><h3 id="sources-title">Source references</h3><ol>
+  return <section className="source-index" id="sources" aria-labelledby="sources-title"><h3 id="sources-title">Source references</h3><ol>
     {sources.map((source) => <li id={referenceId(source.reference)} key={source.ordinal} tabIndex={-1}>
       {referenceLabel(source.reference)}</li>)}</ol></section>;
 }
@@ -67,10 +84,11 @@ export function AnalysisDashboard({ result, sources }: DashboardProps) {
   return <section className="analysis-dashboard" aria-labelledby="analysis-title">
     <header className="analysis-heading"><p className="section-label">Oracle synthesis</p>
       <h2 id="analysis-title">Analysis</h2></header>
-    <section className="executive-summary" aria-labelledby="summary-title"><h3 id="summary-title">Executive summary</h3>
+    <DashboardIndex />
+    <section className="executive-summary" id="summary" aria-labelledby="summary-title"><h3 id="summary-title">Executive summary</h3>
       <p>{result.executive_summary}</p></section>
     <AnalysisItems result={result} />
-    <section className="analysis-section resolutions" aria-labelledby="resolutions-title"><h3 id="resolutions-title">Critique resolutions</h3><ul>
+    <section className="analysis-section resolutions" id="resolutions" aria-labelledby="resolutions-title"><h3 id="resolutions-title">Critique resolutions</h3><ul>
       {result.critique_resolutions.map((item) => <li key={item.steelman_item_id}>
         <strong>{item.status}</strong>: {item.explanation}</li>)}</ul></section>
     <SourceIndex sources={sources} />

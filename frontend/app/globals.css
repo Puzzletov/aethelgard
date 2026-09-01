@@ -425,6 +425,28 @@ input:focus-visible {
   line-height: 0.95;
 }
 
+.analysis-index {
+  margin-top: var(--space-xl);
+  padding-block: var(--space-md);
+  border-block: 1px solid var(--color-rule);
+}
+
+.analysis-index ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-lg);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.analysis-index a {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-decoration-color: var(--color-terracotta);
+  text-underline-offset: 0.2em;
+}
+
 .executive-summary {
   display: grid;
   grid-template-columns: minmax(10rem, 1fr) minmax(0, 3fr);
@@ -474,6 +496,12 @@ input:focus-visible {
   padding: 0;
   list-style: none;
   counter-reset: result;
+}
+
+.empty-state {
+  margin: var(--space-lg) 0 0;
+  color: var(--color-charcoal-soft);
+  font-style: italic;
 }
 
 .result-list > li {

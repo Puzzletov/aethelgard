@@ -1134,3 +1134,20 @@ historical work.
   26,214,400. Fonts remained local, licensed and hash-pinned. No architecture,
   network boundary, persistence, runtime dependency, production resource,
   Phase 3 behavior or unsupported-browser claim was introduced.
+
+### 52. Phase 2 Task 2.2 — dashboard information architecture
+
+- Task 2.2: **PASSED** on 2026-09-01. The validated Oracle dashboard now has
+  one fixed professional reading order: executive summary, findings,
+  recommendations, risks, quantitative candidates, critique resolutions and
+  source references. A semantic section index exposes the same exact order;
+  evidence links retain structural source targets and empty optional sections
+  use explicit accessible statements instead of blank lists.
+- The Chrome/Edge golden proof passed exact hierarchy, index destinations,
+  four evidence targets, unchanged risk/quantitative content, keyboard focus,
+  maximum 24-finding rendering, both empty states, Safe Mode, escaping and
+  zero-storage checks. Strict typecheck/lint, Oracle schema/bound tests and the
+  design-system regression passed.
+- Layout and text remain deterministic application code over already validated
+  `S-ORACLE-OUTPUT`; no AI HTML/layout, hidden evidence, content rewriting,
+  persistence, dependency, network behavior or Phase 3 work was introduced.
