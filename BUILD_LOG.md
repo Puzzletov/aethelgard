@@ -1151,3 +1151,23 @@ historical work.
 - Layout and text remain deterministic application code over already validated
   `S-ORACLE-OUTPUT`; no AI HTML/layout, hidden evidence, content rewriting,
   persistence, dependency, network behavior or Phase 3 work was introduced.
+
+### 53. Phase 2 Task 2.3 — Recharts visualizations
+
+- Task 2.3: **PASSED** on 2026-09-01. Added the Architecture-approved Recharts
+  implementation pinned at 3.10.1 and strict `S-CHART-DATA` parsing for bar or
+  line charts, at most 64 finite source-linked points and at most eight charts.
+  Invalid, empty, unknown-field, unsupported-kind and over-bound input omits
+  the complete chart rather than rendering raw data.
+- Each valid chart uses the shared visual tokens, an explicit title/kind/unit
+  label, Recharts accessibility layer, and a visible semantic source-data table
+  containing every value, unit and structural evidence link. No remote asset or
+  invented number exists in the chart path.
+- Chrome and Edge passed golden bar/line, accessibility, 64-point bound, empty,
+  invalid and zero-remote-request proofs. The minified proof bundle measured
+  264,410 gzip bytes against 307,200. Static production export passed with
+  initial JavaScript at 179,764 gzip bytes; strict typecheck/lint, 219-package
+  license validation and both zero-vulnerability audits passed. The only new
+  license expression is permissive `MIT AND ISC`, whose two components were
+  already approved. No chart is yet synthesized from Oracle data before Task
+  2.4, and no persistence, provider, architecture or Phase 3 behavior changed.
