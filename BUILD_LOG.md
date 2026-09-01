@@ -1171,3 +1171,17 @@ historical work.
   license expression is permissive `MIT AND ISC`, whose two components were
   already approved. No chart is yet synthesized from Oracle data before Task
   2.4, and no persistence, provider, architecture or Phase 3 behavior changed.
+
+### 54. Phase 2 Task 2.4 — deterministic chart transforms
+
+- Task 2.4: **PASSED** on 2026-09-01. A pure typed transform now converts
+  validated Oracle quantitative candidates into strict `S-CHART-DATA`, groups
+  only candidates with exactly matching unit and context, preserves candidate
+  and evidence order, and assigns stable chart IDs in first-seen order.
+- Invalid candidates and groups above `B-CHARTS` are omitted deterministically;
+  over-bound candidate collections fail closed. The transform never guesses,
+  case-folds or converts units and has no provider, network or persistence path.
+- Strict typecheck/lint and six focused schema/transform tests passed, covering
+  finite values, units, evidence, grouping, ordering, invalid omission and all
+  relevant bounds. No dependency, architecture, runtime topology, production
+  resource or Phase 3 behavior changed.
