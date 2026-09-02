@@ -1431,3 +1431,9 @@ historical work.
 - A literal Windows-style backslash-path regression was added. Focused tests,
   strict typecheck/lint and diff hygiene passed. No check, security control or
   branch protection was weakened.
+- Both first CI runs also exposed a startup race in the existing browser proof:
+  the DevTools port could appear just before its `/proof` target. Target lookup
+  now waits at most five seconds in 50 ms intervals; browser execution and its
+  60-second proof bound are unchanged.
+- The focused Chrome/Edge language-gate proof, strict typecheck, lint and diff
+  hygiene pass with the bounded target wait.
