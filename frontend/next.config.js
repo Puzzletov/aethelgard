@@ -1,10 +1,13 @@
-const path = require("node:path");
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
 	output: "export",
-	outputFileTracingRoot: path.join(__dirname, ".."),
-	turbopack: { root: path.join(__dirname, "..") },
+	outputFileTracingRoot: path.join(currentDirectory, ".."),
+	turbopack: { root: path.join(currentDirectory, "..") },
 };
 
-module.exports = nextConfig;
+export default nextConfig;

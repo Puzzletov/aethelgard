@@ -1437,3 +1437,7 @@ historical work.
   60-second proof bound are unchanged.
 - The focused Chrome/Edge language-gate proof, strict typecheck, lint and diff
   hygiene pass with the bounded target wait.
+- The rerun then completed all 144 root tests and exposed only Node's
+  `MODULE_TYPELESS_PACKAGE_JSON` warning in frontend ESM tests. The frontend
+  package now declares its existing ESM boundary explicitly; its Next config
+  uses the equivalent ESM form so warnings-as-errors remains enforced.
