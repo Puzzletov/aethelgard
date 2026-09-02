@@ -1325,3 +1325,22 @@ historical work.
 - Strict frontend typecheck/lint passed. No retrieval route, token, service
   worker, cache, browser storage, network call, dependency, architecture
   change, production resource or Phase 3 behavior was introduced.
+
+### 62. Phase 2 Task 2.12 — exact final-PDF hybrid signing
+
+- Task 2.12: **PASSED** on 2026-09-01. Added the private production signing
+  integration over exact Browser Run PDF bytes. It returns the original byte
+  array unchanged only after the existing signer hashes it once, signs that
+  digest with Ed25519 and ML-DSA-65, self-verifies both algorithms and emits a
+  strict bounded `S-SIGNATURE-MANIFEST`.
+- Independent Node verification accepted both signatures over the known
+  SHA-256 fixture digest
+  `904636248025ad20fb9c6bd8b700179a2a42edb5df3636e926c7e09055ee3f75`;
+  changing one PDF byte made both verifications fail. Invalid PDFs, incomplete
+  signature manifests and signer mutation fail closed; mutated input is
+  restored and no partially signed output is returned.
+- Seven real pinned-Wasm signing integrations passed the 50 ms median gate.
+  Strict typecheck/lint and 11 focused signing/response regressions passed.
+  Secrets remain private and wiped by the established signer. No generic or
+  public signing route, caller digest, dependency, persistence, architecture
+  change, production resource or Phase 3 behavior was introduced.
