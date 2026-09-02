@@ -62,13 +62,13 @@ function stageSuccess(provider, stage) {
     body: { choices: [{ message: { content: JSON.stringify(outputs[stage]) } }] } };
 }
 
-test("the five-case injection corpus is frozen", () => {
+test("the seven-class injection corpus is frozen", () => {
   assert.deepEqual(corpus.map((item) => item.id), [
     "direct-role-override", "indirect-delimiter-escape", "secret-exfiltration",
-    "tool-and-control", "html-and-schema",
+    "tool-and-control", "html-and-schema", "role-confusion", "signing-control",
   ]);
   const hash = createHash("sha256").update(JSON.stringify(corpus)).digest("hex");
-  assert.equal(hash, "41b2fb352e67266ce56563ce1ee242d880c94e79c8eba625c8e499d2d838238f");
+  assert.equal(hash, "da270a2108e9454d6fa10a01bd645378bec28725bbbb71d3d8a55f6065a8affc");
 });
 
 test("hostile records remain inert inside one fixed user-data message", () => {
@@ -96,7 +96,8 @@ test("hostile records remain inert inside one fixed user-data message", () => {
 });
 
 test("source-controlled URLs and capabilities cannot alter provider transport", async () => {
-  const request = createStrawmanRequest("groq", "full", sources(corpus[2].content));
+  const fixture = corpus.find((item) => item.id === "secret-exfiltration");
+  const request = createStrawmanRequest("groq", "full", sources(fixture.content));
   const calls = [];
   const fetcher = async (...args) => {
     calls.push(args);
@@ -125,21 +126,28 @@ test("hostile sources cannot alter Strawman-Steelman-Oracle order", async () => 
   }
 });
 
-test("tool, HTML, schema, and destination outputs hard-fail to Safe Mode", async () => {
-  const maliciousOutputs = [
-    { tool_call: { name: "fetch", arguments: { url: "https://evil.example" } } },
-    { ...strawman, findings: [{ ...strawman.findings[0], analysis: "<script>exfiltrate()</script>" }] },
-  ];
-  for (const malicious of maliciousOutputs) {
+test("tool, HTML, schema, and signing-control outputs fail at every stage", async () => {
+  const maliciousOutputs = {
+    strawman: { tool_call: { name: "fetch", arguments: { url: "https://evil.example" } } },
+    steelman: { ...steelman, items: [{ ...steelman.items[0], critique: "<script>exfiltrate()</script>" }] },
+    oracle: { ...oracle, signing_control: { route: "/sign", replace_pdf: true } },
+  };
+  const expectedCalls = {
+    strawman: ["strawman:groq", "strawman:openrouter_free"],
+    steelman: ["strawman:groq", "steelman:groq", "steelman:openrouter_free"],
+    oracle: ["strawman:groq", "steelman:groq", "oracle:groq", "oracle:openrouter_free"],
+  };
+  for (const [attackedStage, malicious] of Object.entries(maliciousOutputs)) {
     const calls = [];
     const transport = async (request) => {
       calls.push(`${request.stage}:${request.provider}`);
+      if (request.stage !== attackedStage) return stageSuccess(request.provider, request.stage);
       return { ok: true, provider: request.provider,
         body: { choices: [{ message: { content: JSON.stringify(malicious) } }] } };
     };
-    const result = await runAnalysis(analyzeRequest(corpus[4].content), keys, transport);
+    const result = await runAnalysis(analyzeRequest(corpus.at(-1).content), keys, transport);
     assert.equal(result.code, "analysis_unavailable");
     assert.equal("findings" in result, false);
-    assert.deepEqual(calls, ["strawman:groq", "strawman:openrouter_free"]);
+    assert.deepEqual(calls, expectedCalls[attackedStage]);
   }
 });

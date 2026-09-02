@@ -1487,3 +1487,20 @@ historical work.
   `franc-min` dependency, 40-letter/eight-token evidence floors, 20,000-code-
   point sample and 2,000-basis-point threshold are unchanged; no translation,
   online service, persistence, production change or architecture drift exists.
+
+### 70. Phase 3 Task 3.4 — prompt-injection fixtures release gate
+
+- Task 3.4: **PASSED** on 2026-09-02. Preserved the five existing synthetic
+  attacks and added explicit role-confusion and signing-control cases. The
+  seven-case frozen corpus SHA-256 is
+  `da270a2108e9454d6fa10a01bd645378bec28725bbbb71d3d8a55f6065a8affc`.
+- Every attack remains inert untrusted JSON under the fixed system prompts for
+  Strawman, Steelman and Oracle. Routes, provider destinations, request fields,
+  tool availability and exact stage order cannot be source-controlled.
+  Invalid tool, HTML/schema and signing-control output at each respective stage
+  exhausts only the approved provider pair and returns analysis Safe Mode;
+  nothing reaches reporting or signing.
+- The five focused injection regressions, 31 affected AI transport/orchestrator/
+  schema regressions, strict typecheck/lint and diff hygiene pass. No live AI,
+  secret, capability, dynamic destination, dependency, production change or
+  architecture drift was introduced.
