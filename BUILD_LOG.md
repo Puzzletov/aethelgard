@@ -1421,3 +1421,13 @@ historical work.
   egress, secret-free public edge, private trusted runtime and architecture
   drift gates passed. No production deployment or Phase 3 implementation was
   performed. Phase 3 remains owner-gated.
+
+### 66. Phase 2 PR CodeQL remediation
+
+- PR #16's first aggregate CodeQL scan identified one high-severity incomplete
+  string-escaping dataflow in the Markdown writer. The chained escape calls
+  were consolidated into one explicit character-class pass before fixed
+  URI-scheme colon escaping; output semantics and golden hash are unchanged.
+- A literal Windows-style backslash-path regression was added. Focused tests,
+  strict typecheck/lint and diff hygiene passed. No check, security control or
+  branch protection was weakened.

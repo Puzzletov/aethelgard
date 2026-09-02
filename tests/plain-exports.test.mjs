@@ -46,10 +46,11 @@ test("fixed headings, order and structural references are preserved", () => {
 test("Markdown controls and URI schemes are escaped without HTML or links", () => {
   const value = model();
   value.title = "# [Review](javascript:alert) 5 < 7 > 3";
-  value.findings[0].analysis = "*bold* https://invalid.example";
+  value.findings[0].analysis = "*bold* https://invalid.example C:\\private\\file";
   const markdown = UTF8.decode(writeReportMarkdown(value));
   assert.ok(markdown.includes("\\# \\[Review\\]\\(javascript\\:alert\\) 5 \\< 7 \\> 3"));
   assert.ok(markdown.includes("\\*bold\\* https\\://invalid\\.example"));
+  assert.ok(markdown.includes("C:\\\\private\\\\file"));
   assert.doesNotMatch(markdown, /\[Review\]\(javascript:|https:\/\/|5 < 7/iu);
 });
 

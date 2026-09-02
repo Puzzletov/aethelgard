@@ -50,8 +50,8 @@ function textDocument(model: ReportModel): string {
 }
 
 function markdown(value: string): string {
-  return value.replaceAll("\\", "\\\\").replace(/([A-Za-z][A-Za-z0-9+.-]{1,31}):/gu, "$1\\:")
-    .replace(/([`*_{}\[\]()#+.!|<>-])/gu, "\\$1");
+  return value.replace(/([\\`*_{}\[\]()#+.!|<>-])/gu, "\\$1")
+    .replace(/([A-Za-z][A-Za-z0-9+.-]{1,31}):/gu, "$1\\:");
 }
 
 function markdownDocument(model: ReportModel): string {
