@@ -1266,3 +1266,23 @@ historical work.
   license gate and a zero-vulnerability production audit passed. No server
   Python, large workbook framework, persistence, architecture change,
   production resource or Phase 3 behavior was introduced.
+
+### 59. Phase 2 Task 2.9 — deterministic text and Markdown outputs
+
+- Task 2.9: **PASSED** on 2026-09-01. Added fixed UTF-8 plain-text and
+  Markdown formatters over strict `S-REPORT-MODEL`. Both preserve the same
+  service-owned order—title/focus, executive summary, findings,
+  recommendations, risks, quantitative analysis and verification—and retain
+  every structural evidence reference in deterministic source order.
+- Markdown insertion escapes control punctuation, angle brackets, backslashes
+  and URI-scheme colons. It creates no HTML, Markdown link, executable URI,
+  model-selected heading or AI-formatted content. Both outputs fail closed
+  atomically on invalid models or the 1,048,576-byte UTF-8 limit and retain
+  Unicode without normalization or truncation.
+- Golden plain-text SHA-256
+  `dc12b10eccfc02bcfa33b96430830123ddc6cfad62fd1c02dcb91da9b64e10e5`
+  and Markdown SHA-256
+  `6a345cebc977cce6e05ea3aff6a76ee3708e1c710034f24360d4b7df55c078e1`
+  passed repeat, fixed-order, evidence, escaping, Unicode, invalid-input and
+  bound tests with strict typecheck/lint. No dependency, model call, HTML path,
+  persistence, architecture, production resource or Phase 3 behavior changed.
