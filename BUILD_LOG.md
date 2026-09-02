@@ -1441,3 +1441,17 @@ historical work.
   `MODULE_TYPELESS_PACKAGE_JSON` warning in frontend ESM tests. The frontend
   package now declares its existing ESM boundary explicitly; its Next config
   uses the equivalent ESM form so warnings-as-errors remains enforced.
+
+### 67. Phase 3 Task 3.1 — complete hostile corpus
+
+- Task 3.1: **PASSED** on 2026-09-02. Froze a version-1 manifest of 47
+  deterministic synthetic hostile cases with SHA-256 hashes and exact expected
+  outcomes. All 20 Section 12.1 classes are represented; Office-specific
+  threats cover DOCX, PPTX and XLSX, and the PDF/text boundaries remain
+  explicit. Existing earlier regressions were retained unchanged.
+- Chrome and Edge rejected all 47 cases exactly with zero external requests.
+  The 256-case maximum, 15 MiB early source limit and 10-second preflight Worker
+  bound remain unchanged. No real malware, scanner, remote dependency,
+  persistence, production change or architecture drift was introduced.
+- The frozen-manifest/hash test, focused browser proof, existing six preflight
+  regressions, strict typecheck/lint, architecture lint and diff hygiene pass.
