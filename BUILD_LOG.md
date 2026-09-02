@@ -1219,3 +1219,26 @@ historical work.
   bound tests. Strict typecheck/lint and the existing Browser Run/chart/token
   regressions passed. No dependency, persistence, production resource,
   architecture or Phase 3 behavior changed.
+
+### 57. Phase 2 Task 2.7 — production Browser Run PDF
+
+- Task 2.7: **PASSED** on 2026-09-01. Added the private production PDF
+  path from branded service-owned report HTML through the fixed Browser Run
+  `/pdf` Quick Action. JavaScript and caching remain disabled; both action and
+  PDF timeouts are 15,000 ms. Returned bytes are held only in request memory
+  and passed through unchanged after PDF header, trailer, content-type and
+  8,388,608-byte validation.
+- The production coordinator reserves the anonymous daily quota before its
+  analysis/report callback, uses the existing two-job in-memory queue, settles
+  trusted Browser Run milliseconds, refunds unused reservations before a
+  Browser call, and fails closed on quota, state, queue, HTML, deadline,
+  transport or PDF validation failure. Persistent state remains exactly UTC
+  date plus aggregate Browser Run milliseconds.
+- Exact-byte, malformed, oversized, quota, queue, timeout, fixed-option and
+  state-schema regressions passed. A secret-free remote-development proof ran
+  the production template through the real Browser Run binding five times:
+  166, 458, 106, 99 and 182 ms, median 166 ms against the 5,000 ms target.
+  The dev session was stopped and every disposable proof file was removed.
+- Strict typecheck/lint and 14 focused Browser Run, quota, queue, HTML and PDF
+  tests passed. No paid renderer, caller HTML path, second runtime, persistence,
+  production deployment, architecture change or Phase 3 behavior was added.

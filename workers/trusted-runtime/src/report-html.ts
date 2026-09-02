@@ -10,6 +10,8 @@ import { reportTokens } from "../../../src/contracts/report-tokens.ts";
 export const MAX_REPORT_HTML_BYTES = 1_048_576;
 const UTF8 = new TextEncoder();
 const REPORT_SECTION_COUNT = 5;
+declare const SERVICE_REPORT_HTML: unique symbol;
+export type ServiceOwnedReportHtml = string & { readonly [SERVICE_REPORT_HTML]: true };
 
 function escapeHtml(value: string): string {
   return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;")
@@ -85,9 +87,9 @@ ${charts(model)}
 <footer><p>Verification keys</p><p>Ed25519: ${escapeHtml(model.verification.ed25519_key_id)}</p><p>ML-DSA-65: ${escapeHtml(model.verification.mldsa65_key_id)}</p></footer></main></body></html>`;
 }
 
-export function renderReportHtml(value: unknown): string | undefined {
+export function renderReportHtml(value: unknown): ServiceOwnedReportHtml | undefined {
   const model = parseReportModel(value);
   if (model === undefined || REPORT_SECTION_COUNT > MAX_REPORT_SECTIONS) return undefined;
   const html = document(model);
-  return UTF8.encode(html).byteLength <= MAX_REPORT_HTML_BYTES ? html : undefined;
+  return UTF8.encode(html).byteLength <= MAX_REPORT_HTML_BYTES ? html as ServiceOwnedReportHtml : undefined;
 }
