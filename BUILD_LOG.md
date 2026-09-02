@@ -1286,3 +1286,24 @@ historical work.
   passed repeat, fixed-order, evidence, escaping, Unicode, invalid-input and
   bound tests with strict typecheck/lint. No dependency, model call, HTML path,
   persistence, architecture, production resource or Phase 3 behavior changed.
+
+### 60. Phase 2 Task 2.10 — bounded multipart analysis response
+
+- Task 2.10: **PASSED** on 2026-09-01. Added strict
+  `S-SIGNATURE-MANIFEST` and `S-ANALYZE-RESPONSE` contracts plus one fixed
+  in-memory JSON response builder. It returns the validated dashboard and only
+  successfully produced requested PDF, XLSX and text fields in canonical
+  order, with `no-store`, JSON UTF-8 and `nosniff` headers.
+- PDF inclusion requires valid bounded PDF header/trailer bytes, an exact
+  matching SHA-256 digest, canonical 64-byte Ed25519 and 3,309-byte ML-DSA-65
+  signatures, fixed algorithms and valid public-key IDs. XLSX and text fields
+  enforce their own magic/UTF-8/byte bounds. Missing or failed PDF is omitted
+  without presenting unsigned bytes; invalid request order, duplicates,
+  unknown input fields and a serialized response over 8,388,608 bytes fail
+  closed before any response is sent.
+- All seven non-empty requested-part combinations, exact keys, headers,
+  missing/changed PDF, total boundary, strict input and no-storage/no-token
+  paths passed. Existing hybrid-signing cross-verification remained green;
+  strict typecheck/lint passed. No result/download route, token, session,
+  storage, retry, email, dependency, architecture change, production resource
+  or Phase 3 behavior was introduced.

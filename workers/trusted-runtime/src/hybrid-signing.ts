@@ -8,6 +8,7 @@ import {
 } from "node:crypto";
 
 import { Mldsa65, MLDSA65_SEED_BYTES } from "./mldsa65.ts";
+import type { SignatureManifest } from "../../../src/contracts/signature-manifest.ts";
 
 const ED25519_SEED_BYTES = 32;
 const ED25519_PKCS8_PREFIX = Uint8Array.from([
@@ -21,16 +22,7 @@ export interface SigningSecrets {
   readonly mldsa65SeedB64: string;
 }
 
-export interface DetachedSignatureManifest {
-  readonly schema_version: "1";
-  readonly pdf_sha256: string;
-  readonly ed25519_algorithm: "Ed25519";
-  readonly ed25519_public_key_id: string;
-  readonly ed25519_signature_b64: string;
-  readonly mldsa65_algorithm: "ML-DSA-65";
-  readonly mldsa65_public_key_id: string;
-  readonly mldsa65_signature_b64: string;
-}
+export type DetachedSignatureManifest = SignatureManifest;
 
 export interface HybridSignatureResult {
   readonly manifest: DetachedSignatureManifest;
