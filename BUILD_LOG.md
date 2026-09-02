@@ -1242,3 +1242,27 @@ historical work.
 - Strict typecheck/lint and 14 focused Browser Run, quota, queue, HTML and PDF
   tests passed. No paid renderer, caller HTML path, second runtime, persistence,
   production deployment, architecture change or Phase 3 behavior was added.
+
+### 58. Phase 2 Task 2.8 — deterministic XLSX writer
+
+- Task 2.8: **PASSED** on 2026-09-01. Added the approved minimal OOXML
+  writer with exact `fflate` 0.8.2 and named tree-shaken imports. It emits five
+  fixed sheets—Analysis, Findings, Recommendations, Risks and Charts—with
+  fixed canonical-token header styling, inline strings, numeric chart values,
+  fixed relationships/properties and deterministic ZIP timestamps.
+- Caller/model text never becomes a formula: leading formula characters are
+  escaped as text, invalid XML controls fail closed, and the package contains
+  no formula, macro, external-link or arbitrary workbook part. Sheet, row,
+  column and 4,194,304-byte output bounds are checked without truncation; the
+  maximal valid chart model produces exactly 513 rows on the Charts sheet.
+- Golden XLSX SHA-256
+  `8cc06315590d739dd2ed1bf4b259ac28dbb7fd020a533db56b35b981a0fb19e0`
+  passed exact-entry, deterministic-repeat, injection, invalid-input and bound
+  tests. A generated 5,028-byte proof opened read-only and without repair in
+  installed Excel 16.0.20326.20112 with all five sheets and expected title;
+  the generated workbook was then removed. The reproducible proof writer is
+  retained for later compatibility gates.
+- Strict typecheck/lint, nine focused report/XLSX regressions, the 220-package
+  license gate and a zero-vulnerability production audit passed. No server
+  Python, large workbook framework, persistence, architecture change,
+  production resource or Phase 3 behavior was introduced.
