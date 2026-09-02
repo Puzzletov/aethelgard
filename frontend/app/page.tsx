@@ -64,6 +64,24 @@ function Principles() {
   );
 }
 
+const sampleFiles = [
+  ["PDF report", "/sample/aethelgard-synthetic-sample.pdf"],
+  ["Detached signature", "/sample/aethelgard-synthetic-sample.sig.json"],
+  ["Dashboard data", "/sample/aethelgard-synthetic-sample.report.json"],
+  ["Synthetic source", "/sample/aethelgard-synthetic-sample.source.txt"],
+  ["Dedicated public keys", "/sample/aethelgard-synthetic-sample.signing-keys.json"],
+] as const;
+
+function StaticSample() {
+  return <section className="static-sample page-frame" aria-labelledby="sample-title">
+    <div className="section-grid"><div><p className="section-label">Portfolio fallback</p>
+      <h2 id="sample-title">Synthetic static sample — not a live analysis</h2></div>
+      <div><p>This reviewed example contains invented programme data and remains available when live free compute is unavailable.</p>
+        <ul>{sampleFiles.map(([label, href]) => <li key={href}><a href={href}>{label}</a></li>)}</ul>
+        <p>Verify the PDF with its detached signature and the dedicated sample public keys.</p></div></div>
+  </section>;
+}
+
 function SiteFooter() {
   return (
     <footer className="site-footer page-frame">
@@ -81,6 +99,7 @@ export default function Home() {
       <main id="main-content">
         <Hero />
         <DocumentPicker />
+        <StaticSample />
         <Principles />
       </main>
       <SiteFooter />

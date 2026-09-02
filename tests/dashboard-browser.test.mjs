@@ -17,6 +17,15 @@ test("dashboard success and Safe Mode states pass supported Chrome and Edge", { 
     [...requiredProofBrowserNames()].sort());
   for (const result of proof.results) {
     assert.equal(result.semantic_success, true);
+    assert.equal(result.visual_regression, true);
+    assert.equal(result.keyboard_focus, true);
+    assert.equal(result.reduced_motion, true);
+    assert.equal(result.golden_order, true);
+    assert.equal(result.deterministic_index, true);
+    assert.equal(result.exact_evidence, true);
+    assert.equal(result.content_preserved, true);
+    assert.equal(result.bound_case, true);
+    assert.equal(result.empty_case, true);
     assert.equal(result.semantic_fault, true);
     assert.equal(result.escaped, true);
     assert.equal(result.storage_writes, 0);

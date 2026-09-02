@@ -8,6 +8,7 @@ import { runDocumentPreflight } from "../input/preflight/run-preflight";
 import type { TurnstileController } from "../security/turnstile-client";
 import type { SafeMode } from "../../src/contracts/safe-mode";
 import { AnalysisDashboard } from "./analysis-dashboard";
+import { DownloadControls } from "./download-controls";
 import { TurnstileWidget } from "./turnstile-widget";
 
 type Focus = "full" | "financial" | "strategic" | "security";
@@ -74,15 +75,17 @@ function MissionControls({ disabled, focus, outputs, setFocus, toggle }: Readonl
   disabled: boolean; focus: Focus; outputs: readonly Output[];
   setFocus: (focus: Focus) => void; toggle: (output: Output, checked: boolean) => void;
 }>) {
-  return <fieldset disabled={disabled}><legend>Analysis options</legend>
-    <label htmlFor="analysis-focus">Focus</label>
+  return <fieldset className="mission-controls" disabled={disabled}><legend>Analysis options</legend>
+    <div className="focus-control"><label htmlFor="analysis-focus">Analytical focus</label>
     <select id="analysis-focus" value={focus} onChange={(event) => setFocus(event.target.value as Focus)}>
       <option value="full">Full</option><option value="financial">Financial</option>
       <option value="strategic">Strategic</option><option value="security">Security</option>
-    </select>
-    <fieldset><legend>Requested outputs</legend>{OUTPUTS.map((output) => <label key={output}>
+    </select></div>
+    <fieldset className="output-control"><legend>Requested outputs</legend><div className="output-grid">
+      {OUTPUTS.map((output) => <label className="output-option" key={output}>
       <input type="checkbox" checked={outputs.includes(output)}
-        onChange={(event) => toggle(output, event.target.checked)} />{output.toUpperCase()}</label>)}</fieldset>
+        onChange={(event) => toggle(output, event.target.checked)} /><span>{output.toUpperCase()}</span></label>)}
+    </div></fieldset>
   </fieldset>;
 }
 
@@ -95,6 +98,7 @@ export function DocumentPicker() {
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState("Ready for a document.");
   const [outcome, setOutcome] = useState<MissionOutcome | null>(null);
+  const [completedOutputs, setCompletedOutputs] = useState<readonly Output[]>([]);
   const onController = useCallback((value: TurnstileController | null) => { controller.current = value; }, []);
   const onReady = useCallback((ready: boolean) => setVerified(ready), []);
   function toggleOutput(output: Output, checked: boolean): void {
@@ -109,11 +113,12 @@ export function DocumentPicker() {
       controller.current?.resetAfterAttempt(); setVerified(false);
       setOutcome({ result: VERIFICATION_FAILURE, sources: [] }); return;
     }
-    setRunning(true); setOutcome(null);
+    const requestedOutputs = [...outputs];
+    setRunning(true); setOutcome(null); setCompletedOutputs([]);
     try {
       const { runBrowserMission } = await import("../analysis/browser-mission");
-      setOutcome(await runBrowserMission(state.result.document, focus, outputs, token,
-        (stage) => setProgress(STAGE_TEXT[stage])));
+      setOutcome(await runBrowserMission(state.result.document, focus, requestedOutputs, token,
+        (stage) => setProgress(STAGE_TEXT[stage]))); setCompletedOutputs(requestedOutputs);
     } catch {
       setOutcome({ result: CLIENT_FAILURE, sources: [] });
     } finally {
@@ -126,10 +131,13 @@ export function DocumentPicker() {
       <h2 id="document-intake-title">Select one document</h2></div><DocumentControl state={state} /></div>
     <MissionControls disabled={running || state.result?.ok !== true} focus={focus} outputs={outputs}
       setFocus={setFocus} toggle={toggleOutput} />
-    <TurnstileWidget onController={onController} onReady={onReady} />
-    <button type="button" disabled={state.result?.ok !== true || !verified || running || outputs.length === 0}
+    <div className="mission-action"><TurnstileWidget onController={onController} onReady={onReady} />
+    <button className="analyze-button" type="button"
+      disabled={state.result?.ok !== true || !verified || running || outputs.length === 0}
       onClick={() => void analyze()}>Analyze document</button>
-    <p role="status" aria-live="polite">{progress}</p>
+    <p className="analysis-progress" role="status" aria-live="polite">{progress}</p></div>
     <AnalysisDashboard result={outcome?.result ?? null} sources={outcome?.sources ?? []} />
+    {outcome?.response === undefined ? null : <DownloadControls response={outcome.response}
+      expectedPdf={completedOutputs.includes("pdf")} />}
   </section>;
 }

@@ -10,8 +10,8 @@ historical work.
   `56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2`.
 - Phase -1: **CLOSED**.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
-- Current implementation position: **PHASE 1 COMPLETE**; Phase 2 requires
-  explicit owner authorization.
+- Current implementation position: **PHASE 2 — IN PROGRESS** on
+  `phase/2-reporting`; Task 2.1 passed.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
 - Phase 1 status: **PASSED — MERGED** in PR #11 on 2026-08-31.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
@@ -1114,3 +1114,330 @@ historical work.
 - The correction was deployment order only: private runtime before dependent
   public edge. No source, architecture, boundary, route, persistence, paid
   path, secret, test, branch protection, or Phase 2 implementation changed.
+
+### 51. Phase 2 Task 2.1 — complete premium UI system
+
+- Task 2.1: **PASSED** on 2026-08-31. The existing typed Scandinavian token,
+  palette and self-hosted font foundation now styles the complete document,
+  analysis-option, verification, action, Oracle dashboard, evidence, source and
+  Safe Mode surfaces. The implementation retains semantic fieldsets, headings,
+  lists and sections; obvious focus states; restrained radii and transitions;
+  and an explicit reduced-motion override without a theme or UI dependency.
+- The shared build/Doctor phase marker now reports the authorized Phase 2.
+- The deterministic Chrome/Edge proof passed computed palette, typography,
+  divider, evidence, semantic-heading, keyboard-focus, reduced-motion, escaped
+  output, Safe Mode and zero-storage checks. Four design-system tests and all
+  55 frontend regressions passed with strict typecheck and lint.
+- Static export passed. Initial JavaScript measured 179,545 gzip bytes against
+  `B-FRONTEND-JS-GZIP-BYTES` 307,200; the largest static asset was pinned
+  `pyodide.asm.wasm` at 9,597,831 bytes against `B-STATIC-ASSET-BYTES`
+  26,214,400. Fonts remained local, licensed and hash-pinned. No architecture,
+  network boundary, persistence, runtime dependency, production resource,
+  Phase 3 behavior or unsupported-browser claim was introduced.
+
+### 52. Phase 2 Task 2.2 — dashboard information architecture
+
+- Task 2.2: **PASSED** on 2026-09-01. The validated Oracle dashboard now has
+  one fixed professional reading order: executive summary, findings,
+  recommendations, risks, quantitative candidates, critique resolutions and
+  source references. A semantic section index exposes the same exact order;
+  evidence links retain structural source targets and empty optional sections
+  use explicit accessible statements instead of blank lists.
+- The Chrome/Edge golden proof passed exact hierarchy, index destinations,
+  four evidence targets, unchanged risk/quantitative content, keyboard focus,
+  maximum 24-finding rendering, both empty states, Safe Mode, escaping and
+  zero-storage checks. Strict typecheck/lint, Oracle schema/bound tests and the
+  design-system regression passed.
+- Layout and text remain deterministic application code over already validated
+  `S-ORACLE-OUTPUT`; no AI HTML/layout, hidden evidence, content rewriting,
+  persistence, dependency, network behavior or Phase 3 work was introduced.
+
+### 53. Phase 2 Task 2.3 — Recharts visualizations
+
+- Task 2.3: **PASSED** on 2026-09-01. Added the Architecture-approved Recharts
+  implementation pinned at 3.10.1 and strict `S-CHART-DATA` parsing for bar or
+  line charts, at most 64 finite source-linked points and at most eight charts.
+  Invalid, empty, unknown-field, unsupported-kind and over-bound input omits
+  the complete chart rather than rendering raw data.
+- Each valid chart uses the shared visual tokens, an explicit title/kind/unit
+  label, Recharts accessibility layer, and a visible semantic source-data table
+  containing every value, unit and structural evidence link. No remote asset or
+  invented number exists in the chart path.
+- Chrome and Edge passed golden bar/line, accessibility, 64-point bound, empty,
+  invalid and zero-remote-request proofs. The minified proof bundle measured
+  264,410 gzip bytes against 307,200. Static production export passed with
+  initial JavaScript at 179,764 gzip bytes; strict typecheck/lint, 219-package
+  license validation and both zero-vulnerability audits passed. The only new
+  license expression is permissive `MIT AND ISC`, whose two components were
+  already approved. No chart is yet synthesized from Oracle data before Task
+  2.4, and no persistence, provider, architecture or Phase 3 behavior changed.
+
+### 54. Phase 2 Task 2.4 — deterministic chart transforms
+
+- Task 2.4: **PASSED** on 2026-09-01. A pure typed transform now converts
+  validated Oracle quantitative candidates into strict `S-CHART-DATA`, groups
+  only candidates with exactly matching unit and context, preserves candidate
+  and evidence order, and assigns stable chart IDs in first-seen order.
+- Invalid candidates and groups above `B-CHARTS` are omitted deterministically;
+  over-bound candidate collections fail closed. The transform never guesses,
+  case-folds or converts units and has no provider, network or persistence path.
+- Strict typecheck/lint and six focused schema/transform tests passed, covering
+  finite values, units, evidence, grouping, ordering, invalid omission and all
+  relevant bounds. No dependency, architecture, runtime topology, production
+  resource or Phase 3 behavior changed.
+
+### 55. Phase 2 Task 2.5 — shared report design tokens
+
+- Task 2.5: **PASSED** on 2026-09-01. The approved web palette,
+  typography, spacing and rule width now have one dependency-free canonical
+  typed authority and one strict readonly `S-REPORT-TOKENS` projection for
+  Browser Run reports. The existing frontend consumes that same authority.
+- The report schema accepts only the fixed paper, charcoal, terracotta, local
+  font stacks, exact spacing scale and rule width; unknown properties, remote
+  font values, altered colors, arbitrary spacing and user styling fail closed.
+  The projection uses 15 scalar/spacing entries against the 64-token bound.
+- Web/report equality snapshots, allowed-property validation, strict
+  typecheck/lint and the static production export passed. Existing local font
+  license/hash checks also remained green. No remote asset, dependency,
+  persistence, architecture, production resource or Phase 3 behavior changed.
+
+### 56. Phase 2 Task 2.6 — service-owned HTML report template
+
+- Task 2.6: **PASSED** on 2026-09-01. Added strict `S-REPORT-MODEL`
+  validation and a fixed UTF-8 report template owned by TrustedRuntime. It
+  renders executive summary, findings, recommendations, risks, bounded chart
+  tables and verification key IDs in one deterministic A4 print order using
+  the canonical `S-REPORT-TOKENS` projection.
+- Every inserted string and structural evidence label is escaped. Strict input
+  rejects caller HTML and unknown fields; fixed CSP permits no external
+  resource, and the template contains no script, URL, remote font, user CSS or
+  model-controlled markup. Five fixed sections remain below the 32-section
+  bound; UI text and 1,048,576-byte HTML limits fail closed atomically.
+- Golden output SHA-256
+  `7a1eb1a3d91a980b75ddcbaac161eebee2fc1ad062ad7c784c83926033c1c9a7`
+  passed deterministic-repeat, escaping/injection, CSP/resource, schema and
+  bound tests. Strict typecheck/lint and the existing Browser Run/chart/token
+  regressions passed. No dependency, persistence, production resource,
+  architecture or Phase 3 behavior changed.
+
+### 57. Phase 2 Task 2.7 — production Browser Run PDF
+
+- Task 2.7: **PASSED** on 2026-09-01. Added the private production PDF
+  path from branded service-owned report HTML through the fixed Browser Run
+  `/pdf` Quick Action. JavaScript and caching remain disabled; both action and
+  PDF timeouts are 15,000 ms. Returned bytes are held only in request memory
+  and passed through unchanged after PDF header, trailer, content-type and
+  8,388,608-byte validation.
+- The production coordinator reserves the anonymous daily quota before its
+  analysis/report callback, uses the existing two-job in-memory queue, settles
+  trusted Browser Run milliseconds, refunds unused reservations before a
+  Browser call, and fails closed on quota, state, queue, HTML, deadline,
+  transport or PDF validation failure. Persistent state remains exactly UTC
+  date plus aggregate Browser Run milliseconds.
+- Exact-byte, malformed, oversized, quota, queue, timeout, fixed-option and
+  state-schema regressions passed. A secret-free remote-development proof ran
+  the production template through the real Browser Run binding five times:
+  166, 458, 106, 99 and 182 ms, median 166 ms against the 5,000 ms target.
+  The dev session was stopped and every disposable proof file was removed.
+- Strict typecheck/lint and 14 focused Browser Run, quota, queue, HTML and PDF
+  tests passed. No paid renderer, caller HTML path, second runtime, persistence,
+  production deployment, architecture change or Phase 3 behavior was added.
+
+### 58. Phase 2 Task 2.8 — deterministic XLSX writer
+
+- Task 2.8: **PASSED** on 2026-09-01. Added the approved minimal OOXML
+  writer with exact `fflate` 0.8.2 and named tree-shaken imports. It emits five
+  fixed sheets—Analysis, Findings, Recommendations, Risks and Charts—with
+  fixed canonical-token header styling, inline strings, numeric chart values,
+  fixed relationships/properties and deterministic ZIP timestamps.
+- Caller/model text never becomes a formula: leading formula characters are
+  escaped as text, invalid XML controls fail closed, and the package contains
+  no formula, macro, external-link or arbitrary workbook part. Sheet, row,
+  column and 4,194,304-byte output bounds are checked without truncation; the
+  maximal valid chart model produces exactly 513 rows on the Charts sheet.
+- Golden XLSX SHA-256
+  `8cc06315590d739dd2ed1bf4b259ac28dbb7fd020a533db56b35b981a0fb19e0`
+  passed exact-entry, deterministic-repeat, injection, invalid-input and bound
+  tests. A generated 5,028-byte proof opened read-only and without repair in
+  installed Excel 16.0.20326.20112 with all five sheets and expected title;
+  the generated workbook was then removed. The reproducible proof writer is
+  retained for later compatibility gates.
+- Strict typecheck/lint, nine focused report/XLSX regressions, the 220-package
+  license gate and a zero-vulnerability production audit passed. No server
+  Python, large workbook framework, persistence, architecture change,
+  production resource or Phase 3 behavior was introduced.
+
+### 59. Phase 2 Task 2.9 — deterministic text and Markdown outputs
+
+- Task 2.9: **PASSED** on 2026-09-01. Added fixed UTF-8 plain-text and
+  Markdown formatters over strict `S-REPORT-MODEL`. Both preserve the same
+  service-owned order—title/focus, executive summary, findings,
+  recommendations, risks, quantitative analysis and verification—and retain
+  every structural evidence reference in deterministic source order.
+- Markdown insertion escapes control punctuation, angle brackets, backslashes
+  and URI-scheme colons. It creates no HTML, Markdown link, executable URI,
+  model-selected heading or AI-formatted content. Both outputs fail closed
+  atomically on invalid models or the 1,048,576-byte UTF-8 limit and retain
+  Unicode without normalization or truncation.
+- Golden plain-text SHA-256
+  `dc12b10eccfc02bcfa33b96430830123ddc6cfad62fd1c02dcb91da9b64e10e5`
+  and Markdown SHA-256
+  `6a345cebc977cce6e05ea3aff6a76ee3708e1c710034f24360d4b7df55c078e1`
+  passed repeat, fixed-order, evidence, escaping, Unicode, invalid-input and
+  bound tests with strict typecheck/lint. No dependency, model call, HTML path,
+  persistence, architecture, production resource or Phase 3 behavior changed.
+
+### 60. Phase 2 Task 2.10 — bounded multipart analysis response
+
+- Task 2.10: **PASSED** on 2026-09-01. Added strict
+  `S-SIGNATURE-MANIFEST` and `S-ANALYZE-RESPONSE` contracts plus one fixed
+  in-memory JSON response builder. It returns the validated dashboard and only
+  successfully produced requested PDF, XLSX and text fields in canonical
+  order, with `no-store`, JSON UTF-8 and `nosniff` headers.
+- PDF inclusion requires valid bounded PDF header/trailer bytes, an exact
+  matching SHA-256 digest, canonical 64-byte Ed25519 and 3,309-byte ML-DSA-65
+  signatures, fixed algorithms and valid public-key IDs. XLSX and text fields
+  enforce their own magic/UTF-8/byte bounds. Missing or failed PDF is omitted
+  without presenting unsigned bytes; invalid request order, duplicates,
+  unknown input fields and a serialized response over 8,388,608 bytes fail
+  closed before any response is sent.
+- All seven non-empty requested-part combinations, exact keys, headers,
+  missing/changed PDF, total boundary, strict input and no-storage/no-token
+  paths passed. Existing hybrid-signing cross-verification remained green;
+  strict typecheck/lint passed. No result/download route, token, session,
+  storage, retry, email, dependency, architecture change, production resource
+  or Phase 3 behavior was introduced.
+
+### 61. Phase 2 Task 2.11 — direct object-URL downloads
+
+- Task 2.11: **PASSED** on 2026-09-01. Added browser-only download
+  controls over validated `S-ANALYZE-RESPONSE`. PDF, detached signature JSON,
+  XLSX and text are decoded into fixed-type Blobs only after the user selects
+  the corresponding button, with fixed filenames and exact response bytes.
+- Every object URL has a 300,000 ms maximum timer and is revoked after its
+  click, on `pagehide`, `beforeunload`, component unmount, allocation/trigger
+  failure or explicit disposal. Invalid/missing parts create no URL. Controls
+  expose a polite success/failure status and never auto-download.
+- Exact name/type/byte, delayed-use, maximum-lifetime, page-exit, failure and
+  invalid-response unit cases passed. Real supported desktop Chrome and Edge
+  passed user-trigger, exact Blob, four-name/type, revoke-on-use/exit/failure,
+  zero-storage and zero-remote-request proofs.
+- Strict frontend typecheck/lint passed. No retrieval route, token, service
+  worker, cache, browser storage, network call, dependency, architecture
+  change, production resource or Phase 3 behavior was introduced.
+
+### 62. Phase 2 Task 2.12 — exact final-PDF hybrid signing
+
+- Task 2.12: **PASSED** on 2026-09-01. Added the private production signing
+  integration over exact Browser Run PDF bytes. It returns the original byte
+  array unchanged only after the existing signer hashes it once, signs that
+  digest with Ed25519 and ML-DSA-65, self-verifies both algorithms and emits a
+  strict bounded `S-SIGNATURE-MANIFEST`.
+- Independent Node verification accepted both signatures over the known
+  SHA-256 fixture digest
+  `904636248025ad20fb9c6bd8b700179a2a42edb5df3636e926c7e09055ee3f75`;
+  changing one PDF byte made both verifications fail. Invalid PDFs, incomplete
+  signature manifests and signer mutation fail closed; mutated input is
+  restored and no partially signed output is returned.
+- Seven real pinned-Wasm signing integrations passed the 50 ms median gate.
+  Strict typecheck/lint and 11 focused signing/response regressions passed.
+  Secrets remain private and wiped by the established signer. No generic or
+  public signing route, caller digest, dependency, persistence, architecture
+  change, production resource or Phase 3 behavior was introduced.
+
+### 63. Phase 2 Task 2.13 — detached signature-manifest UX
+
+- Task 2.13: **PASSED** on 2026-09-01. Wired the validated complete analysis
+  response through browser memory to the existing explicit download controls.
+  The PDF and exact pretty-printed version-1 `.sig.json` remain separate,
+  share fixed paired filenames and are never persisted.
+- The dashboard trust affordance displays the exact Ed25519 and ML-DSA-65 key
+  IDs, explains that both signatures cover the exact PDF bytes, and states
+  that verification does not prove source or analysis correctness. Semantic
+  headings, descriptions, explicit buttons, a live download status and the
+  verification-limits link passed in supported desktop Chrome and Edge. A
+  requested but unavailable PDF is labelled Safe Mode and no unsigned or
+  unverifiable PDF is offered.
+- Strict local parsing rejects malformed, unknown-field and over-32,768-byte
+  manifests. The known PDF matches its manifest digest; changing one byte
+  fails the local pairing check. The report response remains memory-only and
+  retains the existing eight-MiB total-response bound.
+- Strict typecheck/lint, seven focused detached-download unit cases, 11 mission
+  flow cases and the real Chrome/Edge lifecycle/accessibility proof passed. No
+  private key, embedded/circular signature, generic verifier, persistence,
+  dependency, architecture change, production resource or Phase 3 behavior
+  was introduced.
+
+### 64. Phase 2 Task 2.14 — synthetic signed static sample
+
+- Task 2.14: **PASSED** on 2026-09-02. Added a plainly labelled
+  `Synthetic static sample — not a live analysis` portfolio set: reviewed
+  invented TXT source, strict dashboard model, production PDF, detached
+  signature manifest and dedicated public verification keys. All five fixed
+  Pages links resolve to committed static artifacts; no live fallback exists.
+- The approved service-owned HTML and production Browser Run PDF path produced
+  the 54,241-byte PDF in 127 aggregate Browser Run ms. Ephemeral sample-only
+  private seeds existed only in generator memory, were wiped, and were not
+  committed. The disposable preview session, generated bundles and logs were
+  removed after use; no production resource changed.
+- Independent Node verification accepted Ed25519 and ML-DSA-65 over exact PDF
+  SHA-256 `d5b1b2cec7fb641bc1e39f3b642fa0ee132bfb6bcce21fb9ea36475335a830c6`.
+  Changing one byte failed both algorithms. The 4,886-byte manifest and all
+  source/PDF/report bounds passed; report and manifest strict schemas and the
+  dedicated key IDs agree exactly.
+- The 255-byte source is entirely fixed synthetic programme data, visibly
+  labelled on its first line, and manual plus deterministic review found no
+  person, owner, contact, URL, account or other real PII. Focused independent
+  verification, strict typecheck/lint and the production static frontend build
+  passed. No second host, dynamic fallback, private key, dependency,
+  architecture change, persistent data, production change or Phase 3 behavior
+  was introduced.
+
+### 65. Phase 2 exit gate
+
+- **PHASE 2 — PASSED** on 2026-09-02. The full Phase 2 and all earlier
+  regression suite, both Worker dry-run builds, static Pages production build,
+  strict typecheck/lint, zero-vulnerability audits, 220-package licence gate,
+  architecture lint and Doctor's 23 checks passed.
+- The exit gate found and corrected one composition defect: the private
+  `/analyze` route had not yet invoked the individually passing report modules.
+  It now composes validated Oracle output into the strict report model and
+  evidence-only charts, generates only requested XLSX/text, uses the existing
+  bounded Browser Run quota/queue for PDF, signs the exact returned bytes with
+  both approved algorithms and emits the bounded in-memory response. Turnstile
+  and all secrets remain inside `TrustedRuntime`; no new route was added.
+- The composed premium-journey regressions passed dashboard, PDF, detached
+  manifest, XLSX and text together. Independent verification accepted both
+  signatures; quota exhaustion made zero Browser/signing calls, omitted PDF,
+  preserved safe optional outputs and retained exactly the approved UTC-date
+  plus aggregate-Browser-ms durable state.
+- Supported Chrome and Edge passed the chart golden/accessibility, dashboard
+  success/Safe Mode and direct-download lifecycle proofs after chart rendering
+  was deferred until a report contains charts. Initial application JavaScript
+  is 268,974 gzip bytes against the 307,200-byte gate. Existing Excel opening,
+  deterministic OOXML compatibility and the signed static fallback remain
+  green.
+- Exact-zero, no-email/BYOK, no application persistence, no source/unredacted
+  egress, secret-free public edge, private trusted runtime and architecture
+  drift gates passed. No production deployment or Phase 3 implementation was
+  performed. Phase 3 remains owner-gated.
+
+### 66. Phase 2 PR CodeQL remediation
+
+- PR #16's first aggregate CodeQL scan identified one high-severity incomplete
+  string-escaping dataflow in the Markdown writer. The chained escape calls
+  were consolidated into one explicit character-class pass before fixed
+  URI-scheme colon escaping; output semantics and golden hash are unchanged.
+- A literal Windows-style backslash-path regression was added. Focused tests,
+  strict typecheck/lint and diff hygiene passed. No check, security control or
+  branch protection was weakened.
+- Both first CI runs also exposed a startup race in the existing browser proof:
+  the DevTools port could appear just before its `/proof` target. Target lookup
+  now waits at most five seconds in 50 ms intervals; browser execution and its
+  60-second proof bound are unchanged.
+- The focused Chrome/Edge language-gate proof, strict typecheck, lint and diff
+  hygiene pass with the bounded target wait.
+- The rerun then completed all 144 root tests and exposed only Node's
+  `MODULE_TYPELESS_PACKAGE_JSON` warning in frontend ESM tests. The frontend
+  package now declares its existing ESM boundary explicitly; its Next config
+  uses the equivalent ESM form so warnings-as-errors remains enforced.

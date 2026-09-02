@@ -11,6 +11,7 @@ const approvedLicenses = new Set([
   "ISC",
   "LGPL-3.0-or-later",
   "MIT",
+  "MIT AND ISC",
   "MIT OR Apache-2.0",
   "MPL-2.0",
   "Apache-2.0 OR BSD-3-Clause",

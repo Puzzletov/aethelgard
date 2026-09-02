@@ -16,7 +16,7 @@ async function readText(path) {
 test("the static shell uses the shared typed design tokens", async () => {
   const [layout, tokens, styles] = await Promise.all([
     readText("app/layout.tsx"),
-    readText("design/tokens.ts"),
+    readText("../src/design/visual-tokens.ts"),
     readText("app/globals.css"),
   ]);
 
@@ -51,4 +51,23 @@ test("the shell exposes only the approved browser mission control", async () => 
   assert.match(page, /Operating principles/);
   assert.match(picker, /AnalysisDashboard/);
   assert.match(picker, /TurnstileWidget/);
+});
+
+test("the complete mission surface uses one restrained accessible visual system", async () => {
+  const [styles, picker, dashboard] = await Promise.all([
+    readText("app/globals.css"),
+    readText("components/document-picker.tsx"),
+    readText("components/analysis-dashboard.tsx"),
+  ]);
+  assert.match(styles, /\.mission-controls/);
+  assert.match(styles, /\.analysis-dashboard/);
+  assert.match(styles, /\.executive-summary/);
+  assert.match(styles, /@media \(prefers-reduced-motion: reduce\)/);
+  assert.match(styles, /button:focus-visible/);
+  assert.doesNotMatch(styles, /gradient|backdrop-filter|border-radius:\s*[2-9]\d/iu);
+  assert.match(picker, /<fieldset className="mission-controls"/);
+  assert.match(picker, /className="analyze-button"/);
+  assert.match(dashboard, /<header className="analysis-heading"/);
+  assert.match(dashboard, /className="executive-summary"/);
+  assert.doesNotMatch(`${picker}\n${dashboard}`, /dangerouslySetInnerHTML|tabIndex=\{[1-9]\}/u);
 });

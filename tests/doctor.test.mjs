@@ -15,7 +15,7 @@ test("Doctor deterministically passes repository invariants without network call
   const report = JSON.parse(result.stdout);
   assert.equal(report.status, "ok");
   assert.equal(report.architecture, "2.1");
-  assert.equal(report.phase, "1");
+  assert.equal(report.phase, "2");
   assert.ok(report.checks >= 17);
 
   const source = await readFile(new URL("../scripts/doctor.mjs", import.meta.url), "utf8");

@@ -8,6 +8,7 @@ import {
 } from "node:crypto";
 
 import { Mldsa65, MLDSA65_SEED_BYTES } from "./mldsa65.ts";
+import type { SignatureManifest } from "../../../src/contracts/signature-manifest.ts";
 
 const ED25519_SEED_BYTES = 32;
 const ED25519_PKCS8_PREFIX = Uint8Array.from([
@@ -21,16 +22,7 @@ export interface SigningSecrets {
   readonly mldsa65SeedB64: string;
 }
 
-export interface DetachedSignatureManifest {
-  readonly schema_version: "1";
-  readonly pdf_sha256: string;
-  readonly ed25519_algorithm: "Ed25519";
-  readonly ed25519_public_key_id: string;
-  readonly ed25519_signature_b64: string;
-  readonly mldsa65_algorithm: "ML-DSA-65";
-  readonly mldsa65_public_key_id: string;
-  readonly mldsa65_signature_b64: string;
-}
+export type DetachedSignatureManifest = SignatureManifest;
 
 export interface HybridSignatureResult {
   readonly manifest: DetachedSignatureManifest;
@@ -38,6 +30,11 @@ export interface HybridSignatureResult {
     readonly ed25519Spki: Uint8Array;
     readonly mldsa65Raw: Uint8Array;
   };
+}
+
+export interface SigningIdentity {
+  readonly ed25519KeyId: string;
+  readonly mldsa65KeyId: string;
 }
 
 function decodeSeed(name: string, encoded: string, expectedBytes: number): Uint8Array {
@@ -72,6 +69,24 @@ function ed25519PrivateKey(seed: Uint8Array): ReturnType<typeof createPrivateKey
     return createPrivateKey({ key: der, format: "der", type: "pkcs8" });
   } finally {
     der.fill(0);
+  }
+}
+
+export async function deriveSigningIdentity(
+  secrets: SigningSecrets,
+  mldsa65: Mldsa65,
+): Promise<SigningIdentity> {
+  const edSeed = decodeSeed("Ed25519 seed", secrets.ed25519SeedB64, ED25519_SEED_BYTES);
+  const mlSeed = decodeSeed("ML-DSA-65 seed", secrets.mldsa65SeedB64, MLDSA65_SEED_BYTES);
+  try {
+    const edPublic = Uint8Array.from(createPublicKey(ed25519PrivateKey(edSeed))
+      .export({ format: "der", type: "spki" }));
+    const mlPublic = await mldsa65.publicKeyFromSeed(mlSeed);
+    return Object.freeze({ ed25519KeyId: keyId("ed25519", edPublic),
+      mldsa65KeyId: keyId("mldsa65", mlPublic) });
+  } finally {
+    edSeed.fill(0);
+    mlSeed.fill(0);
   }
 }
 

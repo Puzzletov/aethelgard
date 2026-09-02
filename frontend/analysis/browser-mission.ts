@@ -1,6 +1,9 @@
 import { serializeAnalyzeRequest, type NormalizedSourceRecord } from "../../src/contracts/analyze";
+import { analyzeResponseSchema, MAX_ANALYZE_RESPONSE_BYTES,
+  type AnalyzeResponse } from "../../src/contracts/analyze-response";
 import { parseDashboardOracle, type OracleOutput } from "../../src/contracts/oracle";
 import { safeModeSchema, type SafeMode } from "../../src/contracts/safe-mode";
+import type { ReportModel } from "../../src/contracts/report-model";
 import type { SelectedDocument } from "../input/document-input";
 import { normalizeSourceRecords } from "../input/normalization/source-record";
 import type { NormalizedSourceRecord as LocalSourceRecord } from "../input/normalization/source-record";
@@ -10,13 +13,13 @@ import { evaluateEnglishLanguage } from "../input/validation/language-gate";
 import { enforceWordLimit } from "../input/validation/word-limit";
 
 const ANALYSIS_WALL_MS = 180_000;
-const MAX_ANALYSIS_RESPONSE_BYTES = 262_144;
 
 export type MissionStage = "local_parse" | "language" | "redaction" | "verification" | "analysis" | "complete";
-export type MissionResult = OracleOutput | SafeMode;
+export type MissionResult = OracleOutput | ReportModel | SafeMode;
 export interface MissionOutcome {
   readonly result: MissionResult;
   readonly sources: readonly NormalizedSourceRecord[];
+  readonly response?: AnalyzeResponse;
 }
 type Focus = "full" | "financial" | "strategic" | "security";
 type Output = "pdf" | "xlsx" | "text";
@@ -24,7 +27,8 @@ type Output = "pdf" | "xlsx" | "text";
 export interface MissionDependencies {
   readonly parseDocument: (document: SelectedDocument) => Promise<ParserOperationResult>;
   readonly redact: (request: Parameters<typeof runRedactionWorker>[0]) => Promise<RedactionOperationResult>;
-  readonly send: (body: Uint8Array, sources: Parameters<typeof parseDashboardOracle>[1]) => Promise<MissionResult>;
+  readonly send: (body: Uint8Array, sources: Parameters<typeof parseDashboardOracle>[1]) =>
+    Promise<MissionResult | AnalyzeResponse>;
 }
 
 const DOCUMENT_FAILURE = Object.freeze({ schema_version: "1", ok: false, category: "document",
@@ -41,18 +45,22 @@ const ANALYSIS_FAILURE = Object.freeze({ schema_version: "1", ok: false, categor
 
 async function defaultSend(
   body: Uint8Array, sources: Parameters<typeof parseDashboardOracle>[1],
-): Promise<MissionResult> {
+): Promise<MissionResult | AnalyzeResponse> {
   try {
     const response = await fetch("/analyze", { method: "POST", headers: { "content-type": "application/json" },
       body: new TextDecoder().decode(body), signal: AbortSignal.timeout(ANALYSIS_WALL_MS) });
     const declared = Number(response.headers.get("content-length") ?? "0");
-    if (!response.ok || declared > MAX_ANALYSIS_RESPONSE_BYTES) return ANALYSIS_FAILURE;
+    if (!response.ok || declared > MAX_ANALYZE_RESPONSE_BYTES) return ANALYSIS_FAILURE;
     const bytes = new Uint8Array(await response.arrayBuffer());
-    if (bytes.byteLength > MAX_ANALYSIS_RESPONSE_BYTES) return ANALYSIS_FAILURE;
+    if (bytes.byteLength > MAX_ANALYZE_RESPONSE_BYTES) return ANALYSIS_FAILURE;
     const value: unknown = JSON.parse(new TextDecoder().decode(bytes));
     const safe = safeModeSchema.safeParse(value);
     if (safe.success) return safe.data;
-    return parseDashboardOracle(value, sources) ?? ANALYSIS_FAILURE;
+    const complete = analyzeResponseSchema.safeParse(value);
+    if (!complete.success || !reportEvidenceBelongs(complete.data.dashboard, sources)) {
+      return ANALYSIS_FAILURE;
+    }
+    return complete.data;
   } catch { return ANALYSIS_FAILURE; }
 }
 
@@ -102,9 +110,21 @@ export async function runBrowserMission(
   try { body = serializeAnalyzeRequest({ redaction_result: redaction, turnstile_token: token,
     focus, requested_outputs: [...outputs] }); } catch { return { result: PRIVACY_FAILURE, sources: [] }; }
   onStage("analysis");
-  let result: MissionResult;
+  let result: MissionResult | AnalyzeResponse;
   try { result = await dependencies.send(body, redaction.sources); }
   catch { result = ANALYSIS_FAILURE; }
   onStage("complete");
-  return { result, sources: redaction.sources };
+  return "dashboard" in result
+    ? { result: result.dashboard, sources: redaction.sources, response: result }
+    : { result, sources: redaction.sources };
+}
+
+function reportEvidenceBelongs(
+  report: ReportModel, sources: Parameters<typeof parseDashboardOracle>[1],
+): boolean {
+  const allowed = new Set(sources.map((source) => JSON.stringify(source.reference)));
+  const evidence = [...report.findings, ...report.recommendations, ...report.risks]
+    .flatMap((item) => item.evidence);
+  const chartEvidence = report.charts.flatMap((chart) => chart.points.flatMap((point) => point.evidence));
+  return [...evidence, ...chartEvidence].every((reference) => allowed.has(JSON.stringify(reference)));
 }

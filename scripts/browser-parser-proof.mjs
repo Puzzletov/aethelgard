@@ -146,11 +146,22 @@ function evaluate(socket, id) {
   });
 }
 
+async function proofPageSocketUrl(port) {
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    try {
+      const targets = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();
+      const page = targets.find((target) => target.type === "page" && target.url.includes("/proof"));
+      if (page?.webSocketDebuggerUrl !== undefined) return page.webSocketDebuggerUrl;
+    } catch {
+      // The debugging port may become visible just before its target list.
+    }
+    await delay(50);
+  }
+  throw new Error("Browser proof page was not found within 5 seconds.");
+}
+
 async function proofTitle(port) {
-  const targets = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();
-  const page = targets.find((target) => target.type === "page" && target.url.includes("/proof"));
-  if (page?.webSocketDebuggerUrl === undefined) throw new Error("Browser proof page was not found.");
-  const socket = new WebSocket(page.webSocketDebuggerUrl);
+  const socket = new WebSocket(await proofPageSocketUrl(port));
   await new Promise((resolve, reject) => {
     socket.addEventListener("open", resolve, { once: true });
     socket.addEventListener("error", reject, { once: true });

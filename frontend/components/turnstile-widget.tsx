@@ -23,10 +23,11 @@ export function TurnstileWidget({ onController, onReady }: TurnstileWidgetProps)
     onController(controller);
     return () => { onController(null); onReady(false); };
   }, [loaded, onController, onReady]);
-  if (TURNSTILE_SITE_KEY.length === 0) return <p role="alert">Verification is not configured.</p>;
-  return <>
+  if (TURNSTILE_SITE_KEY.length === 0) return <p className="verification-fault" role="alert">Verification is not configured.</p>;
+  return <div className="verification-panel">
+    <p><span>Request verification</span>One challenge. Cleared after every attempt.</p>
     <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
       strategy="afterInteractive" onLoad={() => setLoaded(true)} />
-    <div ref={container} aria-label="Request verification" />
-  </>;
+    <div className="turnstile-frame" ref={container} aria-label="Request verification" />
+  </div>;
 }
