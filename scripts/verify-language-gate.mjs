@@ -5,6 +5,7 @@ import ts from "typescript";
 import { runBrowserParserProof, supportedBrowserExecutables } from "./browser-parser-proof.mjs";
 
 const frontend = new URL("../frontend/", import.meta.url);
+const fixtures = JSON.parse(await readFile(new URL("../tests/fixtures/language.json", import.meta.url), "utf8"));
 
 async function text(relative) {
   return readFile(new URL(relative, frontend), "utf8");
@@ -40,27 +41,30 @@ async function browserModules() {
 function proofWorker() {
   return `
 import { evaluateEnglishLanguage } from "/language/language-gate.js";
-const record = (content) => [{ schema_version: "1", ordinal: 1,
-  reference: { kind: "txt_lines", line_start: 1, line_end: 1 }, content }];
-const english = evaluateEnglishLanguage(record("This project provides a clear independent analysis of the evidence and explains every recommendation in plain English for careful review."));
-const names = evaluateEnglishLanguage(record("This project provides a clear independent analysis of the evidence and explains every recommendation in plain English for careful review with Renée Dubois and José Álvarez named as reviewers."));
-const french = evaluateEnglishLanguage(record("Cette analyse indépendante explique les preuves, identifie chaque risque important et présente des recommandations pratiques pour aider l'équipe à prendre une décision prudente."));
-const mixed = evaluateEnglishLanguage(record("The review explains the evidence and material risks for the project. Cette analyse explique aussi les preuves et les risques importants pour le projet."));
-const short = evaluateEnglishLanguage(record("This text is too short."));
-const valid = english.accepted && names.accepted && english.margin >= 2000 && names.margin >= 2000
-  && !french.accepted && french.reason === "non_english"
-  && !mixed.accepted && mixed.reason === "mixed_or_uncertain"
-  && !short.accepted && short.reason === "insufficient";
-if (!valid) throw new Error("language_gate_invalid");
-self.postMessage({ status: "ok", english_margin: english.margin, names_margin: names.margin,
-  failures: [french.reason, mixed.reason, short.reason], external_network_requests: 0 });
+const fixtures = __LANGUAGE_FIXTURES__;
+let languageDataRequests = 0;
+globalThis.fetch = async () => { languageDataRequests += 1; throw new Error("language_network_forbidden"); };
+function record(fixture) {
+  const reference = fixture.reference === "xlsx"
+    ? { kind: "xlsx_cell", sheet: 1, cell: "A1" }
+    : { kind: "txt_lines", line_start: 1, line_end: 1 };
+  return [{ schema_version: "1", ordinal: 1, reference, content: fixture.content }];
+}
+const decisions = fixtures.fixtures.map(fixture => ({ id: fixture.id,
+  decision: evaluateEnglishLanguage(record(fixture)) }));
+const mismatches = decisions.filter((item, index) =>
+  JSON.stringify(item.decision) !== JSON.stringify(fixtures.fixtures[index].expected));
+self.postMessage({ status: "ok", schema_version: "1", fixture_count: decisions.length,
+  decisions, mismatches, language_data_requests: languageDataRequests,
+  passed: decisions.length === 9 && mismatches.length === 0 && languageDataRequests === 0 });
 `;
 }
 
 const modules = await browserModules();
+const workerSource = proofWorker().replace("__LANGUAGE_FIXTURES__", JSON.stringify(fixtures));
 const results = [];
 for (const browser of supportedBrowserExecutables()) {
-  const result = await runBrowserParserProof(Buffer.alloc(0), proofWorker(), browser.executable, modules);
+  const result = await runBrowserParserProof(Buffer.alloc(0), workerSource, browser.executable, modules);
   results.push({ browser: browser.name, ...result });
 }
 process.stdout.write(`${JSON.stringify({ status: "ok", results })}\n`);

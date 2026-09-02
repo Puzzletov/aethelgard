@@ -1471,3 +1471,19 @@ historical work.
   Redaction Worker proof passed. Both browsers exposed no mapping, external
   request or persistent write and failed closed on crash and the ten-second
   timeout. No floor, dependency, production resource or architecture changed.
+
+### 69. Phase 3 Task 3.3 — language fixtures release gate
+
+- Task 3.3: **PASSED** on 2026-09-02. Froze the nine required local fixture
+  classes: clear English prose, English XLSX table content, English with
+  international names, Spanish, French, German, Swedish, mixed/ambiguous text
+  and insufficient text. Each fixture records its exact schema-version-1
+  decision under the release code.
+- Chrome and Edge produced the complete expected matrix. All three English
+  fixtures ranked `eng` first with integer margins of 2,402, 2,402 and 2,277
+  basis points; all other fixtures failed closed with their exact reason.
+  No language-data request occurred.
+- The browser matrix, strict typecheck/lint and diff hygiene pass. The local
+  `franc-min` dependency, 40-letter/eight-token evidence floors, 20,000-code-
+  point sample and 2,000-basis-point threshold are unchanged; no translation,
+  online service, persistence, production change or architecture drift exists.
