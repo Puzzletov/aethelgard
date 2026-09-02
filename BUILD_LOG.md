@@ -1392,3 +1392,32 @@ historical work.
   passed. No second host, dynamic fallback, private key, dependency,
   architecture change, persistent data, production change or Phase 3 behavior
   was introduced.
+
+### 65. Phase 2 exit gate
+
+- **PHASE 2 — PASSED** on 2026-09-02. The full Phase 2 and all earlier
+  regression suite, both Worker dry-run builds, static Pages production build,
+  strict typecheck/lint, zero-vulnerability audits, 220-package licence gate,
+  architecture lint and Doctor's 23 checks passed.
+- The exit gate found and corrected one composition defect: the private
+  `/analyze` route had not yet invoked the individually passing report modules.
+  It now composes validated Oracle output into the strict report model and
+  evidence-only charts, generates only requested XLSX/text, uses the existing
+  bounded Browser Run quota/queue for PDF, signs the exact returned bytes with
+  both approved algorithms and emits the bounded in-memory response. Turnstile
+  and all secrets remain inside `TrustedRuntime`; no new route was added.
+- The composed premium-journey regressions passed dashboard, PDF, detached
+  manifest, XLSX and text together. Independent verification accepted both
+  signatures; quota exhaustion made zero Browser/signing calls, omitted PDF,
+  preserved safe optional outputs and retained exactly the approved UTC-date
+  plus aggregate-Browser-ms durable state.
+- Supported Chrome and Edge passed the chart golden/accessibility, dashboard
+  success/Safe Mode and direct-download lifecycle proofs after chart rendering
+  was deferred until a report contains charts. Initial application JavaScript
+  is 268,974 gzip bytes against the 307,200-byte gate. Existing Excel opening,
+  deterministic OOXML compatibility and the signed static fallback remain
+  green.
+- Exact-zero, no-email/BYOK, no application persistence, no source/unredacted
+  egress, secret-free public edge, private trusted runtime and architecture
+  drift gates passed. No production deployment or Phase 3 implementation was
+  performed. Phase 3 remains owner-gated.

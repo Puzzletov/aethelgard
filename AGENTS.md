@@ -23,9 +23,8 @@ runtime beyond proving the failure is runtime-specific.
 
 - Phase 0 is complete and merged.
 - Phase 1 Tasks 1.1–1.22 and its exit gate are complete and merged in PR #11.
-- Phase 2 is owner-authorized on `phase/2-reporting`, one task at a time.
-- Tasks 2.1–2.14 are passed; the Phase 2 exit gate is next.
-- Phase 3 and later implementation are not authorized.
+- Phase 2 Tasks 2.1–2.14 and its exit gate are complete on `phase/2-reporting`.
+- Phase 3 and later implementation require explicit owner authorization.
 
 ## Task protocol
 

@@ -32,6 +32,11 @@ export interface HybridSignatureResult {
   };
 }
 
+export interface SigningIdentity {
+  readonly ed25519KeyId: string;
+  readonly mldsa65KeyId: string;
+}
+
 function decodeSeed(name: string, encoded: string, expectedBytes: number): Uint8Array {
   if (!STRICT_BASE64.test(encoded) || encoded.length > 64) throw new Error(`${name} is invalid.`);
   let decoded: string;
@@ -64,6 +69,24 @@ function ed25519PrivateKey(seed: Uint8Array): ReturnType<typeof createPrivateKey
     return createPrivateKey({ key: der, format: "der", type: "pkcs8" });
   } finally {
     der.fill(0);
+  }
+}
+
+export async function deriveSigningIdentity(
+  secrets: SigningSecrets,
+  mldsa65: Mldsa65,
+): Promise<SigningIdentity> {
+  const edSeed = decodeSeed("Ed25519 seed", secrets.ed25519SeedB64, ED25519_SEED_BYTES);
+  const mlSeed = decodeSeed("ML-DSA-65 seed", secrets.mldsa65SeedB64, MLDSA65_SEED_BYTES);
+  try {
+    const edPublic = Uint8Array.from(createPublicKey(ed25519PrivateKey(edSeed))
+      .export({ format: "der", type: "spki" }));
+    const mlPublic = await mldsa65.publicKeyFromSeed(mlSeed);
+    return Object.freeze({ ed25519KeyId: keyId("ed25519", edPublic),
+      mldsa65KeyId: keyId("mldsa65", mlPublic) });
+  } finally {
+    edSeed.fill(0);
+    mlSeed.fill(0);
   }
 }
 

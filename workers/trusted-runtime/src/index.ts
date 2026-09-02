@@ -4,6 +4,9 @@ import { readBoundedBody } from "../../../src/public-edge/body.ts";
 import { parseTrustedAnalyzeRequest } from "../../../src/contracts/analyze.ts";
 import { verifyTurnstile } from "./turnstile.ts";
 import { runAnalysis } from "./analysis-orchestrator.ts";
+import { FinalPdfQueue } from "./pdf-queue.ts";
+import { createProductionReport } from "./report-pipeline.ts";
+import { productionSigningIdentity, signProductionFinalPdf } from "./signing-runtime.ts";
 
 const RESPONSE_HEADERS = Object.freeze({
   "cache-control": "no-store",
@@ -39,6 +42,8 @@ function parseJson(bytes: Uint8Array): unknown {
 }
 
 export class TrustedRuntime extends DurableObject<TrustedRuntimeEnv> {
+  private readonly pdfQueue = new FinalPdfQueue();
+
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname !== "/analyze" || url.search !== "") {
@@ -74,7 +79,20 @@ export class TrustedRuntime extends DurableObject<TrustedRuntimeEnv> {
       groq: this.env.GROQ_API_KEY,
       openrouter_free: this.env.OPENROUTER_API_KEY,
     });
-    return new Response(JSON.stringify(analysis), { status: 200, headers: RESPONSE_HEADERS });
+    if ("ok" in analysis) {
+      return new Response(JSON.stringify(analysis), { status: 200, headers: RESPONSE_HEADERS });
+    }
+    const report = await createProductionReport(envelope, analysis, {
+      browser: this.env.BROWSER,
+      identity: () => productionSigningIdentity(this.env.SIGNING_ED25519_PRIVATE_B64,
+        this.env.SIGNING_MLDSA65_SEED_B64),
+      queue: this.pdfQueue,
+      sign: (bytes) => signProductionFinalPdf(bytes, this.env.SIGNING_ED25519_PRIVATE_B64,
+        this.env.SIGNING_MLDSA65_SEED_B64),
+      storage: this.ctx.storage,
+    });
+    return report instanceof Response ? report
+      : new Response(JSON.stringify(report), { status: 200, headers: RESPONSE_HEADERS });
   }
 }
 

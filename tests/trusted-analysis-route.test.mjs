@@ -13,7 +13,11 @@ test("private analyze route verifies Turnstile before the bounded analysis orche
   assert.match(source, /"cache-control": "no-store"/u);
 });
 
-test("Phase 1 journey returns no Phase 0 synthetic PDF or Phase 2 output", () => {
-  assert.doesNotMatch(source, /renderSyntheticPdf|signTrustedFinalPdf|createFoundationProof|FinalPdfQueue/u);
+test("Phase 2 report composition follows analysis without restoring Phase 0 proof paths", () => {
+  const analysis = source.indexOf("await runAnalysis");
+  const reporting = source.indexOf("await createProductionReport");
+  assert.ok(analysis >= 0 && reporting > analysis);
+  assert.match(source, /FinalPdfQueue|signProductionFinalPdf/u);
+  assert.doesNotMatch(source, /renderSyntheticPdf|signTrustedFinalPdf|createFoundationProof/u);
   assert.doesNotMatch(source, /download|report_html|result route/iu);
 });

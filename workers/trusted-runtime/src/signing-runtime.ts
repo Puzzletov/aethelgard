@@ -1,6 +1,7 @@
 import mldsaModule from "../vendor/mldsa-native/mldsa65.wasm";
 
-import { signExactPdf, type HybridSignatureResult } from "./hybrid-signing.ts";
+import { deriveSigningIdentity, signExactPdf, type HybridSignatureResult,
+  type SigningIdentity } from "./hybrid-signing.ts";
 import { integrateTrustedFinalPdf, type SignedFinalPdf } from "./final-signing.ts";
 import { Mldsa65 } from "./mldsa65.ts";
 
@@ -22,4 +23,11 @@ export function signProductionFinalPdf(
   const secrets = { ed25519SeedB64, mldsa65SeedB64 };
   return integrateTrustedFinalPdf(pdfBytes, secrets,
     (bytes, signingSecrets) => signExactPdf(bytes, signingSecrets, mldsa65));
+}
+
+export function productionSigningIdentity(
+  ed25519SeedB64: string,
+  mldsa65SeedB64: string,
+): Promise<SigningIdentity> {
+  return deriveSigningIdentity({ ed25519SeedB64, mldsa65SeedB64 }, mldsa65);
 }

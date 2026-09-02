@@ -1,8 +1,13 @@
+import { lazy, Suspense } from "react";
+
 import type { NormalizedSourceRecord, SourceReference } from "../input/normalization/source-record";
 import type { OracleOutput } from "../../src/contracts/oracle";
 import type { ReportModel } from "../../src/contracts/report-model";
 import type { SafeMode } from "../../src/contracts/safe-mode";
-import { AnalysisChart } from "./analysis-chart";
+
+const AnalysisChart = lazy(async () => ({
+  default: (await import("./analysis-chart")).AnalysisChart,
+}));
 
 interface DashboardProps {
   readonly result: OracleOutput | ReportModel | SafeMode | null;
@@ -91,7 +96,8 @@ export function AnalysisDashboard({ result, sources }: DashboardProps) {
     {"charts" in result ? <section className="analysis-section" id="charts" aria-labelledby="charts-title">
       <h3 id="charts-title">Charts</h3>{result.charts.length === 0
         ? <EmptyState>No charts were produced.</EmptyState>
-        : result.charts.map((chart) => <AnalysisChart data={chart} key={chart.id} />)}</section> : <>
+        : result.charts.map((chart) => <Suspense fallback={<p>Preparing chart.</p>} key={chart.id}>
+          <AnalysisChart data={chart} /></Suspense>)}</section> : <>
       <section className="analysis-section" id="candidates" aria-labelledby="candidates-title"><h3 id="candidates-title">Quantitative candidates</h3>
         {result.quantitative_candidates.length === 0 ? <EmptyState>No quantitative candidates were identified.</EmptyState>
           : <ul className="result-list">{result.quantitative_candidates.map((item) => <li key={item.id}><p>{item.label}: {item.value} {item.unit}</p>
