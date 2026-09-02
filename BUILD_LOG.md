@@ -1455,3 +1455,19 @@ historical work.
   persistence, production change or architecture drift was introduced.
 - The frozen-manifest/hash test, focused browser proof, existing six preflight
   regressions, strict typecheck/lint, architecture lint and diff hygiene pass.
+
+### 68. Phase 3 Task 3.2 — frozen PII corpus release gate
+
+- Task 3.2: **PASSED** on 2026-09-02 without changing the approved corpus,
+  release redactor or acceptance floors. The release-target browser bundle
+  reproduced exact corpus SHA-256
+  `0c777c5fc3300eb0b00a29cf583b23ea6455a12a43d990531b88990d1d679467`
+  across 84 cases and 576 labelled entities.
+- Structured recall, named recall and overall recall were `1.0`; named
+  precision was `0.9908256880733946` and overall precision was
+  `0.9965397923875432`, with zero must-redact leaks. These remain the frozen
+  project regression baseline, not a universal accuracy claim.
+- The static release build, exact corpus regression and existing Chrome/Edge
+  Redaction Worker proof passed. Both browsers exposed no mapping, external
+  request or persistent write and failed closed on crash and the ten-second
+  timeout. No floor, dependency, production resource or architecture changed.
