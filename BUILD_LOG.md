@@ -1367,3 +1367,28 @@ historical work.
   private key, embedded/circular signature, generic verifier, persistence,
   dependency, architecture change, production resource or Phase 3 behavior
   was introduced.
+
+### 64. Phase 2 Task 2.14 — synthetic signed static sample
+
+- Task 2.14: **PASSED** on 2026-09-02. Added a plainly labelled
+  `Synthetic static sample — not a live analysis` portfolio set: reviewed
+  invented TXT source, strict dashboard model, production PDF, detached
+  signature manifest and dedicated public verification keys. All five fixed
+  Pages links resolve to committed static artifacts; no live fallback exists.
+- The approved service-owned HTML and production Browser Run PDF path produced
+  the 54,241-byte PDF in 127 aggregate Browser Run ms. Ephemeral sample-only
+  private seeds existed only in generator memory, were wiped, and were not
+  committed. The disposable preview session, generated bundles and logs were
+  removed after use; no production resource changed.
+- Independent Node verification accepted Ed25519 and ML-DSA-65 over exact PDF
+  SHA-256 `d5b1b2cec7fb641bc1e39f3b642fa0ee132bfb6bcce21fb9ea36475335a830c6`.
+  Changing one byte failed both algorithms. The 4,886-byte manifest and all
+  source/PDF/report bounds passed; report and manifest strict schemas and the
+  dedicated key IDs agree exactly.
+- The 255-byte source is entirely fixed synthetic programme data, visibly
+  labelled on its first line, and manual plus deterministic review found no
+  person, owner, contact, URL, account or other real PII. Focused independent
+  verification, strict typecheck/lint and the production static frontend build
+  passed. No second host, dynamic fallback, private key, dependency,
+  architecture change, persistent data, production change or Phase 3 behavior
+  was introduced.

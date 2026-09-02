@@ -1,0 +1,88 @@
+{
+  "schema_version": "1",
+  "focus": "full",
+  "title": "Synthetic control review",
+  "executive_summary": "This static demonstration uses invented programme data. Nine of 12 illustrative control reviews are complete, leaving three for follow-up.",
+  "findings": [
+    {
+      "id": "finding-1",
+      "title": "Illustrative completion gap",
+      "analysis": "The synthetic source records nine completed reviews against 12 planned reviews.",
+      "confidence": "high",
+      "evidence": [
+        {
+          "kind": "txt_lines",
+          "line_start": 2,
+          "line_end": 2
+        }
+      ]
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "recommendation-1",
+      "title": "Close the illustrative gap",
+      "action": "Assign owners to the three synthetic outstanding reviews and check completion evidence.",
+      "priority": "high",
+      "confidence": "high",
+      "evidence": [
+        {
+          "kind": "txt_lines",
+          "line_start": 3,
+          "line_end": 3
+        }
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "id": "risk-1",
+      "text": "The synthetic programme could leave three reviews incomplete.",
+      "confidence": "high",
+      "evidence": [
+        {
+          "kind": "txt_lines",
+          "line_start": 3,
+          "line_end": 3
+        }
+      ]
+    }
+  ],
+  "charts": [
+    {
+      "schema_version": "1",
+      "id": "chart-1",
+      "title": "Illustrative control reviews",
+      "unit": "reviews",
+      "kind": "bar",
+      "points": [
+        {
+          "label": "Complete",
+          "value": 9,
+          "evidence": [
+            {
+              "kind": "txt_lines",
+              "line_start": 2,
+              "line_end": 2
+            }
+          ]
+        },
+        {
+          "label": "Outstanding",
+          "value": 3,
+          "evidence": [
+            {
+              "kind": "txt_lines",
+              "line_start": 3,
+              "line_end": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "ed25519_key_id": "ed25519:668dad86a0bd733ceac392f6f2ddfa8f",
+    "mldsa65_key_id": "mldsa65:af44288b5a4d484bd52f56bdbcb865e3"
+  }
+}
