@@ -1307,3 +1307,21 @@ historical work.
   strict typecheck/lint passed. No result/download route, token, session,
   storage, retry, email, dependency, architecture change, production resource
   or Phase 3 behavior was introduced.
+
+### 61. Phase 2 Task 2.11 — direct object-URL downloads
+
+- Task 2.11: **PASSED** on 2026-09-01. Added browser-only download
+  controls over validated `S-ANALYZE-RESPONSE`. PDF, detached signature JSON,
+  XLSX and text are decoded into fixed-type Blobs only after the user selects
+  the corresponding button, with fixed filenames and exact response bytes.
+- Every object URL has a 300,000 ms maximum timer and is revoked after its
+  click, on `pagehide`, `beforeunload`, component unmount, allocation/trigger
+  failure or explicit disposal. Invalid/missing parts create no URL. Controls
+  expose a polite success/failure status and never auto-download.
+- Exact name/type/byte, delayed-use, maximum-lifetime, page-exit, failure and
+  invalid-response unit cases passed. Real supported desktop Chrome and Edge
+  passed user-trigger, exact Blob, four-name/type, revoke-on-use/exit/failure,
+  zero-storage and zero-remote-request proofs.
+- Strict frontend typecheck/lint passed. No retrieval route, token, service
+  worker, cache, browser storage, network call, dependency, architecture
+  change, production resource or Phase 3 behavior was introduced.
