@@ -1344,3 +1344,26 @@ historical work.
   Secrets remain private and wiped by the established signer. No generic or
   public signing route, caller digest, dependency, persistence, architecture
   change, production resource or Phase 3 behavior was introduced.
+
+### 63. Phase 2 Task 2.13 — detached signature-manifest UX
+
+- Task 2.13: **PASSED** on 2026-09-01. Wired the validated complete analysis
+  response through browser memory to the existing explicit download controls.
+  The PDF and exact pretty-printed version-1 `.sig.json` remain separate,
+  share fixed paired filenames and are never persisted.
+- The dashboard trust affordance displays the exact Ed25519 and ML-DSA-65 key
+  IDs, explains that both signatures cover the exact PDF bytes, and states
+  that verification does not prove source or analysis correctness. Semantic
+  headings, descriptions, explicit buttons, a live download status and the
+  verification-limits link passed in supported desktop Chrome and Edge. A
+  requested but unavailable PDF is labelled Safe Mode and no unsigned or
+  unverifiable PDF is offered.
+- Strict local parsing rejects malformed, unknown-field and over-32,768-byte
+  manifests. The known PDF matches its manifest digest; changing one byte
+  fails the local pairing check. The report response remains memory-only and
+  retains the existing eight-MiB total-response bound.
+- Strict typecheck/lint, seven focused detached-download unit cases, 11 mission
+  flow cases and the real Chrome/Edge lifecycle/accessibility proof passed. No
+  private key, embedded/circular signature, generic verifier, persistence,
+  dependency, architecture change, production resource or Phase 3 behavior
+  was introduced.

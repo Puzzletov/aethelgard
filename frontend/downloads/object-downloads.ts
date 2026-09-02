@@ -1,4 +1,5 @@
 import { analyzeResponseSchema, type AnalyzeResponse } from "../../src/contracts/analyze-response.ts";
+import { detachedManifestBytes } from "../verification/detached-manifest.ts";
 
 export const MAX_OBJECT_URL_LIFETIME_MS = 300_000;
 export type DownloadKind = "pdf" | "signature" | "xlsx" | "text";
@@ -28,8 +29,9 @@ function file(response: AnalyzeResponse, kind: DownloadKind): DownloadFile | und
     return { bytes: decodeBase64(response.pdf.bytes_b64), name: "aethelgard-report.pdf", type: "application/pdf" };
   }
   if (kind === "signature" && response.pdf !== undefined) {
-    return { bytes: new TextEncoder().encode(`${JSON.stringify(response.pdf.signature_manifest, null, 2)}\n`),
-      name: "aethelgard-report.sig.json", type: "application/json" };
+    const bytes = detachedManifestBytes(response.pdf.signature_manifest);
+    return bytes === undefined ? undefined
+      : { bytes, name: "aethelgard-report.sig.json", type: "application/json" };
   }
   if (kind === "xlsx" && response.xlsx_b64 !== undefined) {
     return { bytes: decodeBase64(response.xlsx_b64), name: "aethelgard-report.xlsx",

@@ -5,6 +5,7 @@ import { signatureManifestSchema } from "./signature-manifest.ts";
 
 const MAX_PDF_B64_CHARS = Math.ceil(8_388_608 / 3) * 4;
 const MAX_XLSX_B64_CHARS = Math.ceil(4_194_304 / 3) * 4;
+export const MAX_ANALYZE_RESPONSE_BYTES = 8_388_608;
 const UTF8 = new TextEncoder();
 function isBase64(value: string): boolean {
   if (value.length % 4 !== 0) return false;

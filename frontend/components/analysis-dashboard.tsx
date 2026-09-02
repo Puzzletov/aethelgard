@@ -1,9 +1,11 @@
 import type { NormalizedSourceRecord, SourceReference } from "../input/normalization/source-record";
 import type { OracleOutput } from "../../src/contracts/oracle";
+import type { ReportModel } from "../../src/contracts/report-model";
 import type { SafeMode } from "../../src/contracts/safe-mode";
+import { AnalysisChart } from "./analysis-chart";
 
 interface DashboardProps {
-  readonly result: OracleOutput | SafeMode | null;
+  readonly result: OracleOutput | ReportModel | SafeMode | null;
   readonly sources: readonly NormalizedSourceRecord[];
 }
 
@@ -35,18 +37,21 @@ function EmptyState({ children }: Readonly<{ children: string }>) {
   return <p className="empty-state">{children}</p>;
 }
 
-function DashboardIndex() {
-  const sections = [
+function DashboardIndex({ report }: Readonly<{ report: boolean }>) {
+  const middle: readonly (readonly [string, string])[] = report
+    ? [["charts", "Charts"]] : [["candidates", "Quantitative candidates"],
+      ["resolutions", "Critique resolutions"]];
+  const sections: readonly (readonly [string, string])[] = [
     ["summary", "Summary"], ["findings", "Findings"],
     ["recommendations", "Recommendations"], ["risks", "Risks"],
-    ["candidates", "Quantitative candidates"], ["resolutions", "Critique resolutions"],
+    ...middle,
     ["sources", "Sources"],
-  ] as const;
+  ];
   return <nav className="analysis-index" aria-label="Analysis sections"><ol>{sections.map(([id, label]) =>
     <li key={id}><a href={`#${id}`}>{label}</a></li>)}</ol></nav>;
 }
 
-function AnalysisItems({ result }: Readonly<{ result: OracleOutput }>) {
+function AnalysisItems({ result }: Readonly<{ result: OracleOutput | ReportModel }>) {
   return <div className="analysis-sections">
     <section className="analysis-section" id="findings" aria-labelledby="findings-title"><h3 id="findings-title">Findings</h3>
       <ol className="result-list">{result.findings.map((item) =>
@@ -62,11 +67,6 @@ function AnalysisItems({ result }: Readonly<{ result: OracleOutput }>) {
         : <ul className="result-list">{result.risks.map((item) =>
       <li key={item.id}><p>{item.text}</p><p className="result-meta">Confidence: {item.confidence}</p>
         <Evidence items={item.evidence} /></li>)}</ul>}</section>
-    <section className="analysis-section" id="candidates" aria-labelledby="candidates-title"><h3 id="candidates-title">Quantitative candidates</h3>
-      {result.quantitative_candidates.length === 0
-        ? <EmptyState>No quantitative candidates were identified.</EmptyState> : <ul className="result-list">
-      {result.quantitative_candidates.map((item) => <li key={item.id}><p>{item.label}: {item.value} {item.unit}</p>
-        <p>{item.context}</p><Evidence items={item.evidence} /></li>)}</ul>}</section>
   </div>;
 }
 
@@ -84,13 +84,21 @@ export function AnalysisDashboard({ result, sources }: DashboardProps) {
   return <section className="analysis-dashboard" aria-labelledby="analysis-title">
     <header className="analysis-heading"><p className="section-label">Oracle synthesis</p>
       <h2 id="analysis-title">Analysis</h2></header>
-    <DashboardIndex />
+    <DashboardIndex report={"charts" in result} />
     <section className="executive-summary" id="summary" aria-labelledby="summary-title"><h3 id="summary-title">Executive summary</h3>
       <p>{result.executive_summary}</p></section>
     <AnalysisItems result={result} />
-    <section className="analysis-section resolutions" id="resolutions" aria-labelledby="resolutions-title"><h3 id="resolutions-title">Critique resolutions</h3><ul>
-      {result.critique_resolutions.map((item) => <li key={item.steelman_item_id}>
-        <strong>{item.status}</strong>: {item.explanation}</li>)}</ul></section>
+    {"charts" in result ? <section className="analysis-section" id="charts" aria-labelledby="charts-title">
+      <h3 id="charts-title">Charts</h3>{result.charts.length === 0
+        ? <EmptyState>No charts were produced.</EmptyState>
+        : result.charts.map((chart) => <AnalysisChart data={chart} key={chart.id} />)}</section> : <>
+      <section className="analysis-section" id="candidates" aria-labelledby="candidates-title"><h3 id="candidates-title">Quantitative candidates</h3>
+        {result.quantitative_candidates.length === 0 ? <EmptyState>No quantitative candidates were identified.</EmptyState>
+          : <ul className="result-list">{result.quantitative_candidates.map((item) => <li key={item.id}><p>{item.label}: {item.value} {item.unit}</p>
+            <p>{item.context}</p><Evidence items={item.evidence} /></li>)}</ul>}</section>
+      <section className="analysis-section resolutions" id="resolutions" aria-labelledby="resolutions-title"><h3 id="resolutions-title">Critique resolutions</h3><ul>
+        {result.critique_resolutions.map((item) => <li key={item.steelman_item_id}>
+          <strong>{item.status}</strong>: {item.explanation}</li>)}</ul></section></>}
     <SourceIndex sources={sources} />
   </section>;
 }

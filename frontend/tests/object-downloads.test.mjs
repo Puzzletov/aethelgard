@@ -46,6 +46,7 @@ test("downloads are created only on explicit use with fixed names, types and byt
   assert.equal(await [...proof.blobs.values()][2].text(), "PK workbook");
   assert.equal(await [...proof.blobs.values()][3].text(), "Report text.\n");
   assert.ok((await [...proof.blobs.values()][1].text()).endsWith("}\n"));
+  assert.deepEqual(JSON.parse(await [...proof.blobs.values()][1].text()), response().pdf.signature_manifest);
   assert.deepEqual(proof.scheduled.map((item) => item.milliseconds), Array(4).fill(MAX_OBJECT_URL_LIFETIME_MS));
 });
 
@@ -82,4 +83,14 @@ test("missing and invalid parts create no object URL", () => {
 test("download implementation has no network, service worker, cache or storage path", async () => {
   const source = await readFile(new URL("../downloads/object-downloads.ts", import.meta.url), "utf8");
   assert.doesNotMatch(source, /fetch|XMLHttpRequest|serviceWorker|CacheStorage|localStorage|sessionStorage|indexedDB/iu);
+});
+
+test("trust affordance states exact key IDs and bounded verification claims", async () => {
+  const source = await readFile(new URL("../components/download-controls.tsx", import.meta.url), "utf8");
+  assert.match(source, /Ed25519 key ID/);
+  assert.match(source, /ML-DSA-65 key ID/);
+  assert.match(source, /does not prove that the source or analysis is correct/);
+  assert.match(source, /href="#verification-limits"/);
+  assert.match(source, /no unsigned or unverifiable PDF was offered/);
+  assert.doesNotMatch(source, /authentic|trusted|guarantee/iu);
 });

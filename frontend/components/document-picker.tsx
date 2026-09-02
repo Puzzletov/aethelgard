@@ -8,6 +8,7 @@ import { runDocumentPreflight } from "../input/preflight/run-preflight";
 import type { TurnstileController } from "../security/turnstile-client";
 import type { SafeMode } from "../../src/contracts/safe-mode";
 import { AnalysisDashboard } from "./analysis-dashboard";
+import { DownloadControls } from "./download-controls";
 import { TurnstileWidget } from "./turnstile-widget";
 
 type Focus = "full" | "financial" | "strategic" | "security";
@@ -97,6 +98,7 @@ export function DocumentPicker() {
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState("Ready for a document.");
   const [outcome, setOutcome] = useState<MissionOutcome | null>(null);
+  const [completedOutputs, setCompletedOutputs] = useState<readonly Output[]>([]);
   const onController = useCallback((value: TurnstileController | null) => { controller.current = value; }, []);
   const onReady = useCallback((ready: boolean) => setVerified(ready), []);
   function toggleOutput(output: Output, checked: boolean): void {
@@ -111,11 +113,12 @@ export function DocumentPicker() {
       controller.current?.resetAfterAttempt(); setVerified(false);
       setOutcome({ result: VERIFICATION_FAILURE, sources: [] }); return;
     }
-    setRunning(true); setOutcome(null);
+    const requestedOutputs = [...outputs];
+    setRunning(true); setOutcome(null); setCompletedOutputs([]);
     try {
       const { runBrowserMission } = await import("../analysis/browser-mission");
-      setOutcome(await runBrowserMission(state.result.document, focus, outputs, token,
-        (stage) => setProgress(STAGE_TEXT[stage])));
+      setOutcome(await runBrowserMission(state.result.document, focus, requestedOutputs, token,
+        (stage) => setProgress(STAGE_TEXT[stage]))); setCompletedOutputs(requestedOutputs);
     } catch {
       setOutcome({ result: CLIENT_FAILURE, sources: [] });
     } finally {
@@ -134,5 +137,7 @@ export function DocumentPicker() {
       onClick={() => void analyze()}>Analyze document</button>
     <p className="analysis-progress" role="status" aria-live="polite">{progress}</p></div>
     <AnalysisDashboard result={outcome?.result ?? null} sources={outcome?.sources ?? []} />
+    {outcome?.response === undefined ? null : <DownloadControls response={outcome.response}
+      expectedPdf={completedOutputs.includes("pdf")} />}
   </section>;
 }

@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 
-import { analyzeResponseSchema, type AnalyzeResponse } from "../../../src/contracts/analyze-response.ts";
+import { analyzeResponseSchema, MAX_ANALYZE_RESPONSE_BYTES,
+  type AnalyzeResponse } from "../../../src/contracts/analyze-response.ts";
 import { parseReportModel, type ReportModel } from "../../../src/contracts/report-model.ts";
 import { signatureManifestSchema, type SignatureManifest } from "../../../src/contracts/signature-manifest.ts";
 import { ALLOWED_OUTPUTS } from "../../../src/public-edge/config.ts";
@@ -8,7 +9,7 @@ import { MAX_FINAL_PDF_BYTES } from "./browser-pdf.ts";
 import { MAX_TEXT_OUTPUT_BYTES } from "./plain-exports.ts";
 import { MAX_XLSX_OUTPUT_BYTES } from "./xlsx.ts";
 
-export const MAX_ANALYSIS_RESPONSE_BYTES = 8_388_608;
+export const MAX_ANALYSIS_RESPONSE_BYTES = MAX_ANALYZE_RESPONSE_BYTES;
 export const MAX_RESPONSE_PARTS = 4;
 const UTF8 = new TextEncoder();
 

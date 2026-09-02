@@ -72,11 +72,17 @@ export async function runProof() {
     "aethelgard-report.xlsx", "aethelgard-report.txt"];
   const expectedTypes = ["application/pdf", "application/json",
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/plain;charset=utf-8"];
+  const trust = document.querySelector("#verification-guidance");
+  const trustAccessible = trust?.querySelector("h4")?.textContent === "Verify the PDF"
+    && trust.textContent.includes("ed25519:" + "a".repeat(32))
+    && trust.textContent.includes("mldsa65:" + "b".repeat(32))
+    && trust.querySelector('a[href="#verification-limits"]') !== null
+    && document.querySelector("#verification-limits") !== null;
   const success = userTriggered && JSON.stringify(names) === JSON.stringify(expectedNames)
     && JSON.stringify(types) === JSON.stringify(expectedTypes) && exact && lifecycle && failure
-    && writes === 0 && remote === 0;
+    && trustAccessible && writes === 0 && remote === 0;
   return { status: success ? "ok" : "failed", user_triggered: userTriggered, exact, lifecycle, failure,
-    names, types, storage_writes: writes, remote_requests: remote };
+    trust_accessible: trustAccessible, names, types, storage_writes: writes, remote_requests: remote };
 }`;
 
 const built = await build({ absWorkingDir: root, stdin: { contents: entry,

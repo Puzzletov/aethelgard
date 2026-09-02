@@ -30,6 +30,20 @@ function oracle(content = "A careful result.") {
     critique_resolutions: [{ steelman_item_id: "critique-1", status: "resolved", explanation: "Resolved" }] };
 }
 
+function reportResponse() {
+  const result = oracle();
+  return { schema_version: "1", dashboard: { schema_version: "1", focus: "full", title: "Review",
+    executive_summary: result.executive_summary, findings: result.findings,
+    recommendations: result.recommendations, risks: result.risks, charts: [],
+    verification: { ed25519_key_id: `ed25519:${"a".repeat(32)}`,
+      mldsa65_key_id: `mldsa65:${"b".repeat(32)}` } },
+  pdf: { bytes_b64: btoa("%PDF-1.7\n%%EOF"), signature_manifest: { schema_version: "1",
+    pdf_sha256: "c".repeat(64), ed25519_algorithm: "Ed25519",
+    ed25519_public_key_id: `ed25519:${"a".repeat(32)}`, ed25519_signature_b64: btoa("e".repeat(64)),
+    mldsa65_algorithm: "ML-DSA-65", mldsa65_public_key_id: `mldsa65:${"b".repeat(32)}`,
+    mldsa65_signature_b64: btoa("m".repeat(3_309)) } } };
+}
+
 test("valid local flow sends only canonical redacted sources and reports every stage", async () => {
   const stages = [];
   let request;
@@ -47,6 +61,19 @@ test("valid local flow sends only canonical redacted sources and reports every s
   assert.equal(JSON.stringify(request).includes(english), false);
   assert.equal(result.result.executive_summary, "A careful result.");
   assert.equal(result.sources[0].content.includes("[PERSON_1]"), true);
+});
+
+test("a complete report response retains its detached download pair in memory", async () => {
+  const response = reportResponse();
+  const outcome = await runBrowserMission(document, "full", ["pdf"], "token", () => undefined, {
+    parseDocument: async () => parsed,
+    redact: async ({ sources }) => ({ schema_version: "1", sources,
+      placeholder_count: 0, must_redact_leaks: 0 }),
+    send: async () => response,
+  });
+  assert.equal(outcome.result.title, "Review");
+  assert.equal(outcome.response, response);
+  assert.equal(outcome.response.pdf.signature_manifest.ed25519_algorithm, "Ed25519");
 });
 
 test("local document and privacy failures forbid the network", async () => {
