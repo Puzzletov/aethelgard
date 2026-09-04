@@ -1753,3 +1753,21 @@ historical work.
   performance tests, strict typecheck/lint and diff hygiene pass. The harness
   stores no document data and introduces no runtime dependency, production
   resource, privacy/security weakening or architecture change.
+
+### 86. Phase 3 Task 3.20 — bundle, CPU, memory and output limits
+
+- Task 3.20: **PASSED** on 2026-09-04. Read-only attribution proved the earlier
+  166,456,174-byte result was measurement-harness contamination: response-size
+  search and peak measurement shared one process. The corrected deterministic
+  gate searches in disposable processes, then measures each maximum response
+  shape once in a fresh process.
+- Maximum PDF-only response was 8,388,606 bytes with a 73,100,822-byte measured
+  peak; maximum mixed PDF/XLSX/text response was 8,388,607 bytes with a
+  62,402,348-byte peak. Adding the exact 1,048,576-byte report-HTML and
+  8,388,608-byte signing-arena bounds produced a conservative final peak of
+  82,188,398 bytes, below `B-TRUSTED-MEMORY-BYTES` (100,663,296).
+- Initial JS was 268,974 gzip bytes; the largest static asset was 9,597,831
+  bytes; public/private Worker gzip sizes were 117,740/155,864 bytes; public
+  CPU p99 was 0.222 ms; and the maximum response was 8,388,607 bytes. All 26
+  affected output/PDF/signing/resource tests, strict typecheck/lint and diff
+  hygiene pass. No runtime behavior, bound, dependency or architecture changed.
