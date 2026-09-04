@@ -71,16 +71,18 @@ try {
   const mlPublic = await mldsa65.publicKeyFromSeed(mlSeed);
   const publicRecord = {
     schema_version: "1",
-    ed25519: {
+    ed25519: [{
       algorithm: "Ed25519",
       public_key_id: keyId("ed25519", edPublic),
       public_key_spki_b64: edPublic.toString("base64"),
-    },
-    mldsa65: {
+      status: "current",
+    }],
+    mldsa65: [{
       algorithm: "ML-DSA-65",
       public_key_id: keyId("mldsa65", mlPublic),
       public_key_raw_b64: Buffer.from(mlPublic).toString("base64"),
-    },
+      status: "current",
+    }],
   };
   const resolvedPublicOutput = path.resolve(publicOutput);
   await writeFile(resolvedPublicOutput, `${JSON.stringify(publicRecord, null, 2)}\n`, {

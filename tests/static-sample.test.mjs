@@ -38,8 +38,22 @@ test("static sample is bounded, explicitly synthetic, and linked from Pages", as
   assert.doesNotMatch(source, /@|https?:|\+?\d[\d ()-]{7,}\d|Puzzletov|possi/iu);
   assert.match(page, /Synthetic static sample — not a live analysis/u);
   for (const name of Object.values(names)) assert.match(page, new RegExp(name.replaceAll(".", "\\."), "u"));
-  assert.equal(report.verification.ed25519_key_id, keys.ed25519.public_key_id);
-  assert.equal(report.verification.mldsa65_key_id, keys.mldsa65.public_key_id);
+  assert.match(page, /href="\/sample"/u);
+  assert.equal(report.verification.ed25519_key_id, keys.ed25519[0].public_key_id);
+  assert.equal(report.verification.mldsa65_key_id, keys.mldsa65[0].public_key_id);
+});
+
+test("sample presentation is static, accessible and links both verification paths", async () => {
+  const page = await readFile(new URL("../frontend/app/sample/page.tsx", import.meta.url), "utf8");
+  assert.match(page, /Synthetic sample — not a live analysis/);
+  assert.match(page, /requires no live AI, Worker or Browser Run capacity/);
+  assert.match(page, /<AnalysisDashboard result=/);
+  assert.match(page, /href="\/verify"/);
+  assert.match(page, /aethelgard-synthetic-sample\.pdf/);
+  assert.match(page, /aethelgard-synthetic-sample\.sig\.json/);
+  assert.match(page, /aethelgard-synthetic-sample\.signing-keys\.json/);
+  assert.match(page, /href="#sample-content"/);
+  assert.doesNotMatch(page, /fetch|\/analyze|Turnstile|dangerouslySetInnerHTML/u);
 });
 
 test("static sample verifies independently and one changed byte fails both signatures", async () => {
@@ -50,9 +64,9 @@ test("static sample verifies independently and one changed byte fails both signa
   assert.ok(parsed.success);
   const digest = createHash("sha256").update(pdf).digest();
   assert.equal(digest.toString("hex"), parsed.data.pdf_sha256);
-  const ed = createPublicKey({ key: Buffer.from(keys.ed25519.public_key_spki_b64, "base64"),
+  const ed = createPublicKey({ key: Buffer.from(keys.ed25519[0].public_key_spki_b64, "base64"),
     format: "der", type: "spki" });
-  const ml = mlPublic(Buffer.from(keys.mldsa65.public_key_raw_b64, "base64"));
+  const ml = mlPublic(Buffer.from(keys.mldsa65[0].public_key_raw_b64, "base64"));
   const edSig = Buffer.from(parsed.data.ed25519_signature_b64, "base64");
   const mlSig = Buffer.from(parsed.data.mldsa65_signature_b64, "base64");
   assert.equal(verify(null, digest, ed, edSig), true);

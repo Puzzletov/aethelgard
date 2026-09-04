@@ -18,5 +18,7 @@ From a clean environment:
 6. Require `git status --porcelain` to be empty.
 
 `node scripts/verify-clean-recovery.mjs` performs this exact procedure against a
-disposable remote clone, emits `S-RECOVERY-RESULT`, and removes all temporary
-checkout, cache, configuration and key files afterward.
+disposable remote clone of protected `main`, emits `S-RECOVERY-RESULT`, and
+removes all temporary checkout, cache, configuration and key files afterward.
+Before merge, reviewers can verify an exact release branch with
+`node scripts/verify-clean-recovery.mjs --ref phase/4-trust-portfolio`.

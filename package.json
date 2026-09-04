@@ -22,6 +22,8 @@
     "task:context": "node scripts/task-context.mjs",
     "test": "node --test --test-concurrency=1 tests/*.test.mjs && npm --prefix frontend test",
     "typecheck": "tsc --noEmit && npm --prefix frontend run typecheck",
+    "verify:local": "node scripts/verify-local-verifier.mjs",
+    "verify:report": "node scripts/verify-report.mjs",
     "zero-cost:check": "node scripts/verify-zero-cost.mjs"
   },
   "devDependencies": {

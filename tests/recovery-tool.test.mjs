@@ -10,6 +10,9 @@ test("clean recovery is remote, disposable, bounded, and emits the exact contrac
   assert.match(source, /git", \["clone", "--no-local"/u);
   assert.match(source, /1_800_000/u);
   assert.match(source, /--disposable/u);
+  assert.match(source, /recoveryRef = argument\("--ref"\) \?\? "main"/u);
+  for (const gate of ["architecture-lint.mjs", "typecheck", "lint", "license:check", "audit",
+    "zero-cost:check", "verify:report"]) assert.ok(source.includes(gate));
   assert.match(source, /npm-cache/u);
   assert.match(source, /finally \{\s*await rm\(temporary/u);
   assert.doesNotMatch(source, /shell:/u);

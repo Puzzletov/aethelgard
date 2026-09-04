@@ -10,12 +10,12 @@ historical work.
   `56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2`.
 - Phase -1: **CLOSED**.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
-- Current implementation position: **PHASE 3 — PASSED**, awaiting owner review
-  and merge of PR #18 from `phase/3-hardening`.
+- Current implementation position: **PHASE 4 — IN PROGRESS** on
+  `phase/4-trust-portfolio`; Task 4.1 passed.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
 - Phase 1 status: **PASSED — MERGED** in PR #11 on 2026-08-31.
 - Phase 2 status: **PASSED — MERGED** in PR #16 on 2026-09-02.
-- Phase 3 status: **PASSED — PR #18 AWAITING OWNER REVIEW** on 2026-09-04.
+- Phase 3 status: **PASSED — MERGED** in PR #18 on 2026-09-04.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Architecture execution-hardening EDR 37: **APPROVED**.
@@ -1880,3 +1880,170 @@ historical work.
   privacy, exact-zero, no-persistence, secret-free edge, private runtime,
   provider order and hybrid exact-byte signing invariants are unchanged. Phase
   4 remains unauthorized pending owner review and merge of PR #18.
+
+### 94. Phase 4 Task 4.1 — Trust page
+
+- Task 4.1: **PASSED** on 2026-09-04. Added the static `/trust` route with the
+  ten allow-listed trust claims, exact processing boundary, external
+  processors, exact-zero behavior and owner-approved honest limits. The home
+  navigation links to it without adding a runtime or external dependency.
+- Claim allow/deny, accessibility and local-link proofs pass. The page states
+  English-only and desktop Chrome/Edge scope, makes no malware-scanning or
+  compromised-device guarantee, identifies external metadata limits and makes
+  no uptime SLA claim.
+- Seven focused trust/design tests, static production build, strict frontend
+  typecheck/lint, diff hygiene and the initial-JS gate pass at 268,975 gzip
+  bytes against the 307,200-byte bound. Exact-zero, privacy and security
+  invariants are unchanged; architecture drift is none.
+
+### 95. Phase 4 Task 4.2 — Collect / Never collect disclosure
+
+- Task 4.2: **PASSED** on 2026-09-04. Added one concise Trust-page lifecycle
+  component mapping every Section 30 row exactly once across Never collected,
+  Processed for one request and Stored by design states.
+- The disclosure distinguishes browser-only source/PII data, redacted request
+  processing, private signing material, the anonymous two-field quota state,
+  public verification keys and the persistent synthetic sample. It explicitly
+  states that Aethelgard keeps no user, document, prompt, report or analysis-job
+  history without making an absolute platform-metadata claim.
+- Four focused claim/lifecycle tests, static production build, strict frontend
+  typecheck/lint and diff hygiene pass. No source-upload wording, hidden AI
+  processing, dependency, runtime behavior or architecture drift was introduced.
+
+### 96. Phase 4 Task 4.3 — browser-local verifier
+
+- Task 4.3: **PASSED** on 2026-09-04. Added the static `/verify` UI and a
+  bounded local verifier using the exact version-1 manifest schema, published
+  public keys, WebCrypto Ed25519 and the existing pinned `mldsa-native` Wasm.
+  The result reports SHA-256, Ed25519 and ML-DSA-65 independently and is valid
+  only when all three pass.
+- The table-driven supported-browser matrix passes in desktop Chrome and Edge:
+  valid sample, changed PDF, changed manifest digest, each changed signature,
+  changed keys and malformed manifest all produce the exact expected result.
+  Verification performs zero network requests and zero storage writes.
+- Ten focused verifier/manifest/sample/trust tests, static production build,
+  strict frontend typecheck/lint, diff hygiene and the initial-JS gate pass at
+  268,883 gzip bytes. No private key, upload, persistence, dependency,
+  partial-success validity or architecture drift was introduced.
+
+### 97. Phase 4 Task 4.4 — independent CLI verifier
+
+- Task 4.4: **PASSED** on 2026-09-04. Added the dependency-free Node CLI
+  `npm run verify:report -- PDF MANIFEST KEYS`. It strictly bounds and parses
+  all three inputs, derives and checks both public-key IDs, hashes the exact PDF
+  bytes and independently verifies native Ed25519 and ML-DSA-65 signatures.
+- Exit zero is possible only for the exact `S-VERIFICATION-RESULT` with all
+  three booleans true. Changed PDF, malformed manifest, key mismatch and
+  signature mutation return nonzero; failures expose only the fixed error.
+- Six focused CLI/sample tests, including invocation from a disposable
+  dependency-free directory, strict typecheck/lint, Doctor and diff hygiene
+  pass. No network, private material, remote service, dependency, partial
+  success or architecture drift was introduced.
+
+### 98. Phase 4 Task 4.5 — public key publication
+
+- Task 4.5: **PASSED** on 2026-09-04. Promoted the production and synthetic
+  sample key records to strict version-1 retained-key documents with algorithm,
+  derived identifier, public bytes and `current`/`retired` status. The existing
+  reviewed production IDs remain `ed25519:1bb84280f5f88947bbcc33761c96e8ae`
+  and `mldsa65:57ec85ded568caa2c382a85f64359777`.
+- Added the static `/signing-keys.json` Trust-page link and concise owner-reviewed
+  rotation procedure: retain old public keys as retired, never replace an ID,
+  verify both runtimes before promotion and remain within 32,768 bytes and 16
+  total keys. Both verifiers and the generator now consume the exact schema.
+- Nine focused supply-chain/sample/CLI tests, Chrome/Edge browser-verifier
+  matrix, static build, strict typecheck/lint and diff hygiene pass. Documents
+  contain public material only; no secret, seed, dependency or architecture
+  drift was introduced.
+
+### 99. Phase 4 Task 4.6 — signed static sample presentation
+
+- Task 4.6: **PASSED** on 2026-09-04. Reused the existing pre-generated
+  synthetic artifacts in a static `/sample` experience with the validated
+  dashboard, PDF, detached manifest, dedicated keys, synthetic source and a
+  direct link to the browser-local verifier. It is prominently labelled
+  synthetic and not a live analysis.
+- The sample route imports fixed repository data and requires no live AI,
+  Worker, Browser Run or second host. All artifacts remain within their fixed
+  bounds and contain invented data only.
+- Seven static-sample/CLI tests, both verifier matrices in Chrome and Edge,
+  static production build, strict typecheck/lint, diff hygiene and the
+  268,880-byte initial-JS gate pass. No live dependency, real data, misleading
+  label, runtime dependency or architecture drift was introduced.
+
+### 100. Phase 4 Task 4.7 — README
+
+- Task 4.7: **PASSED** on 2026-09-04. Replaced the bootstrap README with a
+  concise project entry point covering the six-format mission, complete runtime
+  topology, browser-local privacy boundary, exact-zero behavior, English and
+  desktop Chrome/Edge scope, local setup, both verification paths and accurate
+  Phase 4 status.
+- The document links Architecture, Build Log, recovery, key rotation, Trust,
+  browser verifier and signed sample without duplicating the specification or
+  reviving superseded Google/server/email/BYOK instructions.
+- Two deterministic bound/claim/command/relative-link/Markdown checks,
+  architecture lint, Doctor and diff hygiene pass. Documentation remains below
+  20,000 code points; architecture drift is none.
+
+### 101. Phase 4 Task 4.8 — operational runbook
+
+- Task 4.8: **PASSED** on 2026-09-04. Added the bounded owner runbook covering
+  the pre-release checkpoint, private-runtime-first deployment, synthetic live
+  verification, credential and signing-key compromise, fixed provider models,
+  fail-closed quota handling, versioned rollback and clean disaster recovery.
+- Followed every non-destructive account procedure once: public/private Worker
+  version listing, public/private secret-name listing and Pages deployment
+  listing. The public Worker has zero secrets; the private runtime retains
+  exactly the five approved names. Current version IDs and the stale pre-release
+  Pages deployment were observed without production mutation or secret values.
+- Four deterministic runbook/README bound, command, link, claim and Markdown
+  checks plus architecture hash/lint, Doctor, exact-zero and diff hygiene pass.
+  No autonomous change, paid fallback, maintenance service or architecture drift
+  was introduced.
+
+### 102. Phase 4 Task 4.9 — architecture case study
+
+- Task 4.9: **PASSED** on 2026-09-04. Added the static `/case-study` route with
+  an accessible runtime flow and concise evidence for the exact-zero pivot,
+  browser-local boundary, direct external Durable Object binding, fixed
+  three-stage AI, Browser Run rendering and exact-byte hybrid signing.
+- The case study retains the validated English/desktop scope, malware-scanning
+  limitation, compromised-client limitation, external metadata boundary and
+  no-uptime/no-paid-fallback limits. It links Trust, sample and verifier without
+  presenting superseded server infrastructure as current.
+- Six focused case-study/Trust tests, static production build, strict frontend
+  typecheck/lint, diff hygiene and 268,880-byte initial-JS gate pass. No asset,
+  dependency, runtime capability, inflated claim or architecture drift was added.
+
+### 103. Phase 4 Task 4.10 — portfolio explanation
+
+- Task 4.10: **PASSED** on 2026-09-04. Added a concise non-specialist homepage
+  explanation of the Open → Analyze → Keep the proof journey: source stays on
+  the device, only redacted business text is sent, and exact-byte signatures
+  expose later changes.
+- Accessible navigation points reviewers to the signed sample, browser verifier,
+  case study and honest Trust limits. The copy makes no SaaS, SLA, unsupported
+  browser/language, malware-scanning or absolute security promise.
+- Eight focused portfolio/design/case-study tests, static production build,
+  strict frontend typecheck/lint, responsive-layout proof, diff hygiene and the
+  268,880-byte initial-JS gate pass. Exact-zero, privacy and security remain
+  unchanged; architecture drift is none.
+
+### 104. Phase 4 Task 4.11 — clean-machine final verification
+
+- Task 4.11: **PASSED** on 2026-09-04. The deterministic recovery runner now
+  targets protected `main` by default and accepts one explicit reviewed branch
+  for pre-merge proof. It includes architecture lint/hash, Doctor, typecheck,
+  lint, license and vulnerability audits, exact-zero, all tests, both Worker
+  dry-runs, static build, independent CLI verification, both signature
+  algorithms, changed-byte rejection and disposable key generation.
+- A remote disposable clone of signed commit
+  `6217e42b4b20b11b8ace6a51afc6a16aa2458dec` completed in 397.6 seconds.
+  `S-RECOVERY-RESULT` reported `build_passed`, `tests_passed`, `doctor_passed`,
+  `dry_run_passed`, `sample_verified`, `changed_byte_rejected` and `clean` all
+  true with architecture hash
+  `56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2`.
+- The disposable checkout, cache, configuration and generated public-key file
+  were removed. No production credential, personal cache, production mutation,
+  skipped gate, Phase 5 scaffold or architecture drift was introduced. Task
+  4.12 awaits mandatory owner review before production promotion.
