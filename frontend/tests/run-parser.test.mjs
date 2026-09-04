@@ -36,6 +36,9 @@ test("parser controller fails closed when allocation or byte length is invalid",
   assert.deepEqual([...allocationBytes], [0, 0, 0]);
   assert.deepEqual(await runParserWorker({ ...document, byteLength: 4 }, () => fakeWorker({})),
     { ok: false, reason: "invalid" });
+  const worker = fakeWorker({ schema_version: "1", ok: false, reason: "allocation" });
+  assert.deepEqual(await runParserWorker(document, () => worker), { ok: false, reason: "allocation" });
+  assert.equal(worker.terminated, true);
 });
 
 test("parser crash terminates the disposable Worker and wipes untransferred test bytes", async () => {

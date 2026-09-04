@@ -1535,3 +1535,23 @@ historical work.
   strict typecheck/lint and diff hygiene pass. No timeout, retry policy, runtime
   code, dependency, upload fallback, production resource or architecture
   changed.
+
+### 73. Phase 3 Task 3.7 — allocation failure handling
+
+- Task 3.7: **PASSED** on 2026-09-04. Added one strict internal parser-Worker
+  allocation signal containing only schema version, failure state and the named
+  `allocation` reason. The Worker emits it only for `RangeError` or a matching
+  WebAssembly memory failure; all details remain private. The controller maps
+  the signal to the existing parser allocation result and still terminates the
+  disposable Worker and releases its transferred buffer.
+- The shared lifecycle harness now applies the exact 50,331,648-byte pressure
+  allocation in Chrome and Edge. One injected parser allocation failure
+  recovers on exactly one fresh Worker; two failures return exact client-
+  resource Safe Mode. A redactor allocation failure gets zero retry and exact
+  privacy Safe Mode. Every created Worker terminates, owned pressure buffers
+  are wiped, transferred page buffers are released and network calls remain
+  zero.
+- The complete pressure matrix, affected parser/mission regressions, strict
+  typecheck/lint and diff hygiene pass. No server/upload fallback, persistence,
+  unbounded allocation, dependency, production resource or architecture
+  changed.

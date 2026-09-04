@@ -34,6 +34,14 @@ test("parser and redactor crashes obey exact browser lifecycle policy", { timeou
     assert.deepEqual(result.timeout.outcome, { schema_version: "1", ok: false,
       category: "client_resource", code: "parser_resource_failed",
       message: "This browser could not process the document safely.", retry: "fresh_document" });
+    assert.equal(result.allocation.bytes, 50_331_648);
+    assert.deepEqual(result.allocation.recovery, { attempts: 2, redactions: 1, sends: 1,
+      buffers_released: true, outcome: "oracle", workers_created: 2, workers_terminated: 2 });
+    assert.deepEqual(result.allocation.terminal, { attempts: 2, redactions: 0, sends: 0,
+      buffers_released: true, outcome: result.timeout.outcome,
+      workers_created: 2, workers_terminated: 2 });
+    assert.deepEqual(result.allocation.redactor, { parser_attempts: 1, redactor_attempts: 1,
+      sends: 0, outcome: result.redactor.outcome, workers_created: 2, workers_terminated: 2 });
     assert.equal(result.external_requests, 0);
     assert.equal(result.crash_detail_leaked, false);
     assert.equal(result.passed, true);
