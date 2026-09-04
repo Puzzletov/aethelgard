@@ -1811,3 +1811,15 @@ historical work.
   verification material only, and migration tooling never prints secret values.
 - All 12 focused tests and diff hygiene pass. No scan was disabled and no
   production value, key, fixture, dependency or architecture change was made.
+
+### 90. Phase 3 Task 3.24 — license audit
+
+- Task 3.24: **PASSED** on 2026-09-04. The deterministic license audit reviewed
+  220 resolved root/frontend packages and three vendored assets, within the
+  250-item bound. Every shipped item maps to an approved dependency identity
+  and license; required Pyodide, font and `mldsa-native` notices match.
+- The focused dependency, CI, browser-parser and cryptographic supply-chain
+  suites pass, including all six pinned parser/runtime browser proofs. Both npm
+  audits report zero vulnerabilities and diff hygiene is clean.
+- No obsolete package, unknown license, missing notice, runtime license service,
+  dependency addition or architecture change was found or introduced.
