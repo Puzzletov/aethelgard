@@ -1555,3 +1555,19 @@ historical work.
   typecheck/lint and diff hygiene pass. No server/upload fallback, persistence,
   unbounded allocation, dependency, production resource or architecture
   changed.
+
+### 74. Phase 3 Task 3.8 — fresh-Worker recovery
+
+- Task 3.8: **PASSED** on 2026-09-04. Extended the shared lifecycle proof so
+  the first injected parser crash is followed by the actual release Parser
+  Worker and its newly initialized, self-hosted Pyodide runtime. Chrome and
+  Edge each used two distinct Worker identities and terminated the first
+  Worker before creating the recovery Worker.
+- The fresh Worker returned the exact strict TXT parser result, analysis
+  continued once, and the lifecycle event order proved both Workers
+  terminated. Exactly one retry occurred under the unchanged 30,000 ms
+  release deadline; Task 3.6 alone retains its isolated proof-time scaling.
+- All 26 pinned parser/runtime/source assets matched their canonical SHA-256
+  manifest. The supported-browser lifecycle proof, strict typecheck/lint and
+  diff hygiene pass. No Worker reuse, external request, persistence,
+  dependency, production resource or architecture change was introduced.

@@ -1,4 +1,5 @@
 import path from "node:path";
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
@@ -8,7 +9,7 @@ import { runBrowserPageProof, supportedBrowserExecutables } from "./browser-pars
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-async function bundle(entryPoint, parserTimeoutMs) {
+async function bundle(entryPoint, parserTimeoutMs, externalPyodide = false) {
   const plugins = parserTimeoutMs === undefined ? [] : [{
     name: "scaled-parser-timeout-proof",
     setup(pluginBuild) {
@@ -20,15 +21,34 @@ async function bundle(entryPoint, parserTimeoutMs) {
       }));
     },
   }];
+  if (externalPyodide) plugins.push({
+    name: "self-hosted-pyodide",
+    setup(pluginBuild) {
+      pluginBuild.onResolve({ filter: /^pyodide$/ }, () => ({ path: "/pyodide/pyodide.mjs", external: true }));
+    },
+  });
   const result = await build({ absWorkingDir: root, entryPoints: [entryPoint], bundle: true,
     write: false, format: "esm", platform: "browser", target: ["chrome120"], logLevel: "silent", plugins });
   if (result.outputFiles.length !== 1) throw new Error("worker_lifecycle_bundle_invalid");
   return result.outputFiles[0].text;
 }
 
+async function verifyParserAssets() {
+  const manifest = JSON.parse(await readFile(path.join(root, "frontend", "parser", "asset-manifest.json"), "utf8"));
+  const assets = [...manifest.core, ...manifest.packages, ...manifest.licenses, ...manifest.sources];
+  for (const asset of assets) {
+    const bytes = await readFile(path.join(root, "frontend", "public", "pyodide", asset.name));
+    if (createHash("sha256").update(bytes).digest("hex") !== asset.sha256) {
+      throw new Error(`worker_lifecycle_asset_hash_mismatch:${asset.name}`);
+    }
+  }
+  return { pyodide: manifest.pyodide_version, python: manifest.python_version, assets: assets.length };
+}
+
 const PAGE_SOURCE = `
 import { runBrowserMission } from "/lifecycle/mission.js";
 import { runParserWorker } from "/lifecycle/parser-controller.js";
+import { runParserWorker as runParserWorkerTimed } from "/lifecycle/parser-timeout-controller.js";
 import { runRedactionWorker } from "/lifecycle/redaction-controller.js";
 const privateCrash = "synthetic-private-crash-marker";
 const content = "This project provides a clear independent analysis of the evidence and explains every recommendation in plain English for careful review.";
@@ -39,11 +59,14 @@ const oracle = { schema_version: "1", executive_summary: "Safe synthetic result.
   findings: [{ id: "finding-1", title: "Finding", analysis: "Analysis", confidence: "high", evidence: [reference] }],
   recommendations: [], risks: [], quantitative_candidates: [], critique_resolutions: [] };
 const NativeWorker = globalThis.Worker;
-let workersCreated = 0; let workersTerminated = 0; let externalRequests = 0;
+let workersCreated = 0; let workersTerminated = 0; let externalRequests = 0; let nextWorkerId = 0;
+const lifecycleEvents = [];
 globalThis.fetch = async () => { externalRequests += 1; throw new Error("network_forbidden"); };
 globalThis.Worker = class extends NativeWorker {
-  constructor(...args) { super(...args); workersCreated += 1; }
-  terminate() { workersTerminated += 1; super.terminate(); }
+  constructor(...args) { super(...args); workersCreated += 1; this.proofWorkerId = ++nextWorkerId;
+    this.proofTerminated = false; lifecycleEvents.push('create:' + this.proofWorkerId); }
+  terminate() { if (!this.proofTerminated) { this.proofTerminated = true; workersTerminated += 1;
+    lifecycleEvents.push('terminate:' + this.proofWorkerId); } super.terminate(); }
 };
 const urls = [];
 function temporaryWorker(source) {
@@ -69,16 +92,26 @@ function allocationWorker(parserSignal) {
 }
 async function parserCrash() {
   const before = { created: workersCreated, terminated: workersTerminated };
-  let attempts = 0; let sends = 0;
+  const eventStart = lifecycleEvents.length; const identities = []; let attempts = 0; let sends = 0;
+  let recovered;
   const result = await runBrowserMission(document(), "full", ["text"], "token", () => undefined, {
-    parseDocument: value => runParserWorker(value, () => temporaryWorker(++attempts === 1
-      ? 'self.onmessage=()=>{throw new Error("' + privateCrash + '")}'
-      : 'self.onmessage=()=>self.postMessage(' + JSON.stringify(parsed) + ')')),
+    parseDocument: async value => {
+      const parsedResult = await runParserWorker(value, () => {
+        attempts += 1;
+        const worker = attempts === 1
+          ? temporaryWorker('self.onmessage=()=>{throw new Error("' + privateCrash + '")}')
+          : new Worker("/lifecycle/parser-worker.js", { type: "module" });
+        identities.push(worker.proofWorkerId); return worker;
+      });
+      if (parsedResult.ok) recovered = parsedResult.value;
+      return parsedResult;
+    },
     redact: async request => ({ schema_version: "1", sources: request.sources,
       placeholder_count: 0, must_redact_leaks: 0 }),
     send: async () => { sends += 1; return oracle; },
   });
-  return { attempts, sends, outcome: "ok" in result.result ? result.result : "oracle", ...counts(before) };
+  return { attempts, sends, outcome: "ok" in result.result ? result.result : "oracle", identities,
+    events: lifecycleEvents.slice(eventStart), recovered, ...counts(before) };
 }
 async function redactorCrash() {
   const before = { created: workersCreated, terminated: workersTerminated };
@@ -101,7 +134,7 @@ async function parserTimeout() {
     buffers.push(value); return value; } };
   const started = performance.now();
   const result = await runBrowserMission(timeoutDocument, "full", ["text"], "token", () => undefined, {
-    parseDocument: value => runParserWorker(value, () => { attempts += 1;
+    parseDocument: value => runParserWorkerTimed(value, () => { attempts += 1;
       return temporaryWorker("self.onmessage=()=>{while(true){}}"); }),
     redact: async () => { redactions += 1; throw new Error("redaction_forbidden"); },
     send: async () => { sends += 1; return oracle; },
@@ -164,6 +197,12 @@ export async function runProof() {
     return { ...result, crash_detail_leaked: crashDetailLeaked,
       passed: parser.attempts === 2 && parser.sends === 1 && parser.outcome === "oracle"
         && parser.workers_created === 2 && parser.workers_terminated === 2
+        && parser.identities.length === 2 && parser.identities[0] !== parser.identities[1]
+        && JSON.stringify(parser.events) === JSON.stringify(['create:' + parser.identities[0],
+          'terminate:' + parser.identities[0], 'create:' + parser.identities[1],
+          'terminate:' + parser.identities[1]])
+        && parser.recovered?.schema_version === "1" && parser.recovered?.format === "txt"
+        && parser.recovered?.sources?.length === 1 && parser.recovered.sources[0].content === content
         && redactor.parser_attempts === 1 && redactor.redactor_attempts === 1 && redactor.sends === 0
         && redactor.workers_created === 2 && redactor.workers_terminated === 2
         && JSON.stringify(redactor.outcome) === JSON.stringify(expectedSafeMode)
@@ -189,12 +228,15 @@ export async function runProof() {
 
 const modules = Object.freeze({
   "/lifecycle/mission.js": await bundle("frontend/analysis/browser-mission.ts"),
-  "/lifecycle/parser-controller.js": await bundle("frontend/input/parsers/run-parser.ts", 100),
+  "/lifecycle/parser-controller.js": await bundle("frontend/input/parsers/run-parser.ts"),
+  "/lifecycle/parser-timeout-controller.js": await bundle("frontend/input/parsers/run-parser.ts", 100),
   "/lifecycle/redaction-controller.js": await bundle("frontend/input/redaction/run-redaction.ts"),
+  "/lifecycle/parser-worker.js": await bundle("frontend/workers/parser.worker.ts", undefined, true),
 });
+const assetHashes = await verifyParserAssets();
 const results = [];
 for (const browser of supportedBrowserExecutables()) {
   results.push({ browser: browser.name,
     ...await runBrowserPageProof(PAGE_SOURCE, browser.executable, modules) });
 }
-process.stdout.write(`${JSON.stringify({ status: "ok", results })}\n`);
+process.stdout.write(`${JSON.stringify({ status: "ok", asset_hashes: assetHashes, results })}\n`);
