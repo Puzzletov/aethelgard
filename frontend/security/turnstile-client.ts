@@ -1,5 +1,5 @@
 export const TURNSTILE_ACTION = "analyze";
-export const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
+export const TURNSTILE_SITE_KEY = "0x4AAAAAAEGLv7UgKYeWsVdW";
 
 interface TurnstileRenderOptions {
   readonly action: string;

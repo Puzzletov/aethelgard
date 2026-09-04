@@ -6,7 +6,8 @@ const sourceUrl = new URL("../security/turnstile-client.ts", import.meta.url);
 
 test("frontend Turnstile uses only the public key and analyze action", async () => {
   const source = await readFile(sourceUrl, "utf8");
-  assert.match(source, /NEXT_PUBLIC_TURNSTILE_SITE_KEY/);
+  assert.match(source, /TURNSTILE_SITE_KEY = "0x4AAAAAAEGLv7UgKYeWsVdW"/);
+  assert.doesNotMatch(source, /process\.env|NEXT_PUBLIC_TURNSTILE_SITE_KEY/);
   assert.match(source, /TURNSTILE_ACTION = "analyze"/);
   assert.doesNotMatch(source, /TURNSTILE_SECRET|siteverify|remoteip/);
 });
