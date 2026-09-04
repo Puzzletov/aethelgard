@@ -120,3 +120,20 @@ test("hybrid output from the composed journey independently verifies", async () 
   assert.equal(verify(null, digest, mlPublic(publicKeys.mldsa65Raw),
     Buffer.from(result.pdf.signature_manifest.mldsa65_signature_b64, "base64")), true);
 });
+
+test("every signing failure is atomic Safe Mode with no PDF or partial manifest", async () => {
+  const pdf = new TextEncoder().encode("%PDF-1.7\nvalid bytes\n%%EOF\n");
+  for (const [name, sign] of [
+    ["key", async () => { throw new Error("private key detail"); }],
+    ["wasm", async () => { throw new WebAssembly.RuntimeError("wasm detail"); }],
+    ["sign", async () => undefined],
+    ["self_check", async () => { throw new Error("self-check detail"); }],
+  ]) {
+    const base = await runtime(storage(), { async quickAction() { return new Response(pdf,
+      { headers: { "content-type": "application/pdf", "x-browser-ms-used": "1" } }); } });
+    const result = await createProductionReport(request, oracle, { ...base, sign });
+    assert.deepEqual(result, { schema_version: "1", ok: false, category: "signing",
+      code: "signing_unavailable", message: "Report signing is unavailable.", retry: "later" }, name);
+    assert.doesNotMatch(JSON.stringify(result), /private key|wasm detail|self-check|signature_manifest|bytes_b64/iu);
+  }
+});

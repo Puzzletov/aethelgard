@@ -1688,3 +1688,20 @@ historical work.
   tests, strict typecheck/lint and diff hygiene pass. No second renderer,
   paid fallback, malformed download, dependency, production resource or
   architecture change was introduced.
+
+### 82. Phase 3 Task 3.16 — signing failure handling
+
+- Task 3.16: **PASSED** on 2026-09-04. Corrected report composition so a
+  failure after valid PDF rendering is an atomic signing failure rather than
+  an optional PDF omission. Invalid key material, Wasm failure, signing
+  failure and either self-check failure now return only the fixed signing Safe
+  Mode, with no PDF bytes, manifest, partial signature or private detail.
+- Successful signing still covers the exact unchanged PDF bytes with SHA-256,
+  Ed25519 and ML-DSA-65; independent verification passes and one changed byte
+  fails both signatures. The manifest remains below 32,768 bytes and the
+  measured seven-run median remains below 50 ms.
+- The complete signing, supply-chain and report-boundary suites, strict
+  typecheck/lint and diff hygiene pass. Existing seed, digest, randomness,
+  snapshot and Wasm arenas retain their deterministic wipe paths. No one-
+  signature fallback, generic signer, dependency, production resource or
+  architecture change was introduced.
