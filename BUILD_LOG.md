@@ -1784,3 +1784,17 @@ historical work.
 - Focused XLSX tests, strict typecheck/lint and diff hygiene pass. The release-
   branch CodeQL check reports zero unresolved applicable high-severity alerts;
   no query, check, suppression, dependency or architecture was changed.
+
+### 88. Phase 3 Task 3.22 — Dependabot gate
+
+- Task 3.22: **PASSED** on 2026-09-04. Inspected both open Dependabot records
+  (#12 manifest, #13 lockfile); both represented the same active direct
+  `fflate` ZIP64 denial-of-service advisory (`GHSA-px8p-9vwx-vf98`). No active
+  high- or critical-severity vulnerability was present.
+- Applied the smallest compatible exact patch, `fflate` 0.8.2 → 0.8.3, and
+  updated the root lockfile normally. Root and frontend audits now report zero
+  vulnerabilities. The only full-gate repair made a static-sample assertion
+  line-ending portable; sample bytes and signatures remain unchanged.
+- All 227 root/frontend tests, release builds, strict typecheck/lint, audits and
+  diff hygiene pass. No stack replacement, broad update, ignored finding,
+  runtime service or architecture change was introduced.

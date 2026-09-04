@@ -34,7 +34,7 @@ test("static sample is bounded, explicitly synthetic, and linked from Pages", as
   assert.ok(manifestBytes.byteLength <= 32_768);
   assert.ok(Buffer.byteLength(source) <= 15_728_640);
   assert.ok(reportModelSchema.safeParse(report).success);
-  assert.equal(source.split("\n")[0], "SYNTHETIC STATIC SAMPLE — NOT A LIVE ANALYSIS");
+  assert.equal(source.split(/\r?\n/u)[0], "SYNTHETIC STATIC SAMPLE — NOT A LIVE ANALYSIS");
   assert.doesNotMatch(source, /@|https?:|\+?\d[\d ()-]{7,}\d|Puzzletov|possi/iu);
   assert.match(page, /Synthetic static sample — not a live analysis/u);
   for (const name of Object.values(names)) assert.match(page, new RegExp(name.replaceAll(".", "\\."), "u"));
