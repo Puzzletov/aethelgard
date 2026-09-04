@@ -1823,3 +1823,20 @@ historical work.
   audits report zero vulnerabilities and diff hygiene is clean.
 - No obsolete package, unknown license, missing notice, runtime license service,
   dependency addition or architecture change was found or introduced.
+
+### 91. Phase 3 Task 3.25 — clean-machine disaster recovery
+
+- Task 3.25: **PASSED** on 2026-09-04. Added a concise clean-machine runbook
+  and one deterministic recovery runner. It uses a disposable remote clone,
+  empty npm user configuration, isolated package cache and no production
+  credential or copied personal state; all temporary checkout/cache/config/key
+  artifacts are removed in its unconditional cleanup path.
+- The warning-free proof recovered commit
+  `f3ee6d345b0dbe4e4b82e0e94ed6c74b7e88421b` in 270 seconds. Exact
+  architecture hash, Doctor, full tests, both Worker dry-runs, static build,
+  pinned assets, synthetic sample, both signatures, changed-byte rejection and
+  the disposable public-only key-generation procedure passed; the clone ended
+  clean.
+- The exact `S-RECOVERY-RESULT` reported every boolean true. No production
+  mutation, hidden cache requirement, undocumented step, dependency, runtime
+  service or architecture change was introduced.
