@@ -169,6 +169,75 @@ a.phase-mark {
   padding-block: clamp(4rem, 10vw, 8rem);
 }
 
+.verify-page {
+  min-height: calc(100vh - 11rem);
+  padding-block: clamp(4rem, 10vw, 8rem);
+}
+
+.local-verifier {
+  max-width: var(--measure-reading);
+  padding-top: var(--space-xxl);
+  border-top: 1px solid var(--color-rule);
+}
+
+.local-verifier h2 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  line-height: 1;
+}
+
+.verifier-inputs {
+  display: grid;
+  gap: var(--space-lg);
+  margin-block: var(--space-xl);
+}
+
+.verifier-inputs label {
+  display: grid;
+  gap: var(--space-xs);
+  font-weight: 600;
+}
+
+.verifier-inputs input,
+.local-verifier button {
+  padding: var(--space-md);
+  border: 1px solid var(--color-charcoal);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.local-verifier button:not(:disabled) {
+  background: var(--color-charcoal);
+  color: var(--color-paper);
+  cursor: pointer;
+}
+
+.verification-result {
+  margin-top: var(--space-xl);
+  padding-block: var(--space-lg);
+  border-block: 1px solid var(--color-rule);
+}
+
+.verification-result dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-lg);
+}
+
+.verification-result dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.verification-valid {
+  color: var(--color-charcoal);
+}
+
+.verification-invalid {
+  color: var(--color-terracotta-dark);
+}
+
 .trust-intro {
   max-width: 52rem;
   margin-bottom: var(--space-section);

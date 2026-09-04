@@ -1909,3 +1909,19 @@ historical work.
 - Four focused claim/lifecycle tests, static production build, strict frontend
   typecheck/lint and diff hygiene pass. No source-upload wording, hidden AI
   processing, dependency, runtime behavior or architecture drift was introduced.
+
+### 96. Phase 4 Task 4.3 — browser-local verifier
+
+- Task 4.3: **PASSED** on 2026-09-04. Added the static `/verify` UI and a
+  bounded local verifier using the exact version-1 manifest schema, published
+  public keys, WebCrypto Ed25519 and the existing pinned `mldsa-native` Wasm.
+  The result reports SHA-256, Ed25519 and ML-DSA-65 independently and is valid
+  only when all three pass.
+- The table-driven supported-browser matrix passes in desktop Chrome and Edge:
+  valid sample, changed PDF, changed manifest digest, each changed signature,
+  changed keys and malformed manifest all produce the exact expected result.
+  Verification performs zero network requests and zero storage writes.
+- Ten focused verifier/manifest/sample/trust tests, static production build,
+  strict frontend typecheck/lint, diff hygiene and the initial-JS gate pass at
+  268,883 gzip bytes. No private key, upload, persistence, dependency,
+  partial-success validity or architecture drift was introduced.
