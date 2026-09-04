@@ -1519,3 +1519,19 @@ historical work.
 - The browser lifecycle proof, 17 affected mission/parser/controller
   regressions, strict typecheck/lint and diff hygiene pass. No runtime behavior,
   dependency, production resource, persistence or architecture changed.
+
+### 72. Phase 3 Task 3.6 — parser timeout handling
+
+- Task 3.6: **PASSED** on 2026-09-04. Extended the Task 3.5 browser lifecycle
+  harness with a hanging Parser Worker matrix. The release controller remains
+  fixed at exactly 30,000 ms with no adaptive extension; the deterministic
+  browser proof scales that same controller timer to 100 ms per attempt so the
+  lifecycle path is exercised without weakening or delaying the release gate.
+- Chrome and Edge each terminated two distinct hanging Workers after exactly
+  one fresh retry, released both transferred buffers, made zero redaction or
+  network calls and returned the exact client-resource Safe Mode. Two serial
+  proof deadlines completed within the fixed 180–2,000 ms test window.
+- The complete browser timeout proof, affected parser/mission regressions,
+  strict typecheck/lint and diff hygiene pass. No timeout, retry policy, runtime
+  code, dependency, upload fallback, production resource or architecture
+  changed.

@@ -25,7 +25,7 @@ runtime beyond proving the failure is runtime-specific.
 - Phase 1 Tasks 1.1–1.22 and its exit gate are complete and merged in PR #11.
 - Phase 2 Tasks 2.1–2.14 and its exit gate are complete and merged in PR #16.
 - Phase 3 is owner-authorized on `phase/3-hardening`, one task at a time.
-- Tasks 3.1–3.5 are passed; Task 3.6 is the next implementation task.
+- Tasks 3.1–3.6 are passed; Task 3.7 is the next implementation task.
 - Phase 4 implementation is not authorized.
 
 ## Task protocol
