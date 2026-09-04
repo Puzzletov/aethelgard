@@ -58,23 +58,32 @@ const references = [
   { kind: "pptx_slide", slide: 1 }, { kind: "xlsx_cell", sheet: 1, cell: "A1" },
   { kind: "csv_field", row: 1, column: 1 }, { kind: "txt_lines", line_start: 1, line_end: 1 },
 ];
+const outputSelections = [["pdf"], ["xlsx"], ["text"], ["pdf", "xlsx"], ["pdf", "text"],
+  ["xlsx", "text"], ["pdf", "xlsx", "text"]];
 const requests = [];
 let storageWrites = 0;
 const nativeFetch = globalThis.fetch.bind(globalThis);
-const nativeSetItem = Storage.prototype.setItem;
-const nativeRemoveItem = Storage.prototype.removeItem;
-const nativeClear = Storage.prototype.clear;
-Storage.prototype.setItem = function(...args) { storageWrites += 1; return nativeSetItem.apply(this, args); };
-Storage.prototype.removeItem = function(...args) { storageWrites += 1; return nativeRemoveItem.apply(this, args); };
-Storage.prototype.clear = function(...args) { storageWrites += 1; return nativeClear.apply(this, args); };
+function trackMethod(owner, method) {
+  if (owner === undefined || typeof owner[method] !== "function") return;
+  const native = owner[method]; owner[method] = function(...args) {
+    storageWrites += 1; return native.apply(this, args);
+  };
+}
+for (const method of ["setItem", "removeItem", "clear"]) trackMethod(Storage.prototype, method);
 const nativeIndexedDbOpen = indexedDB.open.bind(indexedDB);
 const nativeIndexedDbDelete = indexedDB.deleteDatabase.bind(indexedDB);
 indexedDB.open = (...args) => { storageWrites += 1; return nativeIndexedDbOpen(...args); };
 indexedDB.deleteDatabase = (...args) => { storageWrites += 1; return nativeIndexedDbDelete(...args); };
-const nativeCacheOpen = caches.open.bind(caches);
-const nativeCacheDelete = caches.delete.bind(caches);
-caches.open = (...args) => { storageWrites += 1; return nativeCacheOpen(...args); };
-caches.delete = (...args) => { storageWrites += 1; return nativeCacheDelete(...args); };
+for (const method of ["open", "delete"]) trackMethod(caches, method);
+for (const method of ["add", "addAll", "delete", "put"]) trackMethod(globalThis.Cache?.prototype, method);
+trackMethod(globalThis.ServiceWorkerContainer?.prototype, "register");
+trackMethod(globalThis.ServiceWorkerRegistration?.prototype, "unregister");
+trackMethod(globalThis.StorageManager?.prototype, "getDirectory");
+trackMethod(globalThis.FileSystemFileHandle?.prototype, "createWritable");
+for (const method of ["getDirectoryHandle", "getFileHandle", "removeEntry"]) {
+  trackMethod(globalThis.FileSystemDirectoryHandle?.prototype, method);
+}
+for (const method of ["set", "delete"]) trackMethod(globalThis.CookieStore?.prototype, method);
 const cookieDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, "cookie");
 if (cookieDescriptor?.set) Object.defineProperty(Document.prototype, "cookie", { ...cookieDescriptor,
   set(value) { storageWrites += 1; cookieDescriptor.set.call(this, value); } });
@@ -92,10 +101,10 @@ function trackedWorker(url) {
   worker.terminate = () => { if (!terminated) { terminated = true; workersTerminated += 1; } nativeTerminate(); };
   return worker;
 }
-function strictAnalyze(value, body) {
+function strictAnalyze(value, body, outputs) {
   if (Object.keys(value).sort().join("|") !== "focus|requested_outputs|schema_version|sources|turnstile_token") return false;
   if (value.schema_version !== "1" || value.focus !== "full"
-    || JSON.stringify(value.requested_outputs) !== '["pdf"]' || value.sources.length !== 6) return false;
+    || JSON.stringify(value.requested_outputs) !== JSON.stringify(outputs) || value.sources.length !== 1) return false;
   if (new TextEncoder().encode(body).byteLength > 524288) return false;
   return value.sources.every((source, index) => Object.keys(source).sort().join("|") === "content|ordinal|reference|schema_version"
     && source.schema_version === "1" && source.ordinal === index + 1
@@ -110,25 +119,31 @@ let workersTerminated = 0;
 export async function runProof() {
   const selectionStarted = performance.now();
   await fetch("/proof-asset.js");
-  await fetch("/turnstile-proof", { method: "POST", body: "synthetic-turnstile-token" });
-  for (const fixture of fixtures) {
+  for (const [index, fixture] of fixtures.entries()) {
     const bytes = Uint8Array.from(atob(fixture.bytes), (value) => value.charCodeAt(0));
     const file = new File([bytes], fixture.name, { type: "application/octet-stream" });
     const result = await runDocumentPreflight({ file, format: fixture.format, byteLength: bytes.byteLength },
       () => trackedWorker("/boundary/parser-worker.js"));
     bytes.fill(0);
     if (!result.ok) throw new Error("preflight_failed:" + fixture.format);
+    const sources = [{ schema_version: "1", ordinal: 1, reference: references[index], content: privateText }];
+    const redacted = await runRedactionWorker({ schema_version: "1", sources },
+      () => trackedWorker("/boundary/redaction-worker.js"));
+    if ("ok" in redacted && redacted.ok === false) throw new Error("redaction_failed");
+    for (const outputs of outputSelections) {
+      await fetch("/turnstile-proof", { method: "POST", body: "synthetic-turnstile-token" });
+      const analyze = { schema_version: "1", turnstile_token: "synthetic-turnstile-token",
+        focus: "full", requested_outputs: outputs, sources: redacted.sources };
+      const analyzeBody = JSON.stringify(analyze);
+      if (!strictAnalyze(analyze, analyzeBody, outputs)) throw new Error("analyze_schema_invalid");
+      await fetch("/analyze-proof", { method: "POST", headers: { "content-type": "application/json" },
+        body: analyzeBody });
+    }
   }
-  const sources = references.map((reference, index) => ({ schema_version: "1", ordinal: index + 1,
-    reference, content: privateText }));
-  const redacted = await runRedactionWorker({ schema_version: "1", sources },
-    () => trackedWorker("/boundary/redaction-worker.js"));
-  if ("ok" in redacted && redacted.ok === false) throw new Error("redaction_failed");
-  const analyze = { schema_version: "1", turnstile_token: "synthetic-turnstile-token",
-    focus: "full", requested_outputs: ["pdf"], sources: redacted.sources };
-  const analyzeBody = JSON.stringify(analyze);
-  if (!strictAnalyze(analyze, analyzeBody)) throw new Error("analyze_schema_invalid");
-  await fetch("/analyze-proof", { method: "POST", headers: { "content-type": "application/json" }, body: analyzeBody });
+  const invalid = new File(["not-a-pdf"], "invalid.pdf", { type: "application/pdf" });
+  const failed = await runDocumentPreflight({ file: invalid, format: "pdf", byteLength: invalid.size },
+    () => trackedWorker("/boundary/parser-worker.js"));
+  if (failed.ok) throw new Error("invalid_document_accepted");
   const resourceUrls = performance.getEntriesByType("resource").filter((entry) => entry.startTime >= selectionStarted)
     .map((entry) => entry.name).filter((url) => !requests.some((request) => request.url === url));
   const observed = JSON.stringify(requests) + JSON.stringify(resourceUrls);
@@ -141,9 +156,11 @@ export async function runProof() {
   const filenameEgress = countLeaks(observed, filenames);
   const mappingEgress = /mapping|\\u0000PERSON|\\u0000EMAIL/iu.test(observed) ? 1 : 0;
   const objectUrlEgress = observed.includes("blob:") ? 1 : 0;
-  const analysisIndex = requests.findIndex((request) => request.url.endsWith("/analyze-proof"));
-  const priorDocumentEgress = requests.slice(0, analysisIndex).some((request) => request.body.includes("[PERSON_"));
-  const turnstileSafe = requests.find((request) => request.url.endsWith("/turnstile-proof"))?.body === "synthetic-turnstile-token";
+  const analyses = requests.filter((request) => request.url.endsWith("/analyze-proof"));
+  const turnstiles = requests.filter((request) => request.url.endsWith("/turnstile-proof"));
+  const priorDocumentEgress = requests.slice(0, requests.findIndex((request) => request.url.endsWith("/analyze-proof")))
+    .some((request) => request.body.includes("[PERSON_"));
+  const turnstileSafe = turnstiles.every((request) => request.body === "synthetic-turnstile-token");
   const result = { schema_version: "1", requests_observed: requests.length + resourceUrls.length,
     storage_writes: storageWrites, raw_source_egress: rawSourceEgress,
     unredacted_text_egress: unredactedEgress, filename_egress: filenameEgress,
@@ -152,7 +169,8 @@ export async function runProof() {
   result.passed = result.requests_observed <= 128 && result.storage_writes === 0
     && rawSourceEgress === 0 && unredactedEgress === 0 && filenameEgress === 0
     && mappingEgress === 0 && objectUrlEgress === 0 && !priorDocumentEgress
-    && analysisIndex >= 0 && turnstileSafe && result.workers_terminated;
+    && analyses.length === fixtures.length * outputSelections.length
+    && turnstiles.length === analyses.length && turnstileSafe && result.workers_terminated;
   return result;
 }
 `;

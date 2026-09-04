@@ -1571,3 +1571,19 @@ historical work.
   manifest. The supported-browser lifecycle proof, strict typecheck/lint and
   diff hygiene pass. No Worker reuse, external request, persistence,
   dependency, production resource or architecture change was introduced.
+
+### 75. Phase 3 Task 3.9 — zero browser user-data storage
+
+- Task 3.9: **PASSED** on 2026-09-04. Extended the existing Chrome/Edge
+  boundary proof into a deterministic matrix covering all six source formats
+  and all seven canonical combinations of PDF, XLSX and text outputs, plus an
+  invalid-document failure journey and all four direct download actions.
+- Instrumentation observes Web Storage, IndexedDB, Cache Storage, service-
+  worker registration, OPFS/file-handle access and writes, Cookie Store and
+  document-cookie writes. Every success, failure and download journey recorded
+  exactly zero writes; all Workers terminated and every object URL was revoked.
+- The exact `S-NETWORK-BOUNDARY-RESULT` remained passing in both supported
+  browsers with zero raw-source, unredacted-text, filename or mapping egress.
+  Browser matrices, download regressions, strict typecheck/lint and diff
+  hygiene pass. No allowlist, persistence, dependency, production resource or
+  architecture change was introduced.
