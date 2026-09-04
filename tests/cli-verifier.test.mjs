@@ -29,7 +29,7 @@ test("independent CLI rejects changed, malformed, key and signature cases", asyn
     const changed = Buffer.from(pdf); changed[changed.length - 32] ^= 1;
     variants.push(["changed.pdf", changed, manifestText, keysText]);
     variants.push(["malformed.pdf", pdf, Buffer.from("{}"), keysText]);
-    const keys = JSON.parse(keysText); keys.ed25519.public_key_id = `ed25519:${"0".repeat(32)}`;
+    const keys = JSON.parse(keysText); keys.ed25519[0].public_key_id = `ed25519:${"0".repeat(32)}`;
     variants.push(["keys.pdf", pdf, manifestText, Buffer.from(JSON.stringify(keys))]);
     const manifest = JSON.parse(manifestText); manifest.ed25519_signature_b64 = `${"A".repeat(84)}====`;
     variants.push(["signature.pdf", pdf, Buffer.from(JSON.stringify(manifest)), keysText]);

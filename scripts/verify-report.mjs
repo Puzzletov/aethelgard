@@ -47,10 +47,14 @@ function manifest(value) {
 function publicKeys(value) {
   const ed = value?.ed25519; const ml = value?.mldsa65;
   return exact(value, ["schema_version", "ed25519", "mldsa65"]) && value.schema_version === "1"
-    && exact(ed, ["algorithm", "public_key_id", "public_key_spki_b64"])
-    && ed.algorithm === "Ed25519" && /^ed25519:[0-9a-f]{32}$/u.test(ed.public_key_id)
-    && exact(ml, ["algorithm", "public_key_id", "public_key_raw_b64"])
-    && ml.algorithm === "ML-DSA-65" && /^mldsa65:[0-9a-f]{32}$/u.test(ml.public_key_id) ? value : undefined;
+    && Array.isArray(ed) && Array.isArray(ml) && ed.length > 0 && ml.length > 0
+    && ed.length + ml.length <= 16 && ed.every((item) => exact(item,
+      ["algorithm", "public_key_id", "public_key_spki_b64", "status"])
+      && item.algorithm === "Ed25519" && /^(?:current|retired)$/u.test(item.status)
+      && /^ed25519:[0-9a-f]{32}$/u.test(item.public_key_id))
+    && ml.every((item) => exact(item, ["algorithm", "public_key_id", "public_key_raw_b64", "status"])
+      && item.algorithm === "ML-DSA-65" && /^(?:current|retired)$/u.test(item.status)
+      && /^mldsa65:[0-9a-f]{32}$/u.test(item.public_key_id)) ? value : undefined;
 }
 
 function keyId(algorithm, bytes) {
@@ -64,17 +68,18 @@ async function verifyFiles(paths) {
   if (pdf.subarray(0, 5).toString("ascii") !== "%PDF-") return FALSE_RESULT;
   const record = manifest(parseJson(manifestBytes)); const keys = publicKeys(parseJson(keyBytes));
   if (record === undefined || keys === undefined) return FALSE_RESULT;
-  const edKey = base64(keys.ed25519.public_key_spki_b64, 44);
-  const mlKey = base64(keys.mldsa65.public_key_raw_b64, ML_PUBLIC_BYTES);
+  const edRecord = keys.ed25519.find((item) => item.public_key_id === record.ed25519_public_key_id);
+  const mlRecord = keys.mldsa65.find((item) => item.public_key_id === record.mldsa65_public_key_id);
+  if (edRecord === undefined || mlRecord === undefined) return FALSE_RESULT;
+  const edKey = base64(edRecord.public_key_spki_b64, 44);
+  const mlKey = base64(mlRecord.public_key_raw_b64, ML_PUBLIC_BYTES);
   const edSig = base64(record.ed25519_signature_b64, 64);
   const mlSig = base64(record.mldsa65_signature_b64, ML_SIGNATURE_BYTES);
   if (edKey === undefined || mlKey === undefined || edSig === undefined || mlSig === undefined) return FALSE_RESULT;
   const digest = createHash("sha256").update(pdf).digest();
   const digestMatches = digest.toString("hex") === record.pdf_sha256;
-  const idsMatch = keyId("ed25519", edKey) === keys.ed25519.public_key_id
-    && keyId("mldsa65", mlKey) === keys.mldsa65.public_key_id
-    && record.ed25519_public_key_id === keys.ed25519.public_key_id
-    && record.mldsa65_public_key_id === keys.mldsa65.public_key_id;
+  const idsMatch = keyId("ed25519", edKey) === edRecord.public_key_id
+    && keyId("mldsa65", mlKey) === mlRecord.public_key_id;
   if (!idsMatch) return { ...FALSE_RESULT, digest_matches: digestMatches };
   const ed = createPublicKey({ key: edKey, format: "der", type: "spki" });
   const ml = createPublicKey({ key: Buffer.concat([ML_SPKI_PREFIX, mlKey]), format: "der", type: "spki" });

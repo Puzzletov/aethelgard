@@ -10,10 +10,10 @@ const FALSE_RESULT = Object.freeze({ schema_version: "1", digest_matches: false,
 
 export interface PublicKeyDocument {
   readonly schema_version: "1";
-  readonly ed25519: { readonly algorithm: "Ed25519"; readonly public_key_id: string;
-    readonly public_key_spki_b64: string };
-  readonly mldsa65: { readonly algorithm: "ML-DSA-65"; readonly public_key_id: string;
-    readonly public_key_raw_b64: string };
+  readonly ed25519: readonly { readonly algorithm: "Ed25519"; readonly public_key_id: string;
+    readonly public_key_spki_b64: string; readonly status: "current" | "retired" }[];
+  readonly mldsa65: readonly { readonly algorithm: "ML-DSA-65"; readonly public_key_id: string;
+    readonly public_key_raw_b64: string; readonly status: "current" | "retired" }[];
 }
 
 export interface VerificationResult {
@@ -42,10 +42,11 @@ async function keyId(prefix: "ed25519" | "mldsa65", bytes: Uint8Array): Promise<
 
 function matchingKeys(manifest: ReturnType<typeof parseDetachedManifest>, documents: readonly PublicKeyDocument[]) {
   if (manifest === undefined) return undefined;
-  return documents.find((item) => item.schema_version === "1"
-    && item.ed25519.algorithm === "Ed25519" && item.mldsa65.algorithm === "ML-DSA-65"
-    && item.ed25519.public_key_id === manifest.ed25519_public_key_id
-    && item.mldsa65.public_key_id === manifest.mldsa65_public_key_id);
+  const ed25519 = documents.flatMap((item) => item.ed25519).find((item) =>
+    item.algorithm === "Ed25519" && item.public_key_id === manifest.ed25519_public_key_id);
+  const mldsa65 = documents.flatMap((item) => item.mldsa65).find((item) =>
+    item.algorithm === "ML-DSA-65" && item.public_key_id === manifest.mldsa65_public_key_id);
+  return ed25519 === undefined || mldsa65 === undefined ? undefined : { ed25519, mldsa65 };
 }
 
 async function verifyEd25519(spki: Uint8Array, digest: Uint8Array, signature: Uint8Array) {

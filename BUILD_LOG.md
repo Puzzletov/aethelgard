@@ -1939,3 +1939,19 @@ historical work.
   dependency-free directory, strict typecheck/lint, Doctor and diff hygiene
   pass. No network, private material, remote service, dependency, partial
   success or architecture drift was introduced.
+
+### 98. Phase 4 Task 4.5 — public key publication
+
+- Task 4.5: **PASSED** on 2026-09-04. Promoted the production and synthetic
+  sample key records to strict version-1 retained-key documents with algorithm,
+  derived identifier, public bytes and `current`/`retired` status. The existing
+  reviewed production IDs remain `ed25519:1bb84280f5f88947bbcc33761c96e8ae`
+  and `mldsa65:57ec85ded568caa2c382a85f64359777`.
+- Added the static `/signing-keys.json` Trust-page link and concise owner-reviewed
+  rotation procedure: retain old public keys as retired, never replace an ID,
+  verify both runtimes before promotion and remain within 32,768 bytes and 16
+  total keys. Both verifiers and the generator now consume the exact schema.
+- Nine focused supply-chain/sample/CLI tests, Chrome/Edge browser-verifier
+  matrix, static build, strict typecheck/lint and diff hygiene pass. Documents
+  contain public material only; no secret, seed, dependency or architecture
+  drift was introduced.

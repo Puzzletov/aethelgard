@@ -32,27 +32,38 @@ test("the committed ML-DSA-65 module has the approved bytes, hash, and surface",
 });
 
 test("the published signing-key record contains public verification material only", async () => {
-  const publicKeys = JSON.parse(
-    await readFile(new URL("../frontend/public/signing-keys.json", import.meta.url), "utf8"),
-  );
+  const keyDocument = await readFile(new URL("../frontend/public/signing-keys.json", import.meta.url));
+  assert.ok(keyDocument.byteLength <= 32_768);
+  const publicKeys = JSON.parse(keyDocument);
   assert.deepEqual(Object.keys(publicKeys).sort(), ["ed25519", "mldsa65", "schema_version"]);
   assert.equal(publicKeys.schema_version, "1");
-  assert.deepEqual(Object.keys(publicKeys.ed25519).sort(), [
+  assert.equal(publicKeys.ed25519.length + publicKeys.mldsa65.length <= 16, true);
+  const ed25519 = publicKeys.ed25519[0];
+  const mldsa65 = publicKeys.mldsa65[0];
+  assert.deepEqual(Object.keys(ed25519).sort(), [
     "algorithm",
     "public_key_id",
     "public_key_spki_b64",
+    "status",
   ]);
-  assert.deepEqual(Object.keys(publicKeys.mldsa65).sort(), [
+  assert.deepEqual(Object.keys(mldsa65).sort(), [
     "algorithm",
     "public_key_id",
     "public_key_raw_b64",
+    "status",
   ]);
-  assert.equal(publicKeys.ed25519.algorithm, "Ed25519");
-  assert.equal(publicKeys.mldsa65.algorithm, "ML-DSA-65");
-  assert.match(publicKeys.ed25519.public_key_id, /^ed25519:[0-9a-f]{32}$/);
-  assert.match(publicKeys.mldsa65.public_key_id, /^mldsa65:[0-9a-f]{32}$/);
-  assert.equal(Buffer.from(publicKeys.ed25519.public_key_spki_b64, "base64").byteLength, 44);
-  assert.equal(Buffer.from(publicKeys.mldsa65.public_key_raw_b64, "base64").byteLength, 1_952);
+  assert.equal(ed25519.algorithm, "Ed25519");
+  assert.equal(mldsa65.algorithm, "ML-DSA-65");
+  assert.equal(ed25519.status, "current");
+  assert.equal(mldsa65.status, "current");
+  assert.match(ed25519.public_key_id, /^ed25519:[0-9a-f]{32}$/);
+  assert.match(mldsa65.public_key_id, /^mldsa65:[0-9a-f]{32}$/);
+  assert.equal(Buffer.from(ed25519.public_key_spki_b64, "base64").byteLength, 44);
+  assert.equal(Buffer.from(mldsa65.public_key_raw_b64, "base64").byteLength, 1_952);
+  assert.equal(publicKeys.ed25519.filter((key) => key.status === "current").length, 1);
+  assert.equal(publicKeys.mldsa65.filter((key) => key.status === "current").length, 1);
+  assert.equal(new Set([...publicKeys.ed25519, ...publicKeys.mldsa65]
+    .map((key) => key.public_key_id)).size, publicKeys.ed25519.length + publicKeys.mldsa65.length);
   assert.doesNotMatch(JSON.stringify(publicKeys), /private|secret|seed/i);
 });
 
@@ -73,11 +84,13 @@ test("the key generator uses disposable keys without printing private material",
     assert.equal(status.private_values_printed, false);
     assert.doesNotMatch(result.stdout, /SIGNING_.*_B64|private.*seed/i);
     const publicKeys = JSON.parse(await readFile(output, "utf8"));
-    assert.equal(publicKeys.ed25519.algorithm, "Ed25519");
-    assert.equal(publicKeys.mldsa65.algorithm, "ML-DSA-65");
-    assert.match(publicKeys.ed25519.public_key_id, /^ed25519:[0-9a-f]{32}$/);
-    assert.match(publicKeys.mldsa65.public_key_id, /^mldsa65:[0-9a-f]{32}$/);
-    assert.equal(Buffer.from(publicKeys.mldsa65.public_key_raw_b64, "base64").byteLength, 1_952);
+    assert.equal(publicKeys.ed25519[0].algorithm, "Ed25519");
+    assert.equal(publicKeys.mldsa65[0].algorithm, "ML-DSA-65");
+    assert.equal(publicKeys.ed25519[0].status, "current");
+    assert.equal(publicKeys.mldsa65[0].status, "current");
+    assert.match(publicKeys.ed25519[0].public_key_id, /^ed25519:[0-9a-f]{32}$/);
+    assert.match(publicKeys.mldsa65[0].public_key_id, /^mldsa65:[0-9a-f]{32}$/);
+    assert.equal(Buffer.from(publicKeys.mldsa65[0].public_key_raw_b64, "base64").byteLength, 1_952);
     assert.deepEqual(Object.keys(publicKeys).sort(), ["ed25519", "mldsa65", "schema_version"]);
   } finally {
     await rm(directory, { recursive: true, force: true });

@@ -37,8 +37,8 @@ function variants() {
   const changedMl = { ...originalManifest,
     mldsa65_signature_b64: mutateB64(originalManifest.mldsa65_signature_b64) };
   const changedKeys = structuredClone(originalKeys);
-  changedKeys.ed25519.public_key_spki_b64 = mutateB64(changedKeys.ed25519.public_key_spki_b64);
-  changedKeys.mldsa65.public_key_raw_b64 = mutateB64(changedKeys.mldsa65.public_key_raw_b64);
+  changedKeys.ed25519[0].public_key_spki_b64 = mutateB64(changedKeys.ed25519[0].public_key_spki_b64);
+  changedKeys.mldsa65[0].public_key_raw_b64 = mutateB64(changedKeys.mldsa65[0].public_key_raw_b64);
   return { valid: [pdf, originalManifest, originalKeys], changed_pdf: [changedPdf, originalManifest, originalKeys],
     changed_digest: [pdf, changedDigest, originalKeys], changed_ed25519: [pdf, changedEd, originalKeys],
     changed_mldsa65: [pdf, changedMl, originalKeys], changed_keys: [pdf, originalManifest, changedKeys],
