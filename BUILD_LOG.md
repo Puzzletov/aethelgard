@@ -1721,3 +1721,19 @@ historical work.
   download suites, strict typecheck/lint and diff hygiene pass. No persistence,
   logging, runtime dependency, production resource or architecture change was
   introduced.
+
+### 84. Phase 3 Task 3.18 — production no-logging assertion
+
+- Task 3.18: **PASSED** on 2026-09-04. Doctor now emits the exact bounded
+  `S-DOCTOR-RESULT` contract: 23 named boolean checks, no secret values or user
+  content, and a fixed failed status whenever any check fails.
+- Both canonical production configs explicitly disable observability and omit
+  Tail consumers, Logpush and Analytics Engine. Read-only inspection of the
+  active public version `54ed4f13-cc3d-4edd-a217-482c4fded048` and private
+  version `dd044786-d5aa-44af-bea1-6867788a12ba` found no deployed
+  observability, Tail-consumer or Analytics Engine configuration. Source and
+  dependency inspection found no application-content logging or telemetry
+  product.
+- Doctor, public/private boundary, Turnstile and supported Chrome/Edge network
+  regressions, strict typecheck/lint and diff hygiene pass. No runtime,
+  dependency, production resource or architecture change was introduced.

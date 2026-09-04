@@ -14,9 +14,11 @@ test("Doctor deterministically passes repository invariants without network call
   assert.equal(result.status, 0, result.stderr);
   const report = JSON.parse(result.stdout);
   assert.equal(report.status, "ok");
-  assert.equal(report.architecture, "2.1");
-  assert.equal(report.phase, "2");
-  assert.ok(report.checks >= 17);
+  assert.deepEqual(Object.keys(report), ["status", "checks"]);
+  assert.ok(report.checks.length >= 17);
+  assert.ok(report.checks.length <= 128);
+  assert.ok(report.checks.every(({ name, ok }) => typeof name === "string" && ok === true));
+  assert.equal(new Set(report.checks.map(({ name }) => name)).size, report.checks.length);
 
   const source = await readFile(new URL("../scripts/doctor.mjs", import.meta.url), "utf8");
   assert.doesNotMatch(source, /\bfetch\s*\(|https?:\/\/|child_process.*exec/i);
