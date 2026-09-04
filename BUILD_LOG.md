@@ -1955,3 +1955,18 @@ historical work.
   matrix, static build, strict typecheck/lint and diff hygiene pass. Documents
   contain public material only; no secret, seed, dependency or architecture
   drift was introduced.
+
+### 99. Phase 4 Task 4.6 — signed static sample presentation
+
+- Task 4.6: **PASSED** on 2026-09-04. Reused the existing pre-generated
+  synthetic artifacts in a static `/sample` experience with the validated
+  dashboard, PDF, detached manifest, dedicated keys, synthetic source and a
+  direct link to the browser-local verifier. It is prominently labelled
+  synthetic and not a live analysis.
+- The sample route imports fixed repository data and requires no live AI,
+  Worker, Browser Run or second host. All artifacts remain within their fixed
+  bounds and contain invented data only.
+- Seven static-sample/CLI tests, both verifier matrices in Chrome and Edge,
+  static production build, strict typecheck/lint, diff hygiene and the
+  268,880-byte initial-JS gate pass. No live dependency, real data, misleading
+  label, runtime dependency or architecture drift was introduced.

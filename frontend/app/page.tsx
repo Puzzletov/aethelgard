@@ -79,6 +79,7 @@ function StaticSample() {
     <div className="section-grid"><div><p className="section-label">Portfolio fallback</p>
       <h2 id="sample-title">Synthetic static sample — not a live analysis</h2></div>
       <div><p>This reviewed example contains invented programme data and remains available when live free compute is unavailable.</p>
+        <p><a className="primary-link" href="/sample">Open the sample experience</a></p>
         <ul>{sampleFiles.map(([label, href]) => <li key={href}><a href={href}>{label}</a></li>)}</ul>
         <p>Verify the PDF with its detached signature and the dedicated sample public keys.</p></div></div>
   </section>;

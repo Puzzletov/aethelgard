@@ -26,7 +26,7 @@ runtime beyond proving the failure is runtime-specific.
 - Phase 2 Tasks 2.1–2.14 and its exit gate are complete and merged in PR #16.
 - Phase 3 Tasks 3.1–3.26 and its exit gate are complete and merged in PR #18.
 - Phase 4 is owner-authorized on `phase/4-trust-portfolio`, one task at a time.
-- Tasks 4.1–4.5 are passed; Task 4.6 is the next implementation task.
+- Tasks 4.1–4.6 are passed; Task 4.7 is the next implementation task.
 
 ## Task protocol
 
