@@ -101,6 +101,20 @@ test("HTTP, network, timeout, invalid JSON, and response bounds fail closed", as
   assert.equal(AI_TIMEOUT_MS, 30_000);
 });
 
+test("provider payload contains only the strict redacted stage contract", async () => {
+  for (const provider of ["groq", "openrouter_free"]) {
+    const capture = capturingFetcher();
+    const value = request(provider, { messages: [
+      { role: "system", content: "Return one strict JSON object." },
+      { role: "user", content: "Redacted source: [PERSON_1] approved [CUSTOMER_ID_1]." },
+    ] });
+    assert.equal((await callAiProvider(value, "private-key", capture.fetcher)).ok, true);
+    const serialized = capture.calls[0][1].body;
+    assert.match(serialized, /\[PERSON_1\].*\[CUSTOMER_ID_1\]/u);
+    assert.doesNotMatch(serialized, /Alice Zhang|CUST-100001|private-proof|JVBER|UEsDB/iu);
+  }
+});
+
 test("the fixed attempt deadline cancels an in-flight provider request", async () => {
   const nativeTimeout = AbortSignal.timeout;
   let requestedMs = 0;

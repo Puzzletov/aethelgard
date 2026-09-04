@@ -1705,3 +1705,19 @@ historical work.
   snapshot and Wasm arenas retain their deterministic wipe paths. No one-
   signature fallback, generic signer, dependency, production resource or
   architecture change was introduced.
+
+### 83. Phase 3 Task 3.17 — privacy/network boundary release gate
+
+- Task 3.17: **PASSED** on 2026-09-04. Reused the release-target Chrome/Edge
+  instrumentation across all six formats, seven output combinations, failure
+  and download paths. The exact boundary result reports zero raw-source,
+  unredacted-text, filename and mapping egress, zero browser storage writes,
+  complete Worker termination and at most 128 observed requests.
+- Explicit trusted-boundary assertions prove Groq and OpenRouter Free receive
+  only strict redacted stage payloads. Browser Run receives only bounded,
+  service-rendered report HTML and no source bytes, source filenames, archive/
+  PDF encodings or known raw markers.
+- The full privacy release matrix, provider/prompt, Browser Run and direct-
+  download suites, strict typecheck/lint and diff hygiene pass. No persistence,
+  logging, runtime dependency, production resource or architecture change was
+  introduced.

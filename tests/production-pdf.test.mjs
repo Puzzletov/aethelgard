@@ -74,6 +74,9 @@ test("quota preflight precedes HTML/AI work and exact PDF bytes remain unchanged
   assert.equal(target.calls[0].input.pdfOptions.timeout, PDF_RENDER_TIMEOUT_MS);
   assert.equal(target.calls[0].input.cacheTTL, 0);
   assert.equal(target.calls[0].input.setJavaScriptEnabled, false);
+  assert.ok(new TextEncoder().encode(target.calls[0].input.html).byteLength <= 1_048_576);
+  assert.doesNotMatch(target.calls[0].input.html,
+    /Alice Zhang|CUST-100001|private-proof|RAW-PDF|RAW-DOCX|JVBER|UEsDB/iu);
 });
 
 test("malformed, oversized and timeout outputs fail closed", async () => {
