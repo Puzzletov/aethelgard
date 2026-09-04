@@ -25,7 +25,7 @@ function createEnv(rateLimitSuccess = true) {
     runtimeCalls,
     env: {
       ALLOWED_ORIGIN: allowedOrigin,
-      ANALYZE_RATE_LIMIT: {
+      ANALYZE_RATE_LIMIT: typeof rateLimitSuccess === "object" ? rateLimitSuccess : {
         async limit(input) {
           calls.push(input);
           return { success: rateLimitSuccess };
@@ -110,10 +110,44 @@ test("analysis rejects origin, content type, and oversized content length", asyn
 });
 
 test("analysis applies the per-source rate limit before reading the body", async () => {
-  const { env, calls } = createEnv(false);
+  const { env, calls, runtimeCalls } = createEnv(false);
   const response = await worker.fetch(analyzeRequest(), env);
   assert.equal(response.status, 429);
   assert.deepEqual(calls, [{ key: "192.0.2.1" }]);
+  assert.deepEqual(await response.json(), { ok: false,
+    error: { code: "rate_limited", message: "Try again later." } });
+  assert.equal(response.headers.get("cache-control"), "no-store");
+  assert.equal(runtimeCalls.length, 0);
+});
+
+test("rate boundary and Cloudflare-location isolation allow five accepted attempts", async () => {
+  function binding() {
+    const counts = new Map();
+    return { async limit({ key }) {
+      const next = (counts.get(key) ?? 0) + 1; counts.set(key, next); return { success: next <= 5 };
+    } };
+  }
+  const london = createEnv(binding());
+  const frankfurt = createEnv(binding());
+  for (let attempt = 1; attempt <= 5; attempt += 1) {
+    assert.equal((await worker.fetch(analyzeRequest(), london.env)).status, 503);
+  }
+  const denied = await worker.fetch(analyzeRequest(), london.env);
+  assert.equal(denied.status, 429);
+  assert.equal(london.runtimeCalls.length, 10);
+  assert.equal((await worker.fetch(analyzeRequest(), frankfurt.env)).status, 503);
+  assert.equal((await worker.fetch(analyzeRequest(validEnvelope,
+    { "cf-connecting-ip": "198.51.100.9" }), london.env)).status, 503);
+});
+
+test("limiter failure returns fixed service failure without trusted work", async () => {
+  const failed = createEnv({ async limit() { throw new Error("binding unavailable"); } });
+  const response = await worker.fetch(analyzeRequest(), failed.env);
+  assert.equal(response.status, 503);
+  assert.deepEqual(await response.json(), { ok: false,
+    error: { code: "rate_limit_unavailable", message: "Service is unavailable." } });
+  assert.equal(response.headers.get("cache-control"), "no-store");
+  assert.equal(failed.runtimeCalls.length, 0);
 });
 
 test("analysis accepts only the strict bounded redacted request", async () => {

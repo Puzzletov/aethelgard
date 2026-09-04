@@ -1605,3 +1605,18 @@ historical work.
   typecheck/lint and diff hygiene pass. Runtime code, provider policy,
   dependency, persistence, production resources and architecture are
   unchanged.
+
+### 77. Phase 3 Task 3.11 — rate-limit handling
+
+- Task 3.11: **PASSED** on 2026-09-04. The existing public-edge Rate Limiting
+  binding remains fixed at five accepted attempts per source IP per Cloudflare
+  location per 60 seconds and executes before body reads or TrustedRuntime.
+- A deterministic boundary matrix proves attempts one through five forward,
+  attempt six returns the fixed HTTP 429 `rate_limited` response, a different
+  source IP remains isolated, and a separate synthetic Cloudflare location has
+  its own allowance. Denial performs zero trusted calls.
+- Binding failure returns the fixed no-store HTTP 503 service response and
+  performs zero trusted calls. All 14 public-edge/config tests, strict
+  typecheck/lint and diff hygiene pass. No IP is stored in application state;
+  runtime code, limits, dependency, production resources and architecture are
+  unchanged.
