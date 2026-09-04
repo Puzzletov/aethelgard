@@ -2047,3 +2047,24 @@ historical work.
   were removed. No production credential, personal cache, production mutation,
   skipped gate, Phase 5 scaffold or architecture drift was introduced. Task
   4.12 awaits mandatory owner review before production promotion.
+
+### 105. Task 4.12 corrective pre-release gate
+
+- The first production promotion was stopped before a synthetic mission when
+  the Pages frontend was proven to call its own relative `/analyze` path. Both
+  Workers were restored to their recorded versions, and the owner restored
+  Pages deployment `f721c0c7-e17c-4e37-b17e-2618ba92a522`; the stable Pages
+  response matched that rollback deployment byte-for-byte before correction.
+- The corrective branch pins browser analysis to the sole approved public
+  Worker `/analyze` endpoint and pins the existing public Turnstile site key in
+  the client build. No private value, proxy, alternate backend or runtime was
+  added. Local parser/redaction behavior and dependency-injected tests remain
+  deterministic.
+- Fourteen focused mission/Turnstile tests and five Chrome/Edge privacy and
+  public-edge tests pass. The complete gate passes architecture hash/lint,
+  Doctor, exact-zero, licenses, zero-vulnerability audits, strict types/lint,
+  177 root tests, 72 frontend tests, both Worker dry-runs, static Pages build,
+  independent sample verification and release-artifact inspection. The build
+  contains the approved Worker endpoint and public site key and contains no
+  relative analysis route. Architecture drift is none; production remains on
+  the confirmed rollback state pending protected-main owner review.

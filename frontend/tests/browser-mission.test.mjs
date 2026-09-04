@@ -12,8 +12,17 @@ const output = path.join(directory, "mission.mjs");
 const repository = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 await build({ absWorkingDir: repository, entryPoints: ["./frontend/analysis/browser-mission.ts"],
   bundle: true, platform: "node", format: "esm", target: "node22", outfile: output, logLevel: "silent" });
-const { runBrowserMission } = await import(pathToFileURL(output));
+const { ANALYZE_ENDPOINT, runBrowserMission } = await import(pathToFileURL(output));
 test.after(async () => rm(directory, { recursive: true, force: true }));
+
+test("production analysis targets only the approved public Worker", async () => {
+  assert.equal(ANALYZE_ENDPOINT, "https://aethelgard.justbwas.workers.dev/analyze");
+  const source = await import("node:fs/promises").then(({ readFile }) =>
+    readFile(new URL("../analysis/browser-mission.ts", import.meta.url), "utf8"));
+  assert.match(source, /fetch\(ANALYZE_ENDPOINT,/u);
+  assert.doesNotMatch(source, /fetch\(["'`]\/analyze/u);
+  assert.deepEqual(source.match(/https:\/\/[^"'`]+/gu), [ANALYZE_ENDPOINT]);
+});
 
 const reference = Object.freeze({ kind: "txt_lines", line_start: 1, line_end: 1 });
 const english = "This independent project analysis explains the evidence, material risks, controls, and practical recommendations clearly for careful executive review.";

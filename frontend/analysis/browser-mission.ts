@@ -13,6 +13,7 @@ import { evaluateEnglishLanguage } from "../input/validation/language-gate";
 import { enforceWordLimit } from "../input/validation/word-limit";
 
 const ANALYSIS_WALL_MS = 180_000;
+export const ANALYZE_ENDPOINT = "https://aethelgard.justbwas.workers.dev/analyze";
 
 export type MissionStage = "local_parse" | "language" | "redaction" | "verification" | "analysis" | "complete";
 export type MissionResult = OracleOutput | ReportModel | SafeMode;
@@ -47,7 +48,7 @@ async function defaultSend(
   body: Uint8Array, sources: Parameters<typeof parseDashboardOracle>[1],
 ): Promise<MissionResult | AnalyzeResponse> {
   try {
-    const response = await fetch("/analyze", { method: "POST", headers: { "content-type": "application/json" },
+    const response = await fetch(ANALYZE_ENDPOINT, { method: "POST", headers: { "content-type": "application/json" },
       body: new TextDecoder().decode(body), signal: AbortSignal.timeout(ANALYSIS_WALL_MS) });
     const declared = Number(response.headers.get("content-length") ?? "0");
     if (!response.ok || declared > MAX_ANALYZE_RESPONSE_BYTES) return ANALYSIS_FAILURE;
