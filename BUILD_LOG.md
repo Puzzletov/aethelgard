@@ -1636,3 +1636,20 @@ historical work.
   typecheck/lint and diff hygiene pass. No unknown-field stripping, security-
   field coercion, content logging, runtime change, dependency, production
   resource or architecture change was introduced.
+
+### 79. Phase 3 Task 3.13 — Turnstile failure handling
+
+- Task 3.13: **PASSED** on 2026-09-04. The official Cloudflare test-key path
+  and deterministic mocks cover valid, invalid, missing, 2,049-character,
+  wrong-action, wrong-hostname, replayed and unavailable verification cases.
+  Each accepted-size token causes exactly one Siteverify call; missing and
+  oversized tokens cause none, and `remoteip` is never sent.
+- A controlled in-flight request proves the fixed 5,000 ms Siteverify signal
+  cancels transport. The 8,192-byte response bound remains enforced. Private-
+  route structure proves unavailable verification returns fixed no-store HTTP
+  503, every other rejection returns fixed no-store HTTP 403 requesting a
+  fresh challenge, and both return before AI, Browser Run, PDF or signing.
+- All 19 affected Turnstile, private-boundary, public-secret and request-
+  contract tests, strict typecheck/lint and diff hygiene pass. The public edge
+  remains secret-free; no bypass, token retry, runtime change, dependency,
+  production resource or architecture change was introduced.

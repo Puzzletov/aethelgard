@@ -11,6 +11,11 @@ test("private analyze route verifies Turnstile before the bounded analysis orche
   assert.match(source, /groq: this\.env\.GROQ_API_KEY/u);
   assert.match(source, /openrouter_free: this\.env\.OPENROUTER_API_KEY/u);
   assert.match(source, /"cache-control": "no-store"/u);
+  assert.equal((source.match(/await verifyTurnstile/gu) ?? []).length, 1);
+  const gate = source.slice(verification, analysis);
+  assert.match(gate, /errorResponse\(503, "turnstile_unavailable", "Verification is unavailable\."\)/u);
+  assert.match(gate, /errorResponse\(403, "turnstile_invalid", "Request a fresh verification challenge\."\)/u);
+  assert.doesNotMatch(gate, /runAnalysis|createProductionReport|signProductionFinalPdf|BROWSER/u);
 });
 
 test("Phase 2 report composition follows analysis without restoring Phase 0 proof paths", () => {
