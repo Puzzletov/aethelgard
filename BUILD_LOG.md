@@ -1984,3 +1984,19 @@ historical work.
 - Two deterministic bound/claim/command/relative-link/Markdown checks,
   architecture lint, Doctor and diff hygiene pass. Documentation remains below
   20,000 code points; architecture drift is none.
+
+### 101. Phase 4 Task 4.8 — operational runbook
+
+- Task 4.8: **PASSED** on 2026-09-04. Added the bounded owner runbook covering
+  the pre-release checkpoint, private-runtime-first deployment, synthetic live
+  verification, credential and signing-key compromise, fixed provider models,
+  fail-closed quota handling, versioned rollback and clean disaster recovery.
+- Followed every non-destructive account procedure once: public/private Worker
+  version listing, public/private secret-name listing and Pages deployment
+  listing. The public Worker has zero secrets; the private runtime retains
+  exactly the five approved names. Current version IDs and the stale pre-release
+  Pages deployment were observed without production mutation or secret values.
+- Four deterministic runbook/README bound, command, link, claim and Markdown
+  checks plus architecture hash/lint, Doctor, exact-zero and diff hygiene pass.
+  No autonomous change, paid fallback, maintenance service or architecture drift
+  was introduced.

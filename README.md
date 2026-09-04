@@ -60,6 +60,7 @@ the signed synthetic fallback is at
 - [Architecture 2.1](ARCHITECTURE.md) is the binding system specification.
 - [Build log](BUILD_LOG.md) records task and release evidence.
 - [Clean-machine recovery](RECOVERY.md) defines the reproducible build proof.
+- [Owner runbook](RUNBOOK.md) defines deployment, incident and rollback procedures.
 - [Signing-key rotation](KEY_ROTATION.md) defines retained public-key handling.
 - [Trust page](https://aethelgard-3j9.pages.dev/trust) states the verified
   boundary and honest limits.
