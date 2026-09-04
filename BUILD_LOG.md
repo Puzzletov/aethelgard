@@ -10,10 +10,12 @@ historical work.
   `56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2`.
 - Phase -1: **CLOSED**.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
-- Current implementation position: **PHASE 2 — IN PROGRESS** on
-  `phase/2-reporting`; Task 2.1 passed.
+- Current implementation position: **PHASE 3 — PASSED**, awaiting owner review
+  and merge of PR #18 from `phase/3-hardening`.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
 - Phase 1 status: **PASSED — MERGED** in PR #11 on 2026-08-31.
+- Phase 2 status: **PASSED — MERGED** in PR #16 on 2026-09-02.
+- Phase 3 status: **PASSED — PR #18 AWAITING OWNER REVIEW** on 2026-09-04.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Architecture execution-hardening EDR 37: **APPROVED**.
@@ -1857,3 +1859,24 @@ historical work.
   typecheck/lint, both npm audits and diff hygiene pass. No paid fallback,
   billing mutation, runtime dependency, production resource or architecture
   change was introduced.
+
+### 93. Phase 3 exit gate
+
+- **PHASE 3 — PASSED** on 2026-09-04. All 26 sequential hardening tasks and
+  all earlier regressions pass: 166 root tests and 63 frontend tests, both
+  supported-browser matrices, production builds, strict typecheck/lint,
+  Doctor, architecture lint and exact Git-blob hash, dependency audits,
+  license audit, secret/security gates, recovery proof and exact-zero proof.
+- Controlled serial performance remains within every release target: shell p95
+  900 ms, clean engine p95 4,759.7 ms, warm local p95 24.8 ms, PDF p95 458 ms,
+  signing p95 14.178 ms and full-analysis median 207.954 ms. The fixed corpus
+  hash remains `1bcf99938b2e2c111659098541ed3be11b990f47a8b279a12518efe379244396`.
+- Controlled resources pass: initial JS 268,974 gzip bytes, largest static
+  asset 9,597,831 bytes, public/private Worker gzip 117,740/155,925 bytes,
+  public CPU p99 0.304 ms, maximum response 8,388,607 bytes and conservative
+  trusted-runtime peak 82,188,670 bytes against the 100,663,296-byte bound.
+- Architecture hash remains
+  `56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2`;
+  privacy, exact-zero, no-persistence, secret-free edge, private runtime,
+  provider order and hybrid exact-byte signing invariants are unchanged. Phase
+  4 remains unauthorized pending owner review and merge of PR #18.
