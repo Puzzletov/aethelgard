@@ -1672,3 +1672,19 @@ historical work.
   route/browser tests, strict typecheck/lint and diff hygiene pass. No paid
   overflow, cron, user/job state, dependency, production resource or
   architecture change was introduced.
+
+### 81. Phase 3 Task 3.15 — Browser Run failure handling
+
+- Task 3.15: **PASSED** on 2026-09-04. Added one table-driven production
+  renderer matrix for timeout, unavailable transport, non-PDF content,
+  truncated PDF and declared over-bound output under the unchanged 15,000 ms
+  deadline, 8,388,608-byte limit and queue depth two.
+- Every fault returns no PDF bytes. Measured invalid responses settle quota to
+  their reported usage; timeout and unavailable responses conservatively keep
+  the 60,000 ms reservation. Composed report tests prove non-PDF, truncated
+  and over-bound bytes make zero signing calls and expose no PDF or unsigned
+  substitute; direct-download browser proofs remain passing.
+- All 14 affected renderer, report, signing-boundary and Chrome/Edge download
+  tests, strict typecheck/lint and diff hygiene pass. No second renderer,
+  paid fallback, malformed download, dependency, production resource or
+  architecture change was introduced.

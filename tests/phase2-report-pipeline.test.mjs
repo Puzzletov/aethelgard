@@ -84,6 +84,26 @@ test("quota exhaustion inside the report layer omits PDF and signing without an 
   assert.equal(store.values.get("aggregate_browser_run_ms"), 480_000);
 });
 
+test("invalid Browser Run outputs never reach signing or the PDF response", async () => {
+  const cases = [
+    ["non_pdf", new Response("not pdf", { headers: { "content-type": "text/plain",
+      "x-browser-ms-used": "20" } })],
+    ["truncated", new Response("%PDF-1.7 truncated", { headers: { "content-type": "application/pdf",
+      "x-browser-ms-used": "20" } })],
+    ["over_bound", new Response("", { headers: { "content-type": "application/pdf",
+      "content-length": "8388609", "x-browser-ms-used": "20" } })],
+  ];
+  for (const [name, browserResponse] of cases) {
+    let signCalls = 0;
+    const base = await runtime(storage(), { async quickAction() { return browserResponse.clone(); } });
+    const response = await createProductionReport(request, oracle, { ...base,
+      sign: async () => { signCalls += 1; return undefined; } });
+    const parsed = analyzeResponseSchema.parse(await response.json());
+    assert.equal(parsed.pdf, undefined, name);
+    assert.equal(signCalls, 0, name);
+  }
+});
+
 test("hybrid output from the composed journey independently verifies", async () => {
   const pdf = new TextEncoder().encode("%PDF-1.7\nexact report\n%%EOF\n");
   let publicKeys;

@@ -35,7 +35,7 @@ export interface BrowserPdfBinding {
   quickAction(action: "pdf", options: BrowserRunPDFOptions): Promise<Response>;
 }
 
-type PdfDeadline = (operation: Promise<Response>) => Promise<Response>;
+export type PdfDeadline = (operation: Promise<Response>) => Promise<Response>;
 
 export class PdfRenderTimeoutError extends Error {}
 
