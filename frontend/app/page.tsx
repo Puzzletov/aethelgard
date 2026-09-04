@@ -66,6 +66,26 @@ function Principles() {
   );
 }
 
+const journey = [
+  ["1", "Open", "Choose one supported business document. The source stays on your device while the browser checks and reads it."],
+  ["2", "Analyze", "Personal details are replaced locally. Only the redacted business text is sent for structured critique."],
+  ["3", "Keep the proof", "Download the report directly. Its digest and two signatures let you detect any later byte change."],
+] as const;
+
+function PortfolioExplanation() {
+  return <section className="portfolio-explanation page-frame" aria-labelledby="portfolio-title">
+    <div className="section-grid"><div><p className="section-label">What it demonstrates</p>
+      <h2 id="portfolio-title">Open. Analyze. Leave no copy behind.</h2></div>
+      <div><p>Aethelgard turns a document into a source-linked decision brief while minimizing the data any remote system receives.</p>
+        <ol className="portfolio-flow">{journey.map(([number, title, body]) => <li key={number}>
+          <span aria-hidden="true">{number}</span><div><h3>{title}</h3><p>{body}</p></div></li>)}</ol>
+        <nav className="portfolio-links" aria-label="Project proof">
+          <a href="/sample">Inspect a signed sample</a><a href="/verify">Verify a report</a>
+          <a href="/case-study">Read the engineering case study</a><a href="/trust">Review the limits</a>
+        </nav></div></div>
+  </section>;
+}
+
 const sampleFiles = [
   ["PDF report", "/sample/aethelgard-synthetic-sample.pdf"],
   ["Detached signature", "/sample/aethelgard-synthetic-sample.sig.json"],
@@ -101,6 +121,7 @@ export default function Home() {
       <SiteHeader />
       <main id="main-content">
         <Hero />
+        <PortfolioExplanation />
         <DocumentPicker />
         <StaticSample />
         <Principles />

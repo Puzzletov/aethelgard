@@ -2014,3 +2014,17 @@ historical work.
 - Six focused case-study/Trust tests, static production build, strict frontend
   typecheck/lint, diff hygiene and 268,880-byte initial-JS gate pass. No asset,
   dependency, runtime capability, inflated claim or architecture drift was added.
+
+### 103. Phase 4 Task 4.10 — portfolio explanation
+
+- Task 4.10: **PASSED** on 2026-09-04. Added a concise non-specialist homepage
+  explanation of the Open → Analyze → Keep the proof journey: source stays on
+  the device, only redacted business text is sent, and exact-byte signatures
+  expose later changes.
+- Accessible navigation points reviewers to the signed sample, browser verifier,
+  case study and honest Trust limits. The copy makes no SaaS, SLA, unsupported
+  browser/language, malware-scanning or absolute security promise.
+- Eight focused portfolio/design/case-study tests, static production build,
+  strict frontend typecheck/lint, responsive-layout proof, diff hygiene and the
+  268,880-byte initial-JS gate pass. Exact-zero, privacy and security remain
+  unchanged; architecture drift is none.

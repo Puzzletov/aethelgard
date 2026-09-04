@@ -165,6 +165,54 @@ a.phase-mark {
   border-top: 1px solid var(--color-rule);
 }
 
+.portfolio-explanation {
+  padding-block: var(--space-section);
+  border-top: 1px solid var(--color-rule);
+}
+
+.portfolio-explanation h2 {
+  max-width: 12ch;
+  margin: var(--space-md) 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 4rem);
+  line-height: 1;
+}
+
+.portfolio-explanation .section-grid > div:last-child > p {
+  max-width: var(--measure-reading);
+  margin-top: 0;
+  color: var(--color-charcoal-soft);
+}
+
+.portfolio-flow {
+  margin-block: var(--space-xxl);
+  padding: 0;
+  list-style: none;
+}
+
+.portfolio-flow li {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: var(--space-lg);
+  padding-block: var(--space-lg);
+  border-top: 1px solid var(--color-rule);
+}
+
+.portfolio-flow h3,
+.portfolio-flow p {
+  margin: 0;
+}
+
+.portfolio-flow p {
+  color: var(--color-charcoal-soft);
+}
+
+.portfolio-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md) var(--space-xl);
+}
+
 .trust-page {
   padding-block: clamp(4rem, 10vw, 8rem);
 }
@@ -959,6 +1007,12 @@ a.phase-mark {
   .analysis-heading,
   .executive-summary,
   .analysis-sections {
+    grid-template-columns: 1fr;
+  }
+
+  .case-study > section,
+  .trust-page section,
+  .lifecycle-list > div {
     grid-template-columns: 1fr;
   }
 
