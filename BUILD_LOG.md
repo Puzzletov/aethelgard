@@ -1771,3 +1771,16 @@ historical work.
   CPU p99 was 0.222 ms; and the maximum response was 8,388,607 bytes. All 26
   affected output/PDF/signing/resource tests, strict typecheck/lint and diff
   hygiene pass. No runtime behavior, bound, dependency or architecture changed.
+
+### 87. Phase 3 Task 3.21 — CodeQL gate
+
+- Task 3.21: **PASSED** on 2026-09-04. The bounded CodeQL review examined the
+  sole open result: medium alert #3 (`js/overly-large-range`) in XLSX XML-text
+  validation. It was active and applicable; no high-severity result was open.
+- Replaced the ambiguous literal control-character range with exact numeric
+  XML 1.0 control checks. A complete table-driven regression rejects U+0000–
+  U+0008, U+000B, U+000C and U+000E–U+001F while preserving permitted tab,
+  line-feed and carriage-return characters.
+- Focused XLSX tests, strict typecheck/lint and diff hygiene pass. The release-
+  branch CodeQL check reports zero unresolved applicable high-severity alerts;
+  no query, check, suppression, dependency or architecture was changed.
