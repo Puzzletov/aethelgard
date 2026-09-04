@@ -1970,3 +1970,17 @@ historical work.
   static production build, strict typecheck/lint, diff hygiene and the
   268,880-byte initial-JS gate pass. No live dependency, real data, misleading
   label, runtime dependency or architecture drift was introduced.
+
+### 100. Phase 4 Task 4.7 — README
+
+- Task 4.7: **PASSED** on 2026-09-04. Replaced the bootstrap README with a
+  concise project entry point covering the six-format mission, complete runtime
+  topology, browser-local privacy boundary, exact-zero behavior, English and
+  desktop Chrome/Edge scope, local setup, both verification paths and accurate
+  Phase 4 status.
+- The document links Architecture, Build Log, recovery, key rotation, Trust,
+  browser verifier and signed sample without duplicating the specification or
+  reviving superseded Google/server/email/BYOK instructions.
+- Two deterministic bound/claim/command/relative-link/Markdown checks,
+  architecture lint, Doctor and diff hygiene pass. Documentation remains below
+  20,000 code points; architecture drift is none.
