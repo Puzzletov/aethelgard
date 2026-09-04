@@ -1,8 +1,11 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import { requiredProofBrowserNames } from "../scripts/browser-parser-proof.mjs";
+
+const fixtures = JSON.parse(readFileSync(new URL("./fixtures/language.json", import.meta.url), "utf8"));
 
 test("the pinned local language gate passes its frozen corpus in Chrome and Edge", () => {
   const result = spawnSync(process.execPath, ["scripts/verify-language-gate.mjs"], {
@@ -15,9 +18,13 @@ test("the pinned local language gate passes its frozen corpus in Chrome and Edge
   assert.deepEqual(report.results.map((item) => item.browser), requiredProofBrowserNames());
   for (const item of report.results) {
     assert.equal(item.status, "ok");
-    assert.ok(item.english_margin >= 2_000);
-    assert.ok(item.names_margin >= 2_000);
-    assert.deepEqual(item.failures, ["non_english", "mixed_or_uncertain", "insufficient"]);
-    assert.equal(item.external_network_requests, 0);
+    assert.equal(item.schema_version, "1");
+    assert.equal(item.fixture_count, 9);
+    assert.deepEqual(item.decisions, fixtures.fixtures.map((fixture) => ({
+      id: fixture.id, decision: fixture.expected,
+    })));
+    assert.deepEqual(item.mismatches, []);
+    assert.equal(item.language_data_requests, 0);
+    assert.equal(item.passed, true);
   }
 });

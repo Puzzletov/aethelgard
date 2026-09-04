@@ -16,6 +16,7 @@ import {
 
 class FakeStorage {
   values = new Map();
+  tail = Promise.resolve();
 
   async get(keys) {
     return new Map(keys.filter((key) => this.values.has(key)).map((key) => [key, this.values.get(key)]));
@@ -23,6 +24,13 @@ class FakeStorage {
 
   async put(entries) {
     for (const [key, value] of Object.entries(entries)) this.values.set(key, value);
+  }
+
+  async transaction(callback) {
+    const previous = this.tail;
+    let release; this.tail = new Promise((resolve) => { release = resolve; });
+    await previous;
+    try { return await callback(this); } finally { release(); }
   }
 }
 
@@ -53,6 +61,26 @@ test("quota guard reserves conservatively, fails closed, and resets lazily on UT
 
   storage.values.set(BROWSER_QUOTA_TOTAL_KEY, "corrupt");
   assert.deepEqual(await reserveBrowserRun(storage, secondDay), { ok: false, reason: "storage" });
+});
+
+test("reservation boundary and concurrent reservations are atomic", async () => {
+  const atBoundary = new FakeStorage();
+  atBoundary.values.set(BROWSER_QUOTA_DATE_KEY, "2026-08-28");
+  atBoundary.values.set(BROWSER_QUOTA_TOTAL_KEY, BROWSER_DAILY_CEILING_MS - BROWSER_RUN_RESERVATION_MS);
+  assert.equal((await reserveBrowserRun(atBoundary, firstDay)).ok, true);
+
+  const aboveBoundary = new FakeStorage();
+  aboveBoundary.values.set(BROWSER_QUOTA_DATE_KEY, "2026-08-28");
+  aboveBoundary.values.set(BROWSER_QUOTA_TOTAL_KEY,
+    BROWSER_DAILY_CEILING_MS - BROWSER_RUN_RESERVATION_MS + 1);
+  assert.deepEqual(await reserveBrowserRun(aboveBoundary, firstDay), { ok: false, reason: "exhausted" });
+
+  const concurrent = new FakeStorage();
+  concurrent.values.set(BROWSER_QUOTA_DATE_KEY, "2026-08-28");
+  concurrent.values.set(BROWSER_QUOTA_TOTAL_KEY, BROWSER_DAILY_CEILING_MS - BROWSER_RUN_RESERVATION_MS);
+  const results = await Promise.all([reserveBrowserRun(concurrent, firstDay), reserveBrowserRun(concurrent, firstDay)]);
+  assert.equal(results.filter((result) => result.ok).length, 1);
+  assert.equal(results.filter((result) => !result.ok && result.reason === "exhausted").length, 1);
 });
 
 test("the final-PDF queue is bounded and spaces Quick Actions by ten seconds", async () => {

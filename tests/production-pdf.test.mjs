@@ -27,6 +27,7 @@ class FakeStorage {
     this.events.push("quota:put");
     for (const [key, value] of Object.entries(entries)) this.values.set(key, value);
   }
+  async transaction(callback) { return callback(this); }
 }
 
 const reference = Object.freeze({ kind: "pdf_page", page: 1 });
@@ -73,6 +74,9 @@ test("quota preflight precedes HTML/AI work and exact PDF bytes remain unchanged
   assert.equal(target.calls[0].input.pdfOptions.timeout, PDF_RENDER_TIMEOUT_MS);
   assert.equal(target.calls[0].input.cacheTTL, 0);
   assert.equal(target.calls[0].input.setJavaScriptEnabled, false);
+  assert.ok(new TextEncoder().encode(target.calls[0].input.html).byteLength <= 1_048_576);
+  assert.doesNotMatch(target.calls[0].input.html,
+    /Alice Zhang|CUST-100001|private-proof|RAW-PDF|RAW-DOCX|JVBER|UEsDB/iu);
 });
 
 test("malformed, oversized and timeout outputs fail closed", async () => {
@@ -105,6 +109,34 @@ test("quota exhaustion and queue saturation do not call Browser Run", async () =
     { ok: false, reason: "busy" });
   assert.equal(target.calls.length, 0);
   assert.equal(fresh.values.get(BROWSER_QUOTA_TOTAL_KEY), 0);
+});
+
+test("a crashed Browser Run conservatively settles the full reservation", async () => {
+  const storage = new FakeStorage();
+  const crashed = browser(exactPdf, { error: new Error("browser crashed") });
+  assert.deepEqual(await produceProductionPdf(storage, new FinalPdfQueue(), crashed.binding,
+    async () => reportHtml()), { ok: false, reason: "render" });
+  assert.equal(storage.values.get(BROWSER_QUOTA_TOTAL_KEY), 60_000);
+  assert.deepEqual([...storage.values.keys()].sort(), [BROWSER_QUOTA_DATE_KEY, BROWSER_QUOTA_TOTAL_KEY].sort());
+});
+
+test("Browser Run fault matrix never returns false PDF bytes and settles quota correctly", async () => {
+  const cases = [
+    ["non_pdf", browser(exactPdf, { contentType: "text/plain" }).binding, undefined, 3_200],
+    ["truncated", browser("%PDF-1.7 without trailer").binding, undefined, 3_200],
+    ["over_bound", browser(exactPdf,
+      { headers: { "content-length": String(MAX_FINAL_PDF_BYTES + 1) } }).binding, undefined, 3_200],
+    ["unavailable", browser(exactPdf, { error: new Error("unavailable") }).binding, undefined, 60_000],
+    ["timeout", browser().binding, async () => { throw new PdfRenderTimeoutError("deadline"); }, 60_000],
+  ];
+  for (const [name, binding, deadline, expectedQuota] of cases) {
+    const storage = new FakeStorage();
+    const result = await produceProductionPdf(storage, new FinalPdfQueue(), binding,
+      async () => reportHtml(), undefined, deadline);
+    assert.equal(result.ok, false, name);
+    assert.equal("bytes" in result, false, name);
+    assert.equal(storage.values.get(BROWSER_QUOTA_TOTAL_KEY), expectedQuota, name);
+  }
 });
 
 test("measured Browser Run timing corpus remains below the five-second median target", async () => {

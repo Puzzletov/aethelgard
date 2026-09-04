@@ -15,6 +15,8 @@ interface PreflightRequest {
   readonly buffer: ArrayBuffer;
 }
 
+const ALLOCATION_FAILURE = Object.freeze({ schema_version: "1", ok: false, reason: "allocation" });
+
 function isDocumentFormat(value: unknown): value is DocumentFormat {
   return typeof value === "string" && SUPPORTED_DOCUMENT_FORMATS.some((format) => format === value);
 }
@@ -40,6 +42,11 @@ async function parseValidated(request: PreflightRequest) {
   return failedPreflight("magic_invalid");
 }
 
+function isAllocationFailure(error: unknown): boolean {
+  return error instanceof RangeError
+    || error instanceof WebAssembly.RuntimeError && /memory|allocation|out of bounds/iu.test(error.message);
+}
+
 self.onmessage = async (event: MessageEvent<unknown>) => {
   if (!isPreflightRequest(event.data)) {
     self.postMessage(failedPreflight("archive_malformed"));
@@ -53,6 +60,9 @@ self.onmessage = async (event: MessageEvent<unknown>) => {
       return;
     }
     self.postMessage(await parseValidated(event.data));
+  } catch (error) {
+    if (!isAllocationFailure(error)) throw error;
+    self.postMessage(ALLOCATION_FAILURE);
   } finally {
     bytes.fill(0);
   }

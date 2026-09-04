@@ -75,11 +75,13 @@ test("OpenRouter request is free-only and enforces all privacy controls", async 
 });
 
 test("HTTP, network, timeout, invalid JSON, and response bounds fail closed", async () => {
-  for (const [status, reason] of [[429, "rate_limit"], [403, "policy"], [503, "unavailable"], [400, "invalid_schema"]]) {
-    const result = await callAiProvider(request(), "key", async () => new Response("{}", {
-      status, headers: { "content-type": "application/json" },
-    }));
-    assert.deepEqual(result, { ok: false, provider: "groq", reason });
+  for (const provider of ["groq", "openrouter_free"]) {
+    for (const [status, reason] of [[429, "rate_limit"], [403, "policy"], [503, "unavailable"], [400, "invalid_schema"]]) {
+      const result = await callAiProvider(request(provider), "key", async () => new Response("{}", {
+        status, headers: { "content-type": "application/json" },
+      }));
+      assert.deepEqual(result, { ok: false, provider, reason });
+    }
   }
   assert.deepEqual(await callAiProvider(request(), "key", async () => { throw new Error("offline"); }),
     { ok: false, provider: "groq", reason: "network" });
@@ -97,6 +99,37 @@ test("HTTP, network, timeout, invalid JSON, and response bounds fail closed", as
   assert.deepEqual(await callAiProvider(request(), "key", async () => large),
     { ok: false, provider: "groq", reason: "too_large" });
   assert.equal(AI_TIMEOUT_MS, 30_000);
+});
+
+test("provider payload contains only the strict redacted stage contract", async () => {
+  for (const provider of ["groq", "openrouter_free"]) {
+    const capture = capturingFetcher();
+    const value = request(provider, { messages: [
+      { role: "system", content: "Return one strict JSON object." },
+      { role: "user", content: "Redacted source: [PERSON_1] approved [CUSTOMER_ID_1]." },
+    ] });
+    assert.equal((await callAiProvider(value, "private-key", capture.fetcher)).ok, true);
+    const serialized = capture.calls[0][1].body;
+    assert.match(serialized, /\[PERSON_1\].*\[CUSTOMER_ID_1\]/u);
+    assert.doesNotMatch(serialized, /Alice Zhang|CUST-100001|private-proof|JVBER|UEsDB/iu);
+  }
+});
+
+test("the fixed attempt deadline cancels an in-flight provider request", async () => {
+  const nativeTimeout = AbortSignal.timeout;
+  let requestedMs = 0;
+  const controller = new AbortController();
+  AbortSignal.timeout = (milliseconds) => { requestedMs = milliseconds; return controller.signal; };
+  try {
+    const pending = callAiProvider(request(), "key", async (_input, init) => new Promise((_resolve, reject) => {
+      init.signal.addEventListener("abort", () => reject(new DOMException("deadline", "TimeoutError")), { once: true });
+    }));
+    controller.abort();
+    assert.deepEqual(await pending, { ok: false, provider: "groq", reason: "timeout" });
+    assert.equal(requestedMs, 30_000);
+  } finally {
+    AbortSignal.timeout = nativeTimeout;
+  }
 });
 
 test("router source contains no logging, SDK, arbitrary endpoint, persistence, or retry", async () => {

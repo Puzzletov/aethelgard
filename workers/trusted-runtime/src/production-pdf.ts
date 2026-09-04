@@ -1,12 +1,14 @@
 import {
   reserveBrowserRun,
   settleBrowserRun,
+  type BrowserRunReservation,
   type BrowserQuotaResult,
 } from "./browser-quota.ts";
 import {
   renderReportPdf,
   type BrowserPdfBinding,
   type BrowserPdfResult,
+  type PdfDeadline,
 } from "./browser-pdf.ts";
 import { type FinalPdfQueue } from "./pdf-queue.ts";
 import type { ServiceOwnedReportHtml } from "./report-html.ts";
@@ -36,8 +38,11 @@ export async function produceProductionPdf(
   queue: FinalPdfQueue,
   browser: BrowserPdfBinding,
   createHtml: HtmlFactory,
+  existingReservation?: BrowserRunReservation,
+  deadline?: PdfDeadline,
 ): Promise<ProductionPdfResult> {
-  const quota = await reserveBrowserRun(storage);
+  const quota: BrowserQuotaResult = existingReservation === undefined
+    ? await reserveBrowserRun(storage) : { ok: true, reservation: existingReservation };
   if (!quota.ok) return quotaFailure(quota);
   let html: ServiceOwnedReportHtml | undefined;
   try {
@@ -49,7 +54,7 @@ export async function produceProductionPdf(
     return await refundUnused(storage, quota.reservation)
       ? { ok: false, reason: "html" } : { ok: false, reason: "storage" };
   }
-  const queued = await queue.run(() => renderReportPdf(browser, html));
+  const queued = await queue.run(() => renderReportPdf(browser, html, deadline));
   if (!queued.ok) {
     return await refundUnused(storage, quota.reservation)
       ? { ok: false, reason: "busy" } : { ok: false, reason: "storage" };

@@ -63,7 +63,11 @@ test("formula-like text is escaped and no formula, macro, or external link exist
 
 test("output and XML validity bounds fail closed without truncation", () => {
   assert.equal(writeReportXlsx({ ...xlsxModel(), extra: true }), undefined);
-  assert.equal(writeReportXlsx({ ...xlsxModel(), title: "bad\u0000xml" }), undefined);
+  for (const code of [...Array.from({ length: 9 }, (_, index) => index), 0x0b, 0x0c,
+    ...Array.from({ length: 18 }, (_, index) => index + 0x0e)]) {
+    assert.equal(writeReportXlsx({ ...xlsxModel(), title: `bad${String.fromCharCode(code)}xml` }), undefined);
+  }
+  assert.ok(writeReportXlsx({ ...xlsxModel(), title: "allowed\tline\nreturn\r" }) instanceof Uint8Array);
   assert.equal(writeReportXlsx({ ...xlsxModel(), executive_summary: "x".repeat(200_001) }), undefined);
   const maximal = xlsxModel();
   maximal.charts = Array.from({ length: 8 }, (_, chartIndex) => ({ schema_version: "1",

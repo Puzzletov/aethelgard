@@ -33,11 +33,25 @@ window.setTimeout = (callback, milliseconds, ...args) => {
   if (milliseconds === 300000) lifetimes.push(milliseconds);
   return nativeTimeout(callback, milliseconds, ...args);
 };
-for (const method of ["setItem", "removeItem", "clear"]) {
-  const native = Storage.prototype[method]; Storage.prototype[method] = function(...args) {
-    writes += 1; return native.apply(this, args);
-  };
+function trackMethod(owner, method) {
+  if (owner === undefined || typeof owner[method] !== "function") return;
+  const native = owner[method]; owner[method] = function(...args) { writes += 1; return native.apply(this, args); };
 }
+for (const method of ["setItem", "removeItem", "clear"]) trackMethod(Storage.prototype, method);
+for (const method of ["open", "deleteDatabase"]) trackMethod(indexedDB, method);
+for (const method of ["open", "delete"]) trackMethod(caches, method);
+for (const method of ["add", "addAll", "delete", "put"]) trackMethod(globalThis.Cache?.prototype, method);
+trackMethod(globalThis.ServiceWorkerContainer?.prototype, "register");
+trackMethod(globalThis.ServiceWorkerRegistration?.prototype, "unregister");
+trackMethod(globalThis.StorageManager?.prototype, "getDirectory");
+trackMethod(globalThis.FileSystemFileHandle?.prototype, "createWritable");
+for (const method of ["getDirectoryHandle", "getFileHandle", "removeEntry"]) {
+  trackMethod(globalThis.FileSystemDirectoryHandle?.prototype, method);
+}
+for (const method of ["set", "delete"]) trackMethod(globalThis.CookieStore?.prototype, method);
+const cookieDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, "cookie");
+if (cookieDescriptor?.set) Object.defineProperty(Document.prototype, "cookie", { ...cookieDescriptor,
+  set(value) { writes += 1; cookieDescriptor.set.call(this, value); } });
 const rootNode = createRoot(document.body.appendChild(document.createElement("main")));
 const wait = () => new Promise((resolve) => nativeTimeout(resolve, 20));
 async function buttons(count) {

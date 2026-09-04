@@ -10,10 +10,12 @@ historical work.
   `56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2`.
 - Phase -1: **CLOSED**.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
-- Current implementation position: **PHASE 2 — IN PROGRESS** on
-  `phase/2-reporting`; Task 2.1 passed.
+- Current implementation position: **PHASE 3 — PASSED**, awaiting owner review
+  and merge of PR #18 from `phase/3-hardening`.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
 - Phase 1 status: **PASSED — MERGED** in PR #11 on 2026-08-31.
+- Phase 2 status: **PASSED — MERGED** in PR #16 on 2026-09-02.
+- Phase 3 status: **PASSED — PR #18 AWAITING OWNER REVIEW** on 2026-09-04.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Architecture execution-hardening EDR 37: **APPROVED**.
@@ -1441,3 +1443,440 @@ historical work.
   `MODULE_TYPELESS_PACKAGE_JSON` warning in frontend ESM tests. The frontend
   package now declares its existing ESM boundary explicitly; its Next config
   uses the equivalent ESM form so warnings-as-errors remains enforced.
+
+### 67. Phase 3 Task 3.1 — complete hostile corpus
+
+- Task 3.1: **PASSED** on 2026-09-02. Froze a version-1 manifest of 47
+  deterministic synthetic hostile cases with SHA-256 hashes and exact expected
+  outcomes. All 20 Section 12.1 classes are represented; Office-specific
+  threats cover DOCX, PPTX and XLSX, and the PDF/text boundaries remain
+  explicit. Existing earlier regressions were retained unchanged.
+- Chrome and Edge rejected all 47 cases exactly with zero external requests.
+  The 256-case maximum, 15 MiB early source limit and 10-second preflight Worker
+  bound remain unchanged. No real malware, scanner, remote dependency,
+  persistence, production change or architecture drift was introduced.
+- The frozen-manifest/hash test, focused browser proof, existing six preflight
+  regressions, strict typecheck/lint, architecture lint and diff hygiene pass.
+
+### 68. Phase 3 Task 3.2 — frozen PII corpus release gate
+
+- Task 3.2: **PASSED** on 2026-09-02 without changing the approved corpus,
+  release redactor or acceptance floors. The release-target browser bundle
+  reproduced exact corpus SHA-256
+  `0c777c5fc3300eb0b00a29cf583b23ea6455a12a43d990531b88990d1d679467`
+  across 84 cases and 576 labelled entities.
+- Structured recall, named recall and overall recall were `1.0`; named
+  precision was `0.9908256880733946` and overall precision was
+  `0.9965397923875432`, with zero must-redact leaks. These remain the frozen
+  project regression baseline, not a universal accuracy claim.
+- The static release build, exact corpus regression and existing Chrome/Edge
+  Redaction Worker proof passed. Both browsers exposed no mapping, external
+  request or persistent write and failed closed on crash and the ten-second
+  timeout. No floor, dependency, production resource or architecture changed.
+
+### 69. Phase 3 Task 3.3 — language fixtures release gate
+
+- Task 3.3: **PASSED** on 2026-09-02. Froze the nine required local fixture
+  classes: clear English prose, English XLSX table content, English with
+  international names, Spanish, French, German, Swedish, mixed/ambiguous text
+  and insufficient text. Each fixture records its exact schema-version-1
+  decision under the release code.
+- Chrome and Edge produced the complete expected matrix. All three English
+  fixtures ranked `eng` first with integer margins of 2,402, 2,402 and 2,277
+  basis points; all other fixtures failed closed with their exact reason.
+  No language-data request occurred.
+- The browser matrix, strict typecheck/lint and diff hygiene pass. The local
+  `franc-min` dependency, 40-letter/eight-token evidence floors, 20,000-code-
+  point sample and 2,000-basis-point threshold are unchanged; no translation,
+  online service, persistence, production change or architecture drift exists.
+
+### 70. Phase 3 Task 3.4 — prompt-injection fixtures release gate
+
+- Task 3.4: **PASSED** on 2026-09-02. Preserved the five existing synthetic
+  attacks and added explicit role-confusion and signing-control cases. The
+  seven-case frozen corpus SHA-256 is
+  `da270a2108e9454d6fa10a01bd645378bec28725bbbb71d3d8a55f6065a8affc`.
+- Every attack remains inert untrusted JSON under the fixed system prompts for
+  Strawman, Steelman and Oracle. Routes, provider destinations, request fields,
+  tool availability and exact stage order cannot be source-controlled.
+  Invalid tool, HTML/schema and signing-control output at each respective stage
+  exhausts only the approved provider pair and returns analysis Safe Mode;
+  nothing reaches reporting or signing.
+- The five focused injection regressions, 31 affected AI transport/orchestrator/
+  schema regressions, strict typecheck/lint and diff hygiene pass. No live AI,
+  secret, capability, dynamic destination, dependency, production change or
+  architecture drift was introduced.
+
+### 71. Phase 3 Task 3.5 — Browser Worker crash handling
+
+- Task 3.5: **PASSED** on 2026-09-04. Added one deterministic Chrome/Edge
+  lifecycle proof on the existing mission, parser-controller and redaction-
+  controller implementation. A crashing Parser Worker is terminated, exactly
+  one fresh Worker completes the retry, and analysis proceeds once. No Worker
+  instance is reused.
+- A crashing Redaction Worker is terminated with zero retry and zero network
+  call. Both browsers return the exact privacy Safe Mode object; the injected
+  private crash marker is absent from the result. Created and terminated Worker
+  counts match exactly in both scenarios.
+- The browser lifecycle proof, 17 affected mission/parser/controller
+  regressions, strict typecheck/lint and diff hygiene pass. No runtime behavior,
+  dependency, production resource, persistence or architecture changed.
+
+### 72. Phase 3 Task 3.6 — parser timeout handling
+
+- Task 3.6: **PASSED** on 2026-09-04. Extended the Task 3.5 browser lifecycle
+  harness with a hanging Parser Worker matrix. The release controller remains
+  fixed at exactly 30,000 ms with no adaptive extension; the deterministic
+  browser proof scales that same controller timer to 100 ms per attempt so the
+  lifecycle path is exercised without weakening or delaying the release gate.
+- Chrome and Edge each terminated two distinct hanging Workers after exactly
+  one fresh retry, released both transferred buffers, made zero redaction or
+  network calls and returned the exact client-resource Safe Mode. Two serial
+  proof deadlines completed within the fixed 180–2,000 ms test window.
+- The complete browser timeout proof, affected parser/mission regressions,
+  strict typecheck/lint and diff hygiene pass. No timeout, retry policy, runtime
+  code, dependency, upload fallback, production resource or architecture
+  changed.
+
+### 73. Phase 3 Task 3.7 — allocation failure handling
+
+- Task 3.7: **PASSED** on 2026-09-04. Added one strict internal parser-Worker
+  allocation signal containing only schema version, failure state and the named
+  `allocation` reason. The Worker emits it only for `RangeError` or a matching
+  WebAssembly memory failure; all details remain private. The controller maps
+  the signal to the existing parser allocation result and still terminates the
+  disposable Worker and releases its transferred buffer.
+- The shared lifecycle harness now applies the exact 50,331,648-byte pressure
+  allocation in Chrome and Edge. One injected parser allocation failure
+  recovers on exactly one fresh Worker; two failures return exact client-
+  resource Safe Mode. A redactor allocation failure gets zero retry and exact
+  privacy Safe Mode. Every created Worker terminates, owned pressure buffers
+  are wiped, transferred page buffers are released and network calls remain
+  zero.
+- The complete pressure matrix, affected parser/mission regressions, strict
+  typecheck/lint and diff hygiene pass. No server/upload fallback, persistence,
+  unbounded allocation, dependency, production resource or architecture
+  changed.
+
+### 74. Phase 3 Task 3.8 — fresh-Worker recovery
+
+- Task 3.8: **PASSED** on 2026-09-04. Extended the shared lifecycle proof so
+  the first injected parser crash is followed by the actual release Parser
+  Worker and its newly initialized, self-hosted Pyodide runtime. Chrome and
+  Edge each used two distinct Worker identities and terminated the first
+  Worker before creating the recovery Worker.
+- The fresh Worker returned the exact strict TXT parser result, analysis
+  continued once, and the lifecycle event order proved both Workers
+  terminated. Exactly one retry occurred under the unchanged 30,000 ms
+  release deadline; Task 3.6 alone retains its isolated proof-time scaling.
+- All 26 pinned parser/runtime/source assets matched their canonical SHA-256
+  manifest. The supported-browser lifecycle proof, strict typecheck/lint and
+  diff hygiene pass. No Worker reuse, external request, persistence,
+  dependency, production resource or architecture change was introduced.
+
+### 75. Phase 3 Task 3.9 — zero browser user-data storage
+
+- Task 3.9: **PASSED** on 2026-09-04. Extended the existing Chrome/Edge
+  boundary proof into a deterministic matrix covering all six source formats
+  and all seven canonical combinations of PDF, XLSX and text outputs, plus an
+  invalid-document failure journey and all four direct download actions.
+- Instrumentation observes Web Storage, IndexedDB, Cache Storage, service-
+  worker registration, OPFS/file-handle access and writes, Cookie Store and
+  document-cookie writes. Every success, failure and download journey recorded
+  exactly zero writes; all Workers terminated and every object URL was revoked.
+- The exact `S-NETWORK-BOUNDARY-RESULT` remained passing in both supported
+  browsers with zero raw-source, unredacted-text, filename or mapping egress.
+  Browser matrices, download regressions, strict typecheck/lint and diff
+  hygiene pass. No allowlist, persistence, dependency, production resource or
+  architecture change was introduced.
+
+### 76. Phase 3 Task 3.10 — provider outage handling
+
+- Task 3.10: **PASSED** on 2026-09-04. Added a deterministic table-driven
+  matrix for timeout, network, HTTP 429, HTTP 5xx/unavailable, policy and
+  invalid-schema faults at Strawman, Steelman and Oracle for both approved
+  providers. Transport status mapping is proven for Groq and OpenRouter Free.
+- Every Groq fault triggers exactly one OpenRouter Free attempt at that stage
+  and suppresses Groq for the remainder of the request. A matching
+  OpenRouter fault returns the exact analysis Safe Mode, performs no later
+  stage, emits no partial report and stays within two attempts per stage and
+  six total attempts. No paid or third provider is reachable.
+- A controlled in-flight request proves that the fixed 30,000 ms attempt
+  signal cancels transport; the existing 180,000 ms wall-signal proof cancels
+  the complete analysis. All 14 focused transport/orchestrator tests, strict
+  typecheck/lint and diff hygiene pass. Runtime code, provider policy,
+  dependency, persistence, production resources and architecture are
+  unchanged.
+
+### 77. Phase 3 Task 3.11 — rate-limit handling
+
+- Task 3.11: **PASSED** on 2026-09-04. The existing public-edge Rate Limiting
+  binding remains fixed at five accepted attempts per source IP per Cloudflare
+  location per 60 seconds and executes before body reads or TrustedRuntime.
+- A deterministic boundary matrix proves attempts one through five forward,
+  attempt six returns the fixed HTTP 429 `rate_limited` response, a different
+  source IP remains isolated, and a separate synthetic Cloudflare location has
+  its own allowance. Denial performs zero trusted calls.
+- Binding failure returns the fixed no-store HTTP 503 service response and
+  performs zero trusted calls. All 14 public-edge/config tests, strict
+  typecheck/lint and diff hygiene pass. No IP is stored in application state;
+  runtime code, limits, dependency, production resources and architecture are
+  unchanged.
+
+### 78. Phase 3 Task 3.12 — schema failure handling
+
+- Task 3.12: **PASSED** on 2026-09-04. Added one deterministic mutation table
+  covering missing, additional, wrong-type, invalid-enum/reference and
+  over-bound payloads for the Analyze request, independently revalidated
+  TrustedRuntime request, Strawman, Steelman, Oracle and Analyze response
+  schemas. The suite contains 36 bounded mutations.
+- Every mutation fails at its registered strict boundary. Existing public-
+  ingress tests prove rejected requests make zero TrustedRuntime calls;
+  orchestrator tests prove invalid AI stage output uses only the approved
+  fallback or fixed analysis Safe Mode with no later stage or partial report.
+- All 50 directly affected schema, ingress and orchestrator tests, strict
+  typecheck/lint and diff hygiene pass. No unknown-field stripping, security-
+  field coercion, content logging, runtime change, dependency, production
+  resource or architecture change was introduced.
+
+### 79. Phase 3 Task 3.13 — Turnstile failure handling
+
+- Task 3.13: **PASSED** on 2026-09-04. The official Cloudflare test-key path
+  and deterministic mocks cover valid, invalid, missing, 2,049-character,
+  wrong-action, wrong-hostname, replayed and unavailable verification cases.
+  Each accepted-size token causes exactly one Siteverify call; missing and
+  oversized tokens cause none, and `remoteip` is never sent.
+- A controlled in-flight request proves the fixed 5,000 ms Siteverify signal
+  cancels transport. The 8,192-byte response bound remains enforced. Private-
+  route structure proves unavailable verification returns fixed no-store HTTP
+  503, every other rejection returns fixed no-store HTTP 403 requesting a
+  fresh challenge, and both return before AI, Browser Run, PDF or signing.
+- All 19 affected Turnstile, private-boundary, public-secret and request-
+  contract tests, strict typecheck/lint and diff hygiene pass. The public edge
+  remains secret-free; no bypass, token retry, runtime change, dependency,
+  production resource or architecture change was introduced.
+
+### 80. Phase 3 Task 3.14 — quota failure handling
+
+- Task 3.14: **PASSED** on 2026-09-04. Corrected the existing PDF quota
+  sequence so `TrustedRuntime` atomically reserves Browser Run capacity after
+  Turnstile and before AI whenever PDF is requested. The reservation is passed
+  into the existing renderer, refunded when analysis/report preparation stops
+  early, settled to measured usage after rendering, and conservatively remains
+  fully charged when Browser Run crashes without a trustworthy measurement.
+- Below/at/above the 60,000 ms reservation boundary, concurrent reservation,
+  lazy UTC rollover, queue depth two, queue saturation, rendering failure and
+  crash settlement all pass. Exhausted PDF requests return exact quota Safe
+  Mode before AI, Browser Run or signing; non-PDF requests require no quota.
+- Persistent quota state contains only `utc_date` and
+  `aggregate_browser_run_ms`, capped at 480,000 ms. Chrome and Edge render the
+  fixed quota Safe Mode without an unsigned substitute. All 15 quota/report/
+  route/browser tests, strict typecheck/lint and diff hygiene pass. No paid
+  overflow, cron, user/job state, dependency, production resource or
+  architecture change was introduced.
+
+### 81. Phase 3 Task 3.15 — Browser Run failure handling
+
+- Task 3.15: **PASSED** on 2026-09-04. Added one table-driven production
+  renderer matrix for timeout, unavailable transport, non-PDF content,
+  truncated PDF and declared over-bound output under the unchanged 15,000 ms
+  deadline, 8,388,608-byte limit and queue depth two.
+- Every fault returns no PDF bytes. Measured invalid responses settle quota to
+  their reported usage; timeout and unavailable responses conservatively keep
+  the 60,000 ms reservation. Composed report tests prove non-PDF, truncated
+  and over-bound bytes make zero signing calls and expose no PDF or unsigned
+  substitute; direct-download browser proofs remain passing.
+- All 14 affected renderer, report, signing-boundary and Chrome/Edge download
+  tests, strict typecheck/lint and diff hygiene pass. No second renderer,
+  paid fallback, malformed download, dependency, production resource or
+  architecture change was introduced.
+
+### 82. Phase 3 Task 3.16 — signing failure handling
+
+- Task 3.16: **PASSED** on 2026-09-04. Corrected report composition so a
+  failure after valid PDF rendering is an atomic signing failure rather than
+  an optional PDF omission. Invalid key material, Wasm failure, signing
+  failure and either self-check failure now return only the fixed signing Safe
+  Mode, with no PDF bytes, manifest, partial signature or private detail.
+- Successful signing still covers the exact unchanged PDF bytes with SHA-256,
+  Ed25519 and ML-DSA-65; independent verification passes and one changed byte
+  fails both signatures. The manifest remains below 32,768 bytes and the
+  measured seven-run median remains below 50 ms.
+- The complete signing, supply-chain and report-boundary suites, strict
+  typecheck/lint and diff hygiene pass. Existing seed, digest, randomness,
+  snapshot and Wasm arenas retain their deterministic wipe paths. No one-
+  signature fallback, generic signer, dependency, production resource or
+  architecture change was introduced.
+
+### 83. Phase 3 Task 3.17 — privacy/network boundary release gate
+
+- Task 3.17: **PASSED** on 2026-09-04. Reused the release-target Chrome/Edge
+  instrumentation across all six formats, seven output combinations, failure
+  and download paths. The exact boundary result reports zero raw-source,
+  unredacted-text, filename and mapping egress, zero browser storage writes,
+  complete Worker termination and at most 128 observed requests.
+- Explicit trusted-boundary assertions prove Groq and OpenRouter Free receive
+  only strict redacted stage payloads. Browser Run receives only bounded,
+  service-rendered report HTML and no source bytes, source filenames, archive/
+  PDF encodings or known raw markers.
+- The full privacy release matrix, provider/prompt, Browser Run and direct-
+  download suites, strict typecheck/lint and diff hygiene pass. No persistence,
+  logging, runtime dependency, production resource or architecture change was
+  introduced.
+
+### 84. Phase 3 Task 3.18 — production no-logging assertion
+
+- Task 3.18: **PASSED** on 2026-09-04. Doctor now emits the exact bounded
+  `S-DOCTOR-RESULT` contract: 23 named boolean checks, no secret values or user
+  content, and a fixed failed status whenever any check fails.
+- Both canonical production configs explicitly disable observability and omit
+  Tail consumers, Logpush and Analytics Engine. Read-only inspection of the
+  active public version `54ed4f13-cc3d-4edd-a217-482c4fded048` and private
+  version `dd044786-d5aa-44af-bea1-6867788a12ba` found no deployed
+  observability, Tail-consumer or Analytics Engine configuration. Source and
+  dependency inspection found no application-content logging or telemetry
+  product.
+- Doctor, public/private boundary, Turnstile and supported Chrome/Edge network
+  regressions, strict typecheck/lint and diff hygiene pass. No runtime,
+  dependency, production resource or architecture change was introduced.
+
+### 85. Phase 3 Task 3.19 — performance corpus
+
+- Task 3.19: **PASSED** on 2026-09-04. Added one fixed, reproducible performance
+  corpus (`1bcf99938b2e2c111659098541ed3be11b990f47a8b279a12518efe379244396`)
+  spanning the supported Chrome/Edge shell and local pipeline, deterministic
+  full analysis orchestration, the frozen Browser Run measurements and actual
+  exact-byte hybrid signing.
+- Controlled serial results were: shell p95 748 ms; clean engine p95 3,887.1
+  ms; warm validation/parse/language/redaction median 18.5 ms; PDF median 166
+  ms; signing median 3.268 ms; and synthetic full-analysis median 203.96 ms,
+  p95 482.873 ms. All named Architecture 2.1 targets pass.
+- All 24 affected browser, parser, language, redaction, AI, PDF, signing and
+  performance tests, strict typecheck/lint and diff hygiene pass. The harness
+  stores no document data and introduces no runtime dependency, production
+  resource, privacy/security weakening or architecture change.
+
+### 86. Phase 3 Task 3.20 — bundle, CPU, memory and output limits
+
+- Task 3.20: **PASSED** on 2026-09-04. Read-only attribution proved the earlier
+  166,456,174-byte result was measurement-harness contamination: response-size
+  search and peak measurement shared one process. The corrected deterministic
+  gate searches in disposable processes, then measures each maximum response
+  shape once in a fresh process.
+- Maximum PDF-only response was 8,388,606 bytes with a 73,100,822-byte measured
+  peak; maximum mixed PDF/XLSX/text response was 8,388,607 bytes with a
+  62,402,348-byte peak. Adding the exact 1,048,576-byte report-HTML and
+  8,388,608-byte signing-arena bounds produced a conservative final peak of
+  82,188,398 bytes, below `B-TRUSTED-MEMORY-BYTES` (100,663,296).
+- Initial JS was 268,974 gzip bytes; the largest static asset was 9,597,831
+  bytes; public/private Worker gzip sizes were 117,740/155,864 bytes; public
+  CPU p99 was 0.222 ms; and the maximum response was 8,388,607 bytes. All 26
+  affected output/PDF/signing/resource tests, strict typecheck/lint and diff
+  hygiene pass. No runtime behavior, bound, dependency or architecture changed.
+
+### 87. Phase 3 Task 3.21 — CodeQL gate
+
+- Task 3.21: **PASSED** on 2026-09-04. The bounded CodeQL review examined the
+  sole open result: medium alert #3 (`js/overly-large-range`) in XLSX XML-text
+  validation. It was active and applicable; no high-severity result was open.
+- Replaced the ambiguous literal control-character range with exact numeric
+  XML 1.0 control checks. A complete table-driven regression rejects U+0000–
+  U+0008, U+000B, U+000C and U+000E–U+001F while preserving permitted tab,
+  line-feed and carriage-return characters.
+- Focused XLSX tests, strict typecheck/lint and diff hygiene pass. The release-
+  branch CodeQL check reports zero unresolved applicable high-severity alerts;
+  no query, check, suppression, dependency or architecture was changed.
+
+### 88. Phase 3 Task 3.22 — Dependabot gate
+
+- Task 3.22: **PASSED** on 2026-09-04. Inspected both open Dependabot records
+  (#12 manifest, #13 lockfile); both represented the same active direct
+  `fflate` ZIP64 denial-of-service advisory (`GHSA-px8p-9vwx-vf98`). No active
+  high- or critical-severity vulnerability was present.
+- Applied the smallest compatible exact patch, `fflate` 0.8.2 → 0.8.3, and
+  updated the root lockfile normally. Root and frontend audits now report zero
+  vulnerabilities. The only full-gate repair made a static-sample assertion
+  line-ending portable; sample bytes and signatures remain unchanged.
+- All 227 root/frontend tests, release builds, strict typecheck/lint, audits and
+  diff hygiene pass. No stack replacement, broad update, ignored finding,
+  runtime service or architecture change was introduced.
+
+### 89. Phase 3 Task 3.23 — secret-scanning gate
+
+- Task 3.23: **PASSED** on 2026-09-04. GitHub native secret scanning and push
+  protection remain enabled; the bounded API review returned zero open alerts,
+  so zero true secrets required rotation or remediation. PR #18's GitGuardian
+  check also passes.
+- Deterministic Doctor, public-edge/config, private-migration and cryptographic
+  supply-chain proofs pass. Generated Pages artifacts contain none of the five
+  private runtime secret identifiers; committed signing records contain public
+  verification material only, and migration tooling never prints secret values.
+- All 12 focused tests and diff hygiene pass. No scan was disabled and no
+  production value, key, fixture, dependency or architecture change was made.
+
+### 90. Phase 3 Task 3.24 — license audit
+
+- Task 3.24: **PASSED** on 2026-09-04. The deterministic license audit reviewed
+  220 resolved root/frontend packages and three vendored assets, within the
+  250-item bound. Every shipped item maps to an approved dependency identity
+  and license; required Pyodide, font and `mldsa-native` notices match.
+- The focused dependency, CI, browser-parser and cryptographic supply-chain
+  suites pass, including all six pinned parser/runtime browser proofs. Both npm
+  audits report zero vulnerabilities and diff hygiene is clean.
+- No obsolete package, unknown license, missing notice, runtime license service,
+  dependency addition or architecture change was found or introduced.
+
+### 91. Phase 3 Task 3.25 — clean-machine disaster recovery
+
+- Task 3.25: **PASSED** on 2026-09-04. Added a concise clean-machine runbook
+  and one deterministic recovery runner. It uses a disposable remote clone,
+  empty npm user configuration, isolated package cache and no production
+  credential or copied personal state; all temporary checkout/cache/config/key
+  artifacts are removed in its unconditional cleanup path.
+- The warning-free proof recovered commit
+  `f3ee6d345b0dbe4e4b82e0e94ed6c74b7e88421b` in 270 seconds. Exact
+  architecture hash, Doctor, full tests, both Worker dry-runs, static build,
+  pinned assets, synthetic sample, both signatures, changed-byte rejection and
+  the disposable public-only key-generation procedure passed; the clone ended
+  clean.
+- The exact `S-RECOVERY-RESULT` reported every boolean true. No production
+  mutation, hidden cache requirement, undocumented step, dependency, runtime
+  service or architecture change was introduced.
+
+### 92. Phase 3 Task 3.26 — exact-zero re-attestation
+
+- Task 3.26: **PASSED** on 2026-09-04. The signed owner Free-account
+  attestation from 2026-08-27 remains canonical. Current account evidence
+  confirms the single static `aethelgard` Pages project on
+  `aethelgard-3j9.pages.dev`, a secret-free public Worker and a route-less
+  private runtime containing only the five approved secret bindings.
+- Added one deterministic configuration proof covering the free hostname,
+  public rate guard, private runtime boundary, Browser Run daily guard,
+  bounded free-only provider route, standard GitHub-hosted CI and absence of
+  paid/retired dependencies. It emits the exact `S-ZERO` result with GBP and
+  USD upfront/monthly amounts, paid fallbacks and automatic top-ups all zero.
+- The focused 23-test cost/quota/provider/config matrix, Doctor, strict
+  typecheck/lint, both npm audits and diff hygiene pass. No paid fallback,
+  billing mutation, runtime dependency, production resource or architecture
+  change was introduced.
+
+### 93. Phase 3 exit gate
+
+- **PHASE 3 — PASSED** on 2026-09-04. All 26 sequential hardening tasks and
+  all earlier regressions pass: 166 root tests and 63 frontend tests, both
+  supported-browser matrices, production builds, strict typecheck/lint,
+  Doctor, architecture lint and exact Git-blob hash, dependency audits,
+  license audit, secret/security gates, recovery proof and exact-zero proof.
+- Controlled serial performance remains within every release target: shell p95
+  900 ms, clean engine p95 4,759.7 ms, warm local p95 24.8 ms, PDF p95 458 ms,
+  signing p95 14.178 ms and full-analysis median 207.954 ms. The fixed corpus
+  hash remains `1bcf99938b2e2c111659098541ed3be11b990f47a8b279a12518efe379244396`.
+- Controlled resources pass: initial JS 268,974 gzip bytes, largest static
+  asset 9,597,831 bytes, public/private Worker gzip 117,740/155,925 bytes,
+  public CPU p99 0.304 ms, maximum response 8,388,607 bytes and conservative
+  trusted-runtime peak 82,188,670 bytes against the 100,663,296-byte bound.
+- Architecture hash remains
+  `56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2`;
+  privacy, exact-zero, no-persistence, secret-free edge, private runtime,
+  provider order and hybrid exact-byte signing invariants are unchanged. Phase
+  4 remains unauthorized pending owner review and merge of PR #18.

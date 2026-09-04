@@ -7,6 +7,7 @@ export type ParserOperationResult =
   | Readonly<{ ok: false; reason: "invalid" | "crash" | "timeout" | "allocation" }>;
 
 type WorkerFactory = () => Worker;
+const ALLOCATION_SIGNAL = Object.freeze({ schema_version: "1", ok: false, reason: "allocation" });
 
 function defaultWorker(): Worker {
   return new Worker(new URL("../../workers/parser.worker.ts", import.meta.url), { type: "module" });
@@ -18,6 +19,13 @@ function parseKind(format: DocumentFormat) {
 
 function wipe(buffer: ArrayBuffer): void {
   try { new Uint8Array(buffer).fill(0); } catch { /* A transferred buffer is already inaccessible. */ }
+}
+
+function isAllocationFailure(value: unknown): boolean {
+  return typeof value === "object" && value !== null
+    && Object.keys(value).sort().join("\0") === "ok\0reason\0schema_version"
+    && Reflect.get(value, "schema_version") === "1" && Reflect.get(value, "ok") === false
+    && Reflect.get(value, "reason") === ALLOCATION_SIGNAL.reason;
 }
 
 function executeParser(
@@ -38,7 +46,8 @@ function executeParser(
       resolve(Object.freeze(result));
     };
     const timer = setTimeout(() => finish({ ok: false, reason: "timeout" }), PARSER_TIMEOUT_MS);
-    worker.onmessage = (event: MessageEvent<unknown>) => finish({ ok: true, value: event.data });
+    worker.onmessage = (event: MessageEvent<unknown>) => finish(isAllocationFailure(event.data)
+      ? { ok: false, reason: "allocation" } : { ok: true, value: event.data });
     worker.onerror = (event) => { event.preventDefault(); finish({ ok: false, reason: "crash" }); };
     try {
       worker.postMessage({ kind: parseKind(document.format), format: document.format, buffer }, [buffer]);

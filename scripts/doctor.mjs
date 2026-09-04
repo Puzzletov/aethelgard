@@ -19,12 +19,10 @@ import {
 } from "../src/invariants.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const failures = [];
-let checkCount = 0;
+const checks = [];
 
-function check(id, condition) {
-  checkCount += 1;
-  if (!condition) failures.push(id);
+function check(name, condition) {
+  checks.push({ name, ok: Boolean(condition) });
 }
 
 function gitBlob(revision) {
@@ -105,9 +103,9 @@ check("public_logging_disabled", hasTomlAssignment(section(publicConfig, "observ
 check("private_logging_disabled", hasTomlAssignment(section(privateConfig, "observability"), "enabled", "false"));
 check("no_logging_products", !/tail_consumers|logpush|analytics_engine_datasets/i.test(`${publicConfig}\n${privateConfig}`));
 check("no_forbidden_storage", !/\[\[(?:kv_namespaces|r2_buckets|d1_databases|queues\.(?:producers|consumers))\b/i.test(`${publicConfig}\n${privateConfig}`));
-for (const manifest of [rootPackage, frontendPackage]) {
+for (const [name, manifest] of [["root", rootPackage], ["frontend", frontendPackage]]) {
   const dependencies = { ...manifest.dependencies, ...manifest.devDependencies };
-  check("forbidden_dependencies", FORBIDDEN_DEPENDENCIES.every((name) => dependencies[name] === undefined));
+  check(`${name}_forbidden_dependencies`, FORBIDDEN_DEPENDENCIES.every((dependency) => dependencies[dependency] === undefined));
 }
 
 const workerFiles = [
@@ -124,9 +122,14 @@ check("browser_quota_guard", [
 ].every((marker) => workerSourceText.includes(marker)));
 check("no_application_logging", workerSources.every((source) => !/\bconsole\s*\.|\bctx\.waitUntil\s*\([^)]*(?:log|telemetry)/i.test(source)));
 
-if (failures.length > 0) {
-  process.stderr.write(`${JSON.stringify({ status: "failed", failures: [...new Set(failures)].sort() })}\n`);
+const report = {
+  status: checks.every(({ ok }) => ok) ? "ok" : "failed",
+  checks,
+};
+
+if (report.status === "failed") {
+  process.stderr.write(`${JSON.stringify(report)}\n`);
   process.exitCode = 1;
 } else {
-  process.stdout.write(`${JSON.stringify({ status: "ok", architecture: ARCHITECTURE_VERSION, phase: BUILD_PHASE, checks: checkCount })}\n`);
+  process.stdout.write(`${JSON.stringify(report)}\n`);
 }

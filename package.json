@@ -15,10 +15,14 @@
     "license:check": "node scripts/check-licenses.mjs",
     "lint": "tsc --noEmit --noUnusedLocals --noUnusedParameters --noImplicitReturns --noFallthroughCasesInSwitch && npm --prefix frontend run lint",
     "measure:js": "node scripts/measure-initial-js.mjs",
+    "measure:performance": "node scripts/measure-performance.mjs",
+    "measure:resources": "node --expose-gc scripts/measure-resources.mjs",
+    "measure:trusted-memory": "node --expose-gc scripts/measure-resources.mjs --memory-only",
     "parser:assets": "node scripts/sync-browser-python-assets.mjs",
     "task:context": "node scripts/task-context.mjs",
     "test": "node --test --test-concurrency=1 tests/*.test.mjs && npm --prefix frontend test",
-    "typecheck": "tsc --noEmit && npm --prefix frontend run typecheck"
+    "typecheck": "tsc --noEmit && npm --prefix frontend run typecheck",
+    "zero-cost:check": "node scripts/verify-zero-cost.mjs"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "5.20260825.1",
@@ -26,7 +30,7 @@
     "wrangler": "4.126.0"
   },
   "dependencies": {
-    "fflate": "0.8.2",
+    "fflate": "0.8.3",
     "zod": "4.5.1"
   }
 }

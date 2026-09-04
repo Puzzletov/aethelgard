@@ -30,7 +30,8 @@ const enginePromise = readFile(new URL("../workers/trusted-runtime/vendor/mldsa-
 function storage(initial = {}) {
   const values = new Map(Object.entries(initial));
   return { values, async get(keys) { return new Map(keys.map((key) => [key, values.get(key)])); },
-    async put(entries) { for (const [key, value] of Object.entries(entries)) values.set(key, value); } };
+    async put(entries) { for (const [key, value] of Object.entries(entries)) values.set(key, value); },
+    async transaction(callback) { return callback(this); } };
 }
 
 function mlPublic(raw) {
@@ -69,7 +70,7 @@ test("private premium journey returns dashboard and every requested in-memory ou
   assert.doesNotMatch(JSON.stringify(parsed.data), /turnstile|prompt|token|session|email/iu);
 });
 
-test("quota exhaustion omits PDF and signing while preserving safe optional outputs", async () => {
+test("quota exhaustion inside the report layer omits PDF and signing without an unsigned substitute", async () => {
   const today = new Date().toISOString().slice(0, 10); let browserCalls = 0; let signCalls = 0;
   const store = storage({ utc_date: today, aggregate_browser_run_ms: 480_000 });
   const base = await runtime(store, { async quickAction() { browserCalls += 1; throw new Error("forbidden"); } });
@@ -81,6 +82,26 @@ test("quota exhaustion omits PDF and signing while preserving safe optional outp
   assert.ok(parsed.xlsx_b64); assert.ok(parsed.text_utf8);
   assert.equal(browserCalls, 0); assert.equal(signCalls, 0);
   assert.equal(store.values.get("aggregate_browser_run_ms"), 480_000);
+});
+
+test("invalid Browser Run outputs never reach signing or the PDF response", async () => {
+  const cases = [
+    ["non_pdf", new Response("not pdf", { headers: { "content-type": "text/plain",
+      "x-browser-ms-used": "20" } })],
+    ["truncated", new Response("%PDF-1.7 truncated", { headers: { "content-type": "application/pdf",
+      "x-browser-ms-used": "20" } })],
+    ["over_bound", new Response("", { headers: { "content-type": "application/pdf",
+      "content-length": "8388609", "x-browser-ms-used": "20" } })],
+  ];
+  for (const [name, browserResponse] of cases) {
+    let signCalls = 0;
+    const base = await runtime(storage(), { async quickAction() { return browserResponse.clone(); } });
+    const response = await createProductionReport(request, oracle, { ...base,
+      sign: async () => { signCalls += 1; return undefined; } });
+    const parsed = analyzeResponseSchema.parse(await response.json());
+    assert.equal(parsed.pdf, undefined, name);
+    assert.equal(signCalls, 0, name);
+  }
 });
 
 test("hybrid output from the composed journey independently verifies", async () => {
@@ -98,4 +119,21 @@ test("hybrid output from the composed journey independently verifies", async () 
     format: "der", type: "spki" }), Buffer.from(result.pdf.signature_manifest.ed25519_signature_b64, "base64")), true);
   assert.equal(verify(null, digest, mlPublic(publicKeys.mldsa65Raw),
     Buffer.from(result.pdf.signature_manifest.mldsa65_signature_b64, "base64")), true);
+});
+
+test("every signing failure is atomic Safe Mode with no PDF or partial manifest", async () => {
+  const pdf = new TextEncoder().encode("%PDF-1.7\nvalid bytes\n%%EOF\n");
+  for (const [name, sign] of [
+    ["key", async () => { throw new Error("private key detail"); }],
+    ["wasm", async () => { throw new WebAssembly.RuntimeError("wasm detail"); }],
+    ["sign", async () => undefined],
+    ["self_check", async () => { throw new Error("self-check detail"); }],
+  ]) {
+    const base = await runtime(storage(), { async quickAction() { return new Response(pdf,
+      { headers: { "content-type": "application/pdf", "x-browser-ms-used": "1" } }); } });
+    const result = await createProductionReport(request, oracle, { ...base, sign });
+    assert.deepEqual(result, { schema_version: "1", ok: false, category: "signing",
+      code: "signing_unavailable", message: "Report signing is unavailable.", retry: "later" }, name);
+    assert.doesNotMatch(JSON.stringify(result), /private key|wasm detail|self-check|signature_manifest|bytes_b64/iu);
+  }
 });

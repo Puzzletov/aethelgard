@@ -8,6 +8,7 @@ import type { BrowserPdfBinding } from "./browser-pdf.ts";
 import type { FinalPdfQueue } from "./pdf-queue.ts";
 import { writeReportText } from "./plain-exports.ts";
 import { produceProductionPdf } from "./production-pdf.ts";
+import { settleBrowserRun, type BrowserRunReservation } from "./browser-quota.ts";
 import { renderReportHtml } from "./report-html.ts";
 import type { SigningIdentity } from "./hybrid-signing.ts";
 import type { SignedFinalPdf } from "./final-signing.ts";
@@ -26,6 +27,7 @@ interface PipelineRuntime {
   readonly queue: FinalPdfQueue;
   readonly sign: (bytes: Uint8Array) => Promise<SignedFinalPdf | undefined>;
   readonly storage: DurableObjectStorage;
+  readonly reservation?: BrowserRunReservation;
 }
 
 function model(
@@ -46,13 +48,17 @@ async function signedPdf(
   report: ReportModel,
   runtime: PipelineRuntime,
 ) {
-  if (!request.requested_outputs.includes("pdf")) return undefined;
+  if (!request.requested_outputs.includes("pdf")) return { status: "omitted" } as const;
   const produced = await produceProductionPdf(runtime.storage, runtime.queue, runtime.browser,
-    async () => renderReportHtml(report));
-  if (!produced.ok) return undefined;
-  const signed = await runtime.sign(produced.bytes);
-  return signed === undefined ? undefined
-    : { bytes: signed.bytes, signature_manifest: signed.manifest };
+    async () => renderReportHtml(report), runtime.reservation);
+  if (!produced.ok) return { status: "omitted" } as const;
+  try {
+    const signed = await runtime.sign(produced.bytes);
+    return signed === undefined ? { status: "signing_failure" } as const
+      : { status: "ok", value: { bytes: signed.bytes, signature_manifest: signed.manifest } } as const;
+  } catch {
+    return { status: "signing_failure" } as const;
+  }
 }
 
 export async function createProductionReport(
@@ -64,14 +70,18 @@ export async function createProductionReport(
   try {
     identity = await runtime.identity();
   } catch {
+    if (runtime.reservation !== undefined) await settleBrowserRun(runtime.storage, runtime.reservation, 0);
     return SIGNING_FAILURE;
   }
   const report = model(request, oracle, identity);
-  if (report === undefined) return REPORT_FAILURE;
-  let pdf;
-  try { pdf = await signedPdf(request, report, runtime); } catch { pdf = undefined; }
+  if (report === undefined) {
+    if (runtime.reservation !== undefined) await settleBrowserRun(runtime.storage, runtime.reservation, 0);
+    return REPORT_FAILURE;
+  }
+  const pdf = await signedPdf(request, report, runtime);
+  if (pdf.status === "signing_failure") return SIGNING_FAILURE;
   const response = createAnalyzeResponse({ dashboard: report,
-    requested_outputs: request.requested_outputs, pdf,
+    requested_outputs: request.requested_outputs, pdf: pdf.status === "ok" ? pdf.value : undefined,
     xlsx: request.requested_outputs.includes("xlsx") ? writeReportXlsx(report) : undefined,
     text: request.requested_outputs.includes("text") ? writeReportText(report) : undefined });
   return response ?? REPORT_FAILURE;

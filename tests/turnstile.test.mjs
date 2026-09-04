@@ -118,3 +118,43 @@ test("Siteverify bounds tokens, responses, and transport failures", async () => 
     reason: "unavailable",
   });
 });
+
+test("complete verification decision matrix returns one fixed result per attempt", async () => {
+  const cases = [
+    ["valid", dummyToken, createFetcher({ success: true, hostname: config.expectedHostname,
+      action: config.expectedAction }), { ok: true }],
+    ["invalid", dummyToken, createFetcher({ success: false, "error-codes": ["invalid-input-response"] }),
+      { ok: false, reason: "invalid" }],
+    ["missing", "", createFetcher({ success: true }), { ok: false, reason: "invalid" }],
+    ["oversized", "x".repeat(2_049), createFetcher({ success: true }), { ok: false, reason: "invalid" }],
+    ["wrong_action", dummyToken, createFetcher({ success: true, hostname: config.expectedHostname,
+      action: "login" }), { ok: false, reason: "action_mismatch" }],
+    ["wrong_hostname", dummyToken, createFetcher({ success: true, hostname: "evil.example",
+      action: config.expectedAction }), { ok: false, reason: "hostname_mismatch" }],
+    ["replay", dummyToken, createFetcher({ success: false, "error-codes": ["timeout-or-duplicate"] }),
+      { ok: false, reason: "invalid" }],
+  ];
+  for (const [name, token, harness, expected] of cases) {
+    assert.deepEqual(await verifyTurnstile(token, config, harness.fetcher), expected, name);
+    assert.equal(harness.calls.length, token.length > 0 && token.length <= 2_048 ? 1 : 0, name);
+  }
+  assert.deepEqual(await verifyTurnstile(dummyToken, config, async () => { throw new Error("offline"); }),
+    { ok: false, reason: "unavailable" });
+});
+
+test("the fixed Siteverify deadline cancels one in-flight request", async () => {
+  const nativeTimeout = AbortSignal.timeout;
+  const controller = new AbortController();
+  let requestedMs = 0;
+  AbortSignal.timeout = (milliseconds) => { requestedMs = milliseconds; return controller.signal; };
+  try {
+    const pending = verifyTurnstile(dummyToken, config, async (_input, init) =>
+      new Promise((_resolve, reject) => init.signal.addEventListener("abort",
+        () => reject(new DOMException("deadline", "TimeoutError")), { once: true })));
+    controller.abort();
+    assert.deepEqual(await pending, { ok: false, reason: "unavailable" });
+    assert.equal(requestedMs, 5_000);
+  } finally {
+    AbortSignal.timeout = nativeTimeout;
+  }
+});

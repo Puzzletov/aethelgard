@@ -65,11 +65,23 @@ function scheduledTransport(outcomes = {}) {
       if (outcome === "failure") {
         return { ok: false, provider: stageRequest.provider, reason: "unavailable" };
       }
+      if (["timeout", "network", "rate_limit", "unavailable", "policy"].includes(outcome)) {
+        return { ok: false, provider: stageRequest.provider, reason: outcome };
+      }
       if (outcome === "invalid") return success(stageRequest.provider, stageRequest.stage, { invalid: true });
       if (outcome === "throw") throw new Error("transport failure");
       return success(stageRequest.provider, stageRequest.stage);
     },
   };
+}
+
+const outageReasons = Object.freeze(["timeout", "network", "rate_limit", "unavailable", "policy", "invalid"]);
+const stages = Object.freeze(["strawman", "steelman", "oracle"]);
+const analysisSafeMode = Object.freeze({ schema_version: "1", ok: false, category: "analysis",
+  code: "analysis_unavailable", message: "Analysis is unavailable. Try again later.", retry: "later" });
+
+function routes(calls) {
+  return calls.map(({ stage, provider }) => `${stage}:${provider}`);
 }
 
 test("normal analysis uses exactly three Groq calls and returns only Oracle", async () => {
@@ -106,6 +118,30 @@ test("each stage failure permutation remains finite and ordered", async () => {
     assert.ok(harness.calls.length <= MAX_PROVIDER_ATTEMPTS_TOTAL);
     for (const stage of ["strawman", "steelman", "oracle"]) {
       assert.ok(harness.calls.filter((call) => call.stage === stage).length <= MAX_PROVIDER_ATTEMPTS_PER_STAGE);
+    }
+  }
+});
+
+test("every provider outage class at every stage obeys exact fallback and terminal policy", async () => {
+  for (const stage of stages) {
+    for (const reason of outageReasons) {
+      const groq = scheduledTransport({ [`${stage}:groq`]: reason });
+      assert.deepEqual(await runAnalysis(request, keys, groq.transport), stageOutputs.oracle);
+      const groqRoutes = routes(groq.calls);
+      const failedIndex = groqRoutes.indexOf(`${stage}:groq`);
+      assert.equal(groqRoutes[failedIndex + 1], `${stage}:openrouter_free`);
+      assert.equal(groqRoutes.slice(failedIndex + 1).some((route) => route.endsWith(":groq")), false);
+      assert.ok(groq.calls.length <= MAX_PROVIDER_ATTEMPTS_TOTAL);
+
+      const terminal = scheduledTransport({ [`${stage}:groq`]: reason, [`${stage}:openrouter_free`]: reason });
+      assert.deepEqual(await runAnalysis(request, keys, terminal.transport), analysisSafeMode);
+      const terminalRoutes = routes(terminal.calls);
+      assert.deepEqual(terminalRoutes.slice(-2), [`${stage}:groq`, `${stage}:openrouter_free`]);
+      assert.equal(terminalRoutes.some((route) => stages.indexOf(route.split(":")[0]) > stages.indexOf(stage)), false);
+      assert.ok(terminal.calls.length <= MAX_PROVIDER_ATTEMPTS_TOTAL);
+      for (const current of stages) {
+        assert.ok(terminal.calls.filter((call) => call.stage === current).length <= MAX_PROVIDER_ATTEMPTS_PER_STAGE);
+      }
     }
   }
 });

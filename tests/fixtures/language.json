@@ -1,0 +1,14 @@
+{
+  "schema_version": "1",
+  "fixtures": [
+    {"id":"clear-english-prose","class":"clear English prose","reference":"txt","content":"This project provides a clear independent analysis of the evidence and explains every recommendation in plain English for careful review.","expected":{"schema_version":"1","accepted":true,"language":"eng","letters":117,"tokens":20,"margin":2402}},
+    {"id":"english-table-content","class":"English table content","reference":"xlsx","content":"This project provides a clear independent analysis of the evidence and explains every recommendation in plain English for careful review.","expected":{"schema_version":"1","accepted":true,"language":"eng","letters":117,"tokens":20,"margin":2402}},
+    {"id":"english-international-names","class":"English with international names","reference":"txt","content":"This project provides a clear independent analysis of the evidence and explains every recommendation in plain English for careful review with Renée Dubois and José Álvarez named as reviewers.","expected":{"schema_version":"1","accepted":true,"language":"eng","letters":162,"tokens":29,"margin":2277}},
+    {"id":"spanish","class":"Spanish","reference":"txt","content":"Este analisis independiente explica las pruebas, identifica cada riesgo importante y presenta recomendaciones practicas para ayudar al equipo a tomar una decision prudente.","expected":{"schema_version":"1","accepted":false,"reason":"non_english"}},
+    {"id":"french","class":"French","reference":"txt","content":"Cette analyse independante explique les preuves, identifie chaque risque important et presente des recommandations pratiques pour aider l equipe a prendre une decision prudente.","expected":{"schema_version":"1","accepted":false,"reason":"mixed_or_uncertain"}},
+    {"id":"german","class":"German","reference":"txt","content":"Diese unabhangige Analyse erklart die Beweise, nennt jedes wichtige Risiko und gibt praktische Empfehlungen, damit das Team eine vorsichtige Entscheidung treffen kann.","expected":{"schema_version":"1","accepted":false,"reason":"non_english"}},
+    {"id":"swedish","class":"Swedish","reference":"txt","content":"Denna oberoende analys forklarar bevisen, identifierar varje viktig risk och ger praktiska rekommendationer som hjalper gruppen att fatta ett forsiktigt beslut.","expected":{"schema_version":"1","accepted":false,"reason":"non_english"}},
+    {"id":"mixed-ambiguous","class":"mixed-language ambiguous content","reference":"txt","content":"The review explains the evidence and material risks for the project. Cette analyse explique aussi les preuves et les risques importants pour le projet.","expected":{"schema_version":"1","accepted":false,"reason":"mixed_or_uncertain"}},
+    {"id":"insufficient-text","class":"insufficient textual content","reference":"txt","content":"This text is too short.","expected":{"schema_version":"1","accepted":false,"reason":"insufficient"}}
+  ]
+}
