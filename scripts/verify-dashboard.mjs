@@ -54,8 +54,10 @@ async function waitForCount(selector, count) {
   throw new Error("dashboard_count_timeout:" + selector);
 }
 export async function runProof() {
+  const navigationStarted = performance.timeOrigin;
   root.render(React.createElement(AnalysisDashboard, { result: oracle, sources }));
   const link = await find('a[href^="#source-"]'); link.focus();
+  const interactiveMs = performance.timeOrigin + performance.now() - navigationStarted;
   const dashboard = document.querySelector(".analysis-dashboard");
   const heading = document.querySelector(".analysis-heading h2");
   const summary = document.querySelector(".executive-summary p");
@@ -112,6 +114,7 @@ export async function runProof() {
       && alert.textContent.includes("No report was created.");
   }
   return { status: success && fault && writes === 0 ? "ok" : "failed", semantic_success: semantic,
+    interactive_ms: Math.ceil(interactiveMs),
     visual_regression: visual, visual_metrics: visualMetrics, keyboard_focus: keyboardFocus,
     reduced_motion: reducedMotion, golden_order: goldenOrder, deterministic_index: deterministicIndex,
     exact_evidence: exactEvidence, content_preserved: preserved, bound_case: boundCase,

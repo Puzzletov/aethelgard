@@ -1737,3 +1737,19 @@ historical work.
 - Doctor, public/private boundary, Turnstile and supported Chrome/Edge network
   regressions, strict typecheck/lint and diff hygiene pass. No runtime,
   dependency, production resource or architecture change was introduced.
+
+### 85. Phase 3 Task 3.19 — performance corpus
+
+- Task 3.19: **PASSED** on 2026-09-04. Added one fixed, reproducible performance
+  corpus (`1bcf99938b2e2c111659098541ed3be11b990f47a8b279a12518efe379244396`)
+  spanning the supported Chrome/Edge shell and local pipeline, deterministic
+  full analysis orchestration, the frozen Browser Run measurements and actual
+  exact-byte hybrid signing.
+- Controlled serial results were: shell p95 748 ms; clean engine p95 3,887.1
+  ms; warm validation/parse/language/redaction median 18.5 ms; PDF median 166
+  ms; signing median 3.268 ms; and synthetic full-analysis median 203.96 ms,
+  p95 482.873 ms. All named Architecture 2.1 targets pass.
+- All 24 affected browser, parser, language, redaction, AI, PDF, signing and
+  performance tests, strict typecheck/lint and diff hygiene pass. The harness
+  stores no document data and introduces no runtime dependency, production
+  resource, privacy/security weakening or architecture change.

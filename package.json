@@ -15,6 +15,7 @@
     "license:check": "node scripts/check-licenses.mjs",
     "lint": "tsc --noEmit --noUnusedLocals --noUnusedParameters --noImplicitReturns --noFallthroughCasesInSwitch && npm --prefix frontend run lint",
     "measure:js": "node scripts/measure-initial-js.mjs",
+    "measure:performance": "node scripts/measure-performance.mjs",
     "parser:assets": "node scripts/sync-browser-python-assets.mjs",
     "task:context": "node scripts/task-context.mjs",
     "test": "node --test --test-concurrency=1 tests/*.test.mjs && npm --prefix frontend test",
