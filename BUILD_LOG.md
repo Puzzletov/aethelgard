@@ -1925,3 +1925,17 @@ historical work.
   strict frontend typecheck/lint, diff hygiene and the initial-JS gate pass at
   268,883 gzip bytes. No private key, upload, persistence, dependency,
   partial-success validity or architecture drift was introduced.
+
+### 97. Phase 4 Task 4.4 — independent CLI verifier
+
+- Task 4.4: **PASSED** on 2026-09-04. Added the dependency-free Node CLI
+  `npm run verify:report -- PDF MANIFEST KEYS`. It strictly bounds and parses
+  all three inputs, derives and checks both public-key IDs, hashes the exact PDF
+  bytes and independently verifies native Ed25519 and ML-DSA-65 signatures.
+- Exit zero is possible only for the exact `S-VERIFICATION-RESULT` with all
+  three booleans true. Changed PDF, malformed manifest, key mismatch and
+  signature mutation return nonzero; failures expose only the fixed error.
+- Six focused CLI/sample tests, including invocation from a disposable
+  dependency-free directory, strict typecheck/lint, Doctor and diff hygiene
+  pass. No network, private material, remote service, dependency, partial
+  success or architecture drift was introduced.
