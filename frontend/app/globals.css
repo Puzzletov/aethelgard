@@ -97,6 +97,10 @@ input:focus-visible {
   text-transform: uppercase;
 }
 
+a.phase-mark {
+  text-decoration: none;
+}
+
 .hero {
   display: grid;
   grid-template-columns: minmax(0, 7fr) minmax(16rem, 3fr);
@@ -159,6 +163,72 @@ input:focus-visible {
 .principles {
   padding-block: var(--space-section);
   border-top: 1px solid var(--color-rule);
+}
+
+.trust-page {
+  padding-block: clamp(4rem, 10vw, 8rem);
+}
+
+.trust-intro {
+  max-width: 52rem;
+  margin-bottom: var(--space-section);
+}
+
+.trust-intro h1 {
+  margin: 0 0 var(--space-xl);
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 6vw, 6rem);
+  font-weight: 650;
+  letter-spacing: -0.05em;
+  line-height: 0.98;
+}
+
+.trust-intro > p:last-child,
+.trust-page dd,
+.trust-page li {
+  color: var(--color-charcoal-soft);
+}
+
+.trust-page section {
+  display: grid;
+  grid-template-columns: minmax(10rem, 1fr) minmax(0, 2fr);
+  gap: clamp(2rem, 6vw, 6rem);
+  padding-block: var(--space-xxl);
+  border-top: 1px solid var(--color-rule);
+}
+
+.trust-page h2 {
+  margin: 0;
+  font: 600 0.75rem/1.4 var(--font-body);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.trust-claims,
+.trust-page ul {
+  margin: 0;
+}
+
+.trust-claims > div {
+  padding-block: var(--space-lg);
+  border-top: 1px solid var(--color-rule);
+}
+
+.trust-claims > div:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.trust-claims dt {
+  font-weight: 600;
+}
+
+.trust-claims dd {
+  margin: var(--space-xs) 0 0;
+}
+
+.trust-page li + li {
+  margin-top: var(--space-md);
 }
 
 .document-intake {

@@ -21,7 +21,9 @@ function SiteHeader() {
       <a className="wordmark" href="/" aria-label="Aethelgard home">
         Aethelgard
       </a>
-      <span className="phase-mark">Core mission</span>
+      <nav aria-label="Primary navigation">
+        <a className="phase-mark" href="/trust">Trust</a>
+      </nav>
     </header>
   );
 }

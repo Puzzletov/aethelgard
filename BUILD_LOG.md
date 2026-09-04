@@ -10,12 +10,12 @@ historical work.
   `56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2`.
 - Phase -1: **CLOSED**.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
-- Current implementation position: **PHASE 3 — PASSED**, awaiting owner review
-  and merge of PR #18 from `phase/3-hardening`.
+- Current implementation position: **PHASE 4 — IN PROGRESS** on
+  `phase/4-trust-portfolio`; Task 4.1 passed.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
 - Phase 1 status: **PASSED — MERGED** in PR #11 on 2026-08-31.
 - Phase 2 status: **PASSED — MERGED** in PR #16 on 2026-09-02.
-- Phase 3 status: **PASSED — PR #18 AWAITING OWNER REVIEW** on 2026-09-04.
+- Phase 3 status: **PASSED — MERGED** in PR #18 on 2026-09-04.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Architecture execution-hardening EDR 37: **APPROVED**.
@@ -1880,3 +1880,18 @@ historical work.
   privacy, exact-zero, no-persistence, secret-free edge, private runtime,
   provider order and hybrid exact-byte signing invariants are unchanged. Phase
   4 remains unauthorized pending owner review and merge of PR #18.
+
+### 94. Phase 4 Task 4.1 — Trust page
+
+- Task 4.1: **PASSED** on 2026-09-04. Added the static `/trust` route with the
+  ten allow-listed trust claims, exact processing boundary, external
+  processors, exact-zero behavior and owner-approved honest limits. The home
+  navigation links to it without adding a runtime or external dependency.
+- Claim allow/deny, accessibility and local-link proofs pass. The page states
+  English-only and desktop Chrome/Edge scope, makes no malware-scanning or
+  compromised-device guarantee, identifies external metadata limits and makes
+  no uptime SLA claim.
+- Seven focused trust/design tests, static production build, strict frontend
+  typecheck/lint, diff hygiene and the initial-JS gate pass at 268,975 gzip
+  bytes against the 307,200-byte bound. Exact-zero, privacy and security
+  invariants are unchanged; architecture drift is none.
