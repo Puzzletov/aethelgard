@@ -178,6 +178,63 @@ a.phase-mark {
   padding-block: clamp(4rem, 10vw, 8rem);
 }
 
+.case-study {
+  padding-block: clamp(4rem, 10vw, 8rem);
+}
+
+.case-study > section {
+  display: grid;
+  grid-template-columns: minmax(10rem, 1fr) minmax(0, 2fr);
+  gap: clamp(2rem, 6vw, 6rem);
+  padding-block: var(--space-xxl);
+  border-top: 1px solid var(--color-rule);
+}
+
+.case-study h2 {
+  margin: 0;
+  font: 600 0.75rem/1.4 var(--font-body);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.architecture-flow {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.architecture-flow li + li {
+  margin-top: var(--space-md);
+}
+
+.case-decisions article {
+  padding-block: var(--space-lg);
+  border-top: 1px solid var(--color-rule);
+}
+
+.case-decisions article:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.case-decisions h3 {
+  margin: 0 0 var(--space-xs);
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+}
+
+.case-decisions p {
+  margin: 0;
+  color: var(--color-charcoal-soft);
+}
+
+.case-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-lg);
+  padding-top: var(--space-xxl);
+  border-top: 1px solid var(--color-rule);
+}
+
 .sample-actions {
   display: flex;
   flex-wrap: wrap;

@@ -2000,3 +2000,17 @@ historical work.
   checks plus architecture hash/lint, Doctor, exact-zero and diff hygiene pass.
   No autonomous change, paid fallback, maintenance service or architecture drift
   was introduced.
+
+### 102. Phase 4 Task 4.9 — architecture case study
+
+- Task 4.9: **PASSED** on 2026-09-04. Added the static `/case-study` route with
+  an accessible runtime flow and concise evidence for the exact-zero pivot,
+  browser-local boundary, direct external Durable Object binding, fixed
+  three-stage AI, Browser Run rendering and exact-byte hybrid signing.
+- The case study retains the validated English/desktop scope, malware-scanning
+  limitation, compromised-client limitation, external metadata boundary and
+  no-uptime/no-paid-fallback limits. It links Trust, sample and verifier without
+  presenting superseded server infrastructure as current.
+- Six focused case-study/Trust tests, static production build, strict frontend
+  typecheck/lint, diff hygiene and 268,880-byte initial-JS gate pass. No asset,
+  dependency, runtime capability, inflated claim or architecture drift was added.

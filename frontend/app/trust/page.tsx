@@ -45,7 +45,7 @@ export default function TrustPage() {
     </main>
     <footer className="site-footer page-frame">
       <p>Aethelgard — private by boundary, not by promise.</p>
-      <p><a href="/verify">Verify a report</a> · <a href="/signing-keys.json">Public keys</a> · <a href="/">Return to analysis</a></p>
+      <p><a href="/verify">Verify a report</a> · <a href="/case-study">Architecture case study</a> · <a href="/signing-keys.json">Public keys</a> · <a href="/">Return to analysis</a></p>
     </footer>
   </>;
 }
