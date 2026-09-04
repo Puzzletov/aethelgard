@@ -1620,3 +1620,19 @@ historical work.
   typecheck/lint and diff hygiene pass. No IP is stored in application state;
   runtime code, limits, dependency, production resources and architecture are
   unchanged.
+
+### 78. Phase 3 Task 3.12 — schema failure handling
+
+- Task 3.12: **PASSED** on 2026-09-04. Added one deterministic mutation table
+  covering missing, additional, wrong-type, invalid-enum/reference and
+  over-bound payloads for the Analyze request, independently revalidated
+  TrustedRuntime request, Strawman, Steelman, Oracle and Analyze response
+  schemas. The suite contains 36 bounded mutations.
+- Every mutation fails at its registered strict boundary. Existing public-
+  ingress tests prove rejected requests make zero TrustedRuntime calls;
+  orchestrator tests prove invalid AI stage output uses only the approved
+  fallback or fixed analysis Safe Mode with no later stage or partial report.
+- All 50 directly affected schema, ingress and orchestrator tests, strict
+  typecheck/lint and diff hygiene pass. No unknown-field stripping, security-
+  field coercion, content logging, runtime change, dependency, production
+  resource or architecture change was introduced.
