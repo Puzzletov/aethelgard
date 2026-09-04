@@ -1840,3 +1840,20 @@ historical work.
 - The exact `S-RECOVERY-RESULT` reported every boolean true. No production
   mutation, hidden cache requirement, undocumented step, dependency, runtime
   service or architecture change was introduced.
+
+### 92. Phase 3 Task 3.26 — exact-zero re-attestation
+
+- Task 3.26: **PASSED** on 2026-09-04. The signed owner Free-account
+  attestation from 2026-08-27 remains canonical. Current account evidence
+  confirms the single static `aethelgard` Pages project on
+  `aethelgard-3j9.pages.dev`, a secret-free public Worker and a route-less
+  private runtime containing only the five approved secret bindings.
+- Added one deterministic configuration proof covering the free hostname,
+  public rate guard, private runtime boundary, Browser Run daily guard,
+  bounded free-only provider route, standard GitHub-hosted CI and absence of
+  paid/retired dependencies. It emits the exact `S-ZERO` result with GBP and
+  USD upfront/monthly amounts, paid fallbacks and automatic top-ups all zero.
+- The focused 23-test cost/quota/provider/config matrix, Doctor, strict
+  typecheck/lint, both npm audits and diff hygiene pass. No paid fallback,
+  billing mutation, runtime dependency, production resource or architecture
+  change was introduced.

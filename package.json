@@ -21,7 +21,8 @@
     "parser:assets": "node scripts/sync-browser-python-assets.mjs",
     "task:context": "node scripts/task-context.mjs",
     "test": "node --test --test-concurrency=1 tests/*.test.mjs && npm --prefix frontend test",
-    "typecheck": "tsc --noEmit && npm --prefix frontend run typecheck"
+    "typecheck": "tsc --noEmit && npm --prefix frontend run typecheck",
+    "zero-cost:check": "node scripts/verify-zero-cost.mjs"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "5.20260825.1",
