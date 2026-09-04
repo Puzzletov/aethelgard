@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { DataLifecycle } from "../../components/data-lifecycle";
 import { externalProcessors, honestLimits, trustClaims } from "../../trust/claims";
 
 export const metadata: Metadata = {
@@ -34,6 +35,8 @@ export default function TrustPage() {
         <h2 id="processors-title">External processors</h2>
         <ul>{externalProcessors.map((item) => <li key={item}>{item}</li>)}</ul>
       </section>
+
+      <DataLifecycle />
 
       <section aria-labelledby="limits-title">
         <h2 id="limits-title">Honest limits</h2>

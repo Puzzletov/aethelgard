@@ -1895,3 +1895,17 @@ historical work.
   typecheck/lint, diff hygiene and the initial-JS gate pass at 268,975 gzip
   bytes against the 307,200-byte bound. Exact-zero, privacy and security
   invariants are unchanged; architecture drift is none.
+
+### 95. Phase 4 Task 4.2 — Collect / Never collect disclosure
+
+- Task 4.2: **PASSED** on 2026-09-04. Added one concise Trust-page lifecycle
+  component mapping every Section 30 row exactly once across Never collected,
+  Processed for one request and Stored by design states.
+- The disclosure distinguishes browser-only source/PII data, redacted request
+  processing, private signing material, the anonymous two-field quota state,
+  public verification keys and the persistent synthetic sample. It explicitly
+  states that Aethelgard keeps no user, document, prompt, report or analysis-job
+  history without making an absolute platform-metadata claim.
+- Four focused claim/lifecycle tests, static production build, strict frontend
+  typecheck/lint and diff hygiene pass. No source-upload wording, hidden AI
+  processing, dependency, runtime behavior or architecture drift was introduced.

@@ -185,7 +185,8 @@ a.phase-mark {
 
 .trust-intro > p:last-child,
 .trust-page dd,
-.trust-page li {
+.trust-page li,
+.section-note {
   color: var(--color-charcoal-soft);
 }
 
@@ -205,6 +206,7 @@ a.phase-mark {
 }
 
 .trust-claims,
+.lifecycle-list,
 .trust-page ul {
   margin: 0;
 }
@@ -212,6 +214,29 @@ a.phase-mark {
 .trust-claims > div {
   padding-block: var(--space-lg);
   border-top: 1px solid var(--color-rule);
+}
+
+.lifecycle-list > div {
+  display: grid;
+  grid-template-columns: minmax(10rem, 1fr) minmax(0, 2fr);
+  gap: var(--space-lg);
+  padding-block: var(--space-lg);
+  border-top: 1px solid var(--color-rule);
+}
+
+.lifecycle-list > div:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.lifecycle-list dt,
+.lifecycle-list dd {
+  margin: 0;
+}
+
+.section-note {
+  max-width: 22rem;
+  margin-top: var(--space-md);
 }
 
 .trust-claims > div:first-child {

@@ -38,3 +38,18 @@ test("Trust route has accessible landmarks, headings and local navigation", asyn
   assert.match(home, /href="\/trust"/);
   assert.doesNotMatch(page, /target="_blank"|dangerouslySetInnerHTML/);
 });
+
+test("each canonical lifecycle row maps once to exact plain-language handling", async () => {
+  const lifecycle = await read("components/data-lifecycle.tsx");
+  const ids = ["raw-source", "unredacted-text", "pii-mapping", "redacted-sources",
+    "turnstile-token", "ai-results", "report-model", "report-html", "report-outputs",
+    "signing-material", "public-keys", "quota-state", "static-sample"];
+  for (const id of ids) assert.equal(lifecycle.match(new RegExp(`\\["${id}"`, "gu"))?.length, 1);
+  assert.equal((lifecycle.match(/^  \["/gmu) ?? []).length, ids.length);
+  assert.match(lifecycle, /Never collected/);
+  assert.match(lifecycle, /Processed for one request/);
+  assert.match(lifecycle, /Stored by design/);
+  assert.match(lifecycle, /No user, document, prompt, report or analysis-job history/);
+  assert.doesNotMatch(lifecycle, /upload|records nothing|no metadata/iu);
+  assert.ok([...lifecycle].length <= 20_000);
+});
