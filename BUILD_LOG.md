@@ -1587,3 +1587,21 @@ historical work.
   Browser matrices, download regressions, strict typecheck/lint and diff
   hygiene pass. No allowlist, persistence, dependency, production resource or
   architecture change was introduced.
+
+### 76. Phase 3 Task 3.10 — provider outage handling
+
+- Task 3.10: **PASSED** on 2026-09-04. Added a deterministic table-driven
+  matrix for timeout, network, HTTP 429, HTTP 5xx/unavailable, policy and
+  invalid-schema faults at Strawman, Steelman and Oracle for both approved
+  providers. Transport status mapping is proven for Groq and OpenRouter Free.
+- Every Groq fault triggers exactly one OpenRouter Free attempt at that stage
+  and suppresses Groq for the remainder of the request. A matching
+  OpenRouter fault returns the exact analysis Safe Mode, performs no later
+  stage, emits no partial report and stays within two attempts per stage and
+  six total attempts. No paid or third provider is reachable.
+- A controlled in-flight request proves that the fixed 30,000 ms attempt
+  signal cancels transport; the existing 180,000 ms wall-signal proof cancels
+  the complete analysis. All 14 focused transport/orchestrator tests, strict
+  typecheck/lint and diff hygiene pass. Runtime code, provider policy,
+  dependency, persistence, production resources and architecture are
+  unchanged.
