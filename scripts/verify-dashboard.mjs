@@ -39,6 +39,14 @@ async function find(selector) {
   }
   throw new Error("dashboard_render_timeout:" + selector);
 }
+async function findText(selector, text) {
+  for (let attempt = 0; attempt < 50; attempt += 1) {
+    const value = document.querySelector(selector);
+    if (value?.textContent.includes(text)) return value;
+    await wait();
+  }
+  throw new Error("dashboard_text_timeout:" + selector);
+}
 async function waitForCount(selector, count) {
   for (let attempt = 0; attempt < 50; attempt += 1) {
     if (document.querySelectorAll(selector).length === count) return; await wait();
@@ -93,10 +101,16 @@ export async function runProof() {
   await waitForCount(".empty-state", 2);
   const emptyCase = [...document.querySelectorAll(".empty-state")].map((item) => item.textContent).join("|")
     === "No risks were identified.|No quantitative candidates were identified.";
-  root.render(React.createElement(AnalysisDashboard, { result: { schema_version: "1", ok: false,
-    category: "service", code: "service_unavailable", message: "Analysis is unavailable. Try again later.", retry: "later" }, sources: [] }));
-  const alert = await find('[role="alert"]');
-  const fault = alert.textContent.includes("No report was created.") === true;
+  let fault = true;
+  for (const result of [{ schema_version: "1", ok: false, category: "service", code: "service_unavailable",
+    message: "Analysis is unavailable. Try again later.", retry: "later" },
+  { schema_version: "1", ok: false, category: "quota", code: "pdf_quota_exhausted",
+    message: "PDF capacity is unavailable. Try again later.", retry: "later" }]) {
+    root.render(React.createElement(AnalysisDashboard, { result, sources: [] }));
+    const alert = await findText('[role="alert"]', result.message);
+    fault = fault && alert.textContent.includes(result.message)
+      && alert.textContent.includes("No report was created.");
+  }
   return { status: success && fault && writes === 0 ? "ok" : "failed", semantic_success: semantic,
     visual_regression: visual, visual_metrics: visualMetrics, keyboard_focus: keyboardFocus,
     reduced_motion: reducedMotion, golden_order: goldenOrder, deterministic_index: deterministicIndex,

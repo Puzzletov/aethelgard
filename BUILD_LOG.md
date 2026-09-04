@@ -1653,3 +1653,22 @@ historical work.
   contract tests, strict typecheck/lint and diff hygiene pass. The public edge
   remains secret-free; no bypass, token retry, runtime change, dependency,
   production resource or architecture change was introduced.
+
+### 80. Phase 3 Task 3.14 — quota failure handling
+
+- Task 3.14: **PASSED** on 2026-09-04. Corrected the existing PDF quota
+  sequence so `TrustedRuntime` atomically reserves Browser Run capacity after
+  Turnstile and before AI whenever PDF is requested. The reservation is passed
+  into the existing renderer, refunded when analysis/report preparation stops
+  early, settled to measured usage after rendering, and conservatively remains
+  fully charged when Browser Run crashes without a trustworthy measurement.
+- Below/at/above the 60,000 ms reservation boundary, concurrent reservation,
+  lazy UTC rollover, queue depth two, queue saturation, rendering failure and
+  crash settlement all pass. Exhausted PDF requests return exact quota Safe
+  Mode before AI, Browser Run or signing; non-PDF requests require no quota.
+- Persistent quota state contains only `utc_date` and
+  `aggregate_browser_run_ms`, capped at 480,000 ms. Chrome and Edge render the
+  fixed quota Safe Mode without an unsigned substitute. All 15 quota/report/
+  route/browser tests, strict typecheck/lint and diff hygiene pass. No paid
+  overflow, cron, user/job state, dependency, production resource or
+  architecture change was introduced.

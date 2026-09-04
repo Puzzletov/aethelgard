@@ -27,6 +27,7 @@ class FakeStorage {
     this.events.push("quota:put");
     for (const [key, value] of Object.entries(entries)) this.values.set(key, value);
   }
+  async transaction(callback) { return callback(this); }
 }
 
 const reference = Object.freeze({ kind: "pdf_page", page: 1 });
@@ -105,6 +106,15 @@ test("quota exhaustion and queue saturation do not call Browser Run", async () =
     { ok: false, reason: "busy" });
   assert.equal(target.calls.length, 0);
   assert.equal(fresh.values.get(BROWSER_QUOTA_TOTAL_KEY), 0);
+});
+
+test("a crashed Browser Run conservatively settles the full reservation", async () => {
+  const storage = new FakeStorage();
+  const crashed = browser(exactPdf, { error: new Error("browser crashed") });
+  assert.deepEqual(await produceProductionPdf(storage, new FinalPdfQueue(), crashed.binding,
+    async () => reportHtml()), { ok: false, reason: "render" });
+  assert.equal(storage.values.get(BROWSER_QUOTA_TOTAL_KEY), 60_000);
+  assert.deepEqual([...storage.values.keys()].sort(), [BROWSER_QUOTA_DATE_KEY, BROWSER_QUOTA_TOTAL_KEY].sort());
 });
 
 test("measured Browser Run timing corpus remains below the five-second median target", async () => {

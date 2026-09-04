@@ -7,6 +7,7 @@ import { runAnalysis } from "./analysis-orchestrator.ts";
 import { FinalPdfQueue } from "./pdf-queue.ts";
 import { createProductionReport } from "./report-pipeline.ts";
 import { productionSigningIdentity, signProductionFinalPdf } from "./signing-runtime.ts";
+import { reserveBrowserRun, settleBrowserRun, type BrowserRunReservation } from "./browser-quota.ts";
 
 const RESPONSE_HEADERS = Object.freeze({
   "cache-control": "no-store",
@@ -40,6 +41,9 @@ function parseJson(bytes: Uint8Array): unknown {
     return undefined;
   }
 }
+
+const QUOTA_FAILURE = Object.freeze({ schema_version: "1", ok: false, category: "quota",
+  code: "pdf_quota_exhausted", message: "PDF capacity is unavailable. Try again later.", retry: "later" } as const);
 
 export class TrustedRuntime extends DurableObject<TrustedRuntimeEnv> {
   private readonly pdfQueue = new FinalPdfQueue();
@@ -75,11 +79,18 @@ export class TrustedRuntime extends DurableObject<TrustedRuntimeEnv> {
     if (!result.ok) {
       return errorResponse(403, "turnstile_invalid", "Request a fresh verification challenge.");
     }
+    let reservation: BrowserRunReservation | undefined;
+    if (envelope.requested_outputs.includes("pdf")) {
+      const quota = await reserveBrowserRun(this.ctx.storage);
+      if (!quota.ok) return new Response(JSON.stringify(QUOTA_FAILURE), { status: 200, headers: RESPONSE_HEADERS });
+      reservation = quota.reservation;
+    }
     const analysis = await runAnalysis(envelope, {
       groq: this.env.GROQ_API_KEY,
       openrouter_free: this.env.OPENROUTER_API_KEY,
     });
     if ("ok" in analysis) {
+      if (reservation !== undefined) await settleBrowserRun(this.ctx.storage, reservation, 0);
       return new Response(JSON.stringify(analysis), { status: 200, headers: RESPONSE_HEADERS });
     }
     const report = await createProductionReport(envelope, analysis, {
@@ -90,6 +101,7 @@ export class TrustedRuntime extends DurableObject<TrustedRuntimeEnv> {
       sign: (bytes) => signProductionFinalPdf(bytes, this.env.SIGNING_ED25519_PRIVATE_B64,
         this.env.SIGNING_MLDSA65_SEED_B64),
       storage: this.ctx.storage,
+      reservation,
     });
     return report instanceof Response ? report
       : new Response(JSON.stringify(report), { status: 200, headers: RESPONSE_HEADERS });

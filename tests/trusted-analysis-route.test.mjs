@@ -6,8 +6,10 @@ const source = await readFile(new URL("../workers/trusted-runtime/src/index.ts",
 
 test("private analyze route verifies Turnstile before the bounded analysis orchestrator", () => {
   const verification = source.indexOf("await verifyTurnstile");
+  const pdfGate = source.indexOf('requested_outputs.includes("pdf")');
+  const quota = source.indexOf("await reserveBrowserRun");
   const analysis = source.indexOf("await runAnalysis");
-  assert.ok(verification >= 0 && analysis > verification);
+  assert.ok(verification >= 0 && pdfGate > verification && quota > pdfGate && analysis > quota);
   assert.match(source, /groq: this\.env\.GROQ_API_KEY/u);
   assert.match(source, /openrouter_free: this\.env\.OPENROUTER_API_KEY/u);
   assert.match(source, /"cache-control": "no-store"/u);
@@ -16,6 +18,8 @@ test("private analyze route verifies Turnstile before the bounded analysis orche
   assert.match(gate, /errorResponse\(503, "turnstile_unavailable", "Verification is unavailable\."\)/u);
   assert.match(gate, /errorResponse\(403, "turnstile_invalid", "Request a fresh verification challenge\."\)/u);
   assert.doesNotMatch(gate, /runAnalysis|createProductionReport|signProductionFinalPdf|BROWSER/u);
+  assert.match(source, /reservation,\s*\n/u);
+  assert.match(source, /settleBrowserRun\(this\.ctx\.storage, reservation, 0\)/u);
 });
 
 test("Phase 2 report composition follows analysis without restoring Phase 0 proof paths", () => {

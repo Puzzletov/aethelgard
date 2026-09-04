@@ -1,6 +1,7 @@
 import {
   reserveBrowserRun,
   settleBrowserRun,
+  type BrowserRunReservation,
   type BrowserQuotaResult,
 } from "./browser-quota.ts";
 import {
@@ -36,8 +37,10 @@ export async function produceProductionPdf(
   queue: FinalPdfQueue,
   browser: BrowserPdfBinding,
   createHtml: HtmlFactory,
+  existingReservation?: BrowserRunReservation,
 ): Promise<ProductionPdfResult> {
-  const quota = await reserveBrowserRun(storage);
+  const quota: BrowserQuotaResult = existingReservation === undefined
+    ? await reserveBrowserRun(storage) : { ok: true, reservation: existingReservation };
   if (!quota.ok) return quotaFailure(quota);
   let html: ServiceOwnedReportHtml | undefined;
   try {

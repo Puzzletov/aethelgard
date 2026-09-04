@@ -30,7 +30,8 @@ const enginePromise = readFile(new URL("../workers/trusted-runtime/vendor/mldsa-
 function storage(initial = {}) {
   const values = new Map(Object.entries(initial));
   return { values, async get(keys) { return new Map(keys.map((key) => [key, values.get(key)])); },
-    async put(entries) { for (const [key, value] of Object.entries(entries)) values.set(key, value); } };
+    async put(entries) { for (const [key, value] of Object.entries(entries)) values.set(key, value); },
+    async transaction(callback) { return callback(this); } };
 }
 
 function mlPublic(raw) {
@@ -69,7 +70,7 @@ test("private premium journey returns dashboard and every requested in-memory ou
   assert.doesNotMatch(JSON.stringify(parsed.data), /turnstile|prompt|token|session|email/iu);
 });
 
-test("quota exhaustion omits PDF and signing while preserving safe optional outputs", async () => {
+test("quota exhaustion inside the report layer omits PDF and signing without an unsigned substitute", async () => {
   const today = new Date().toISOString().slice(0, 10); let browserCalls = 0; let signCalls = 0;
   const store = storage({ utc_date: today, aggregate_browser_run_ms: 480_000 });
   const base = await runtime(store, { async quickAction() { browserCalls += 1; throw new Error("forbidden"); } });
