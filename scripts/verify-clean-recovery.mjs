@@ -9,13 +9,22 @@ const repository = "https://github.com/Puzzletov/aethelgard.git";
 const architectureSha256 = "56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2";
 const wallLimitMs = 1_800_000;
 
+function argument(name) {
+  const index = process.argv.indexOf(name);
+  return index === -1 ? undefined : process.argv[index + 1];
+}
+
+const recoveryRef = argument("--ref") ?? "main";
+if (!/^[A-Za-z0-9._/-]{1,100}$/u.test(recoveryRef) || recoveryRef.startsWith("-")
+  || recoveryRef.includes("..")) throw new Error("Recovery ref is invalid.");
+
 async function run(file, args, options = {}) {
   try {
     const result = await execute(file, args, { encoding: "utf8", maxBuffer: 16 * 1024 * 1024,
       timeout: 1_200_000, windowsHide: true, ...options });
     return result.stdout.trim();
   } catch (error) {
-    const detail = String(error.stderr ?? error.stdout ?? error.message).slice(-4_000);
+    const detail = String(error.stderr || error.stdout || error.message).slice(-4_000);
     throw new Error(`${path.basename(file)} ${args[0] ?? ""} failed: ${detail}`);
   }
 }
@@ -53,14 +62,24 @@ async function proof(checkout, commit, environment, keyOutput) {
     sample_verified: false, changed_byte_rejected: false, clean: false };
   const hash = await run(process.execPath, ["scripts/architecture-hash.mjs"], { cwd: checkout, env: environment });
   if (hash !== architectureSha256) throw new Error("Architecture hash mismatch.");
+  await run(process.execPath, ["scripts/architecture-lint.mjs"], { cwd: checkout, env: environment });
   await run(process.execPath, ["scripts/doctor.mjs"], { cwd: checkout, env: environment });
   report.doctor_passed = true;
+  await npm(["run", "typecheck"], { cwd: checkout, env: environment });
+  await npm(["run", "lint"], { cwd: checkout, env: environment });
+  await npm(["run", "license:check"], { cwd: checkout, env: environment });
+  await npm(["run", "audit"], { cwd: checkout, env: environment });
+  await npm(["run", "zero-cost:check"], { cwd: checkout, env: environment });
   await npm(["test"], { cwd: checkout, env: environment });
   report.tests_passed = true;
   await npm(["run", "build"], { cwd: checkout, env: environment });
   report.build_passed = true; report.dry_run_passed = true;
   await run(process.execPath, ["--test", "tests/static-sample.test.mjs", "tests/phase0-proof.test.mjs"],
     { cwd: checkout, env: environment });
+  await npm(["run", "verify:report", "--", "frontend/public/sample/aethelgard-synthetic-sample.pdf",
+    "frontend/public/sample/aethelgard-synthetic-sample.sig.json",
+    "frontend/public/sample/aethelgard-synthetic-sample.signing-keys.json"],
+  { cwd: checkout, env: environment });
   report.sample_verified = true; report.changed_byte_rejected = true;
   await verifyKeyProcedure(checkout, keyOutput, environment);
   report.clean = (await run("git", ["status", "--porcelain"], { cwd: checkout, env: environment })) === "";
@@ -76,7 +95,7 @@ try {
   await writeFile(userConfig, "", "utf8");
   const environment = { ...process.env, CI: "true", NEXT_TELEMETRY_DISABLED: "1",
     WRANGLER_SEND_METRICS: "false", XDG_CONFIG_HOME: path.join(temporary, "config") };
-  await run("git", ["clone", "--no-local", "--filter=blob:none", "--branch", "phase/3-hardening",
+  await run("git", ["clone", "--no-local", "--filter=blob:none", "--branch", recoveryRef,
     "--single-branch", repository, checkout], { cwd: temporary, env: environment });
   const commit = await run("git", ["rev-parse", "HEAD"], { cwd: checkout, env: environment });
   await install(checkout, cache, userConfig, environment);

@@ -6,13 +6,14 @@ const root = new URL("../", import.meta.url);
 
 test("owner runbook is bounded and covers every required operation and checkpoint", async () => {
   const runbook = await readFile(new URL("RUNBOOK.md", root), "utf8");
+  const normalized = runbook.replaceAll("\r\n", "\n");
   assert.ok([...runbook].length <= 40_000);
   for (const phrase of ["Release checkpoint", "Deploy and verify", "Provider configuration and incidents",
     "signing-key compromise", "Quota", "Rollback", "Disaster recovery", "explicit owner-reviewed checkpoint",
     "GBP 0.00 and USD 0.00"]) assert.match(runbook, new RegExp(phrase, "u"));
-  const privateDeploy = runbook.indexOf("deploy --config workers/trusted-runtime/wrangler.toml");
-  const publicDeploy = runbook.indexOf("npx wrangler deploy\n", privateDeploy);
-  const pagesDeploy = runbook.indexOf("pages deployment create", publicDeploy);
+  const privateDeploy = normalized.indexOf("deploy --config workers/trusted-runtime/wrangler.toml");
+  const publicDeploy = normalized.indexOf("npx wrangler deploy\n", privateDeploy);
+  const pagesDeploy = normalized.indexOf("pages deployment create", publicDeploy);
   assert.ok(privateDeploy >= 0 && publicDeploy > privateDeploy && pagesDeploy > publicDeploy);
   assert.match(runbook, /Strawman → Steelman → Oracle/);
   assert.match(runbook, /every boolean\s+true/);

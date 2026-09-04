@@ -2028,3 +2028,22 @@ historical work.
   strict frontend typecheck/lint, responsive-layout proof, diff hygiene and the
   268,880-byte initial-JS gate pass. Exact-zero, privacy and security remain
   unchanged; architecture drift is none.
+
+### 104. Phase 4 Task 4.11 — clean-machine final verification
+
+- Task 4.11: **PASSED** on 2026-09-04. The deterministic recovery runner now
+  targets protected `main` by default and accepts one explicit reviewed branch
+  for pre-merge proof. It includes architecture lint/hash, Doctor, typecheck,
+  lint, license and vulnerability audits, exact-zero, all tests, both Worker
+  dry-runs, static build, independent CLI verification, both signature
+  algorithms, changed-byte rejection and disposable key generation.
+- A remote disposable clone of signed commit
+  `6217e42b4b20b11b8ace6a51afc6a16aa2458dec` completed in 397.6 seconds.
+  `S-RECOVERY-RESULT` reported `build_passed`, `tests_passed`, `doctor_passed`,
+  `dry_run_passed`, `sample_verified`, `changed_byte_rejected` and `clean` all
+  true with architecture hash
+  `56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2`.
+- The disposable checkout, cache, configuration and generated public-key file
+  were removed. No production credential, personal cache, production mutation,
+  skipped gate, Phase 5 scaffold or architecture drift was introduced. Task
+  4.12 awaits mandatory owner review before production promotion.
