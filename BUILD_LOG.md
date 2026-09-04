@@ -1504,3 +1504,18 @@ historical work.
   schema regressions, strict typecheck/lint and diff hygiene pass. No live AI,
   secret, capability, dynamic destination, dependency, production change or
   architecture drift was introduced.
+
+### 71. Phase 3 Task 3.5 — Browser Worker crash handling
+
+- Task 3.5: **PASSED** on 2026-09-04. Added one deterministic Chrome/Edge
+  lifecycle proof on the existing mission, parser-controller and redaction-
+  controller implementation. A crashing Parser Worker is terminated, exactly
+  one fresh Worker completes the retry, and analysis proceeds once. No Worker
+  instance is reused.
+- A crashing Redaction Worker is terminated with zero retry and zero network
+  call. Both browsers return the exact privacy Safe Mode object; the injected
+  private crash marker is absent from the result. Created and terminated Worker
+  counts match exactly in both scenarios.
+- The browser lifecycle proof, 17 affected mission/parser/controller
+  regressions, strict typecheck/lint and diff hygiene pass. No runtime behavior,
+  dependency, production resource, persistence or architecture changed.
