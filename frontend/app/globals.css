@@ -77,7 +77,7 @@ input:focus-visible {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  min-height: 5.5rem;
+  min-height: 4.5rem;
   border-bottom: 1px solid var(--color-rule);
 }
 
@@ -89,12 +89,28 @@ input:focus-visible {
   text-decoration: none;
 }
 
-.phase-mark {
+.phase-mark,
+.primary-nav a {
   color: var(--color-charcoal-soft);
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+}
+
+.primary-nav {
+  display: flex;
+  gap: clamp(1rem, 3vw, 2.5rem);
+}
+
+.primary-nav a {
+  text-decoration: none;
+}
+
+.primary-nav a:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--color-terracotta);
+  text-underline-offset: 0.3rem;
 }
 
 a.phase-mark {
@@ -104,14 +120,13 @@ a.phase-mark {
 .hero {
   display: grid;
   grid-template-columns: minmax(0, 7fr) minmax(16rem, 3fr);
-  gap: clamp(3rem, 9vw, 9rem);
+  gap: clamp(2rem, 7vw, 7rem);
   align-items: end;
-  min-height: min(48rem, calc(100vh - 5.5rem));
-  padding-block: clamp(5rem, 12vh, 9rem) var(--space-xxl);
+  padding-block: clamp(2.5rem, 7vh, 5rem) clamp(2rem, 5vh, 4rem);
 }
 
 .eyebrow {
-  margin: 0 0 var(--space-xl);
+  margin: 0 0 var(--space-md);
   color: var(--color-terracotta-dark);
   font-size: 0.75rem;
   font-weight: 600;
@@ -120,14 +135,23 @@ a.phase-mark {
 }
 
 .hero h1 {
-  max-width: 14ch;
+  max-width: 12ch;
   margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(3.2rem, 7vw, 7.5rem);
+  font-size: clamp(3rem, 6vw, 6.5rem);
   font-optical-sizing: auto;
   font-weight: 650;
   letter-spacing: -0.055em;
   line-height: 0.95;
+}
+
+.hero-deck {
+  max-width: 30rem;
+  margin: 0;
+  padding-top: var(--space-lg);
+  border-top: 0.2rem solid var(--color-terracotta);
+  color: var(--color-charcoal-soft);
+  font-size: 1.05rem;
 }
 
 .hero-aside {
@@ -443,8 +467,11 @@ a.phase-mark {
 }
 
 .document-intake {
-  padding-block: var(--space-section);
-  border-top: 1px solid var(--color-rule);
+  display: grid;
+  grid-template-columns: minmax(13rem, 1fr) minmax(0, 2fr);
+  gap: clamp(2rem, 6vw, 6rem);
+  padding-block: clamp(2rem, 5vw, 4rem);
+  border-block: 1px solid var(--color-rule);
 }
 
 .document-intake h2 {
@@ -457,12 +484,18 @@ a.phase-mark {
   line-height: 1;
 }
 
+.intake-heading > p:last-child {
+  max-width: 18rem;
+  color: var(--color-charcoal-soft);
+  font-size: 0.85rem;
+}
+
 .document-control {
-  max-width: var(--measure-reading);
+  min-width: 0;
 }
 
 .document-control > p {
-  margin: 0 0 var(--space-xl);
+  margin: var(--space-md) 0 0;
   color: var(--color-charcoal-soft);
 }
 
@@ -481,9 +514,28 @@ a.phase-mark {
 }
 
 .file-label {
-  padding-inline: var(--space-lg);
-  background: var(--color-charcoal);
-  color: var(--color-paper);
+  display: grid;
+  min-height: 9rem;
+  place-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-xl);
+  border-color: var(--color-charcoal);
+  background: var(--color-white);
+  text-align: center;
+}
+
+.file-label span {
+  color: var(--color-charcoal);
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  letter-spacing: -0.025em;
+  text-transform: none;
+}
+
+.file-label small {
+  color: var(--color-charcoal-soft);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
 }
 
 .clear-selection {
@@ -532,10 +584,32 @@ a.phase-mark {
   display: grid;
   grid-template-columns: minmax(15rem, 1fr) minmax(0, 2fr);
   gap: clamp(2rem, 6vw, 6rem);
-  margin: var(--space-xxl) 0 0;
+  margin: var(--space-lg) 0 0;
   padding: var(--space-xl) 0;
   border: 0;
   border-block: 1px solid var(--color-rule);
+}
+
+.options-disclosure {
+  grid-column: 2;
+  border-top: 1px solid var(--color-rule);
+}
+
+.options-disclosure summary {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  padding-block: var(--space-md);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.options-disclosure summary span {
+  color: var(--color-charcoal-soft);
+  font-weight: 400;
 }
 
 .mission-controls > legend,
@@ -614,11 +688,69 @@ a.phase-mark {
 }
 
 .mission-action {
+  grid-column: 2;
   display: grid;
   grid-template-columns: minmax(19rem, 1fr) auto;
   gap: var(--space-xl);
   align-items: end;
   padding-block: var(--space-xl);
+}
+
+.mission-progress {
+  grid-column: 2;
+  padding-block: var(--space-lg);
+  border-top: 1px solid var(--color-rule);
+}
+
+.mission-progress > p {
+  margin: 0 0 var(--space-md);
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+}
+
+.mission-progress ol {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mission-progress li {
+  padding-top: var(--space-sm);
+  border-top: 0.15rem solid var(--color-rule);
+  color: var(--color-charcoal-soft);
+  font-size: 0.68rem;
+}
+
+.mission-progress li[aria-current="step"],
+.mission-progress li.is-complete {
+  border-color: var(--color-terracotta);
+  color: var(--color-charcoal);
+}
+
+.process-note {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  gap: var(--space-lg);
+  align-items: center;
+  padding-block: var(--space-xl);
+  font-size: 0.78rem;
+}
+
+.process-note p {
+  margin: 0;
+}
+
+.process-note span {
+  margin-right: var(--space-sm);
+  color: var(--color-terracotta-dark);
+  font-weight: 600;
+}
+
+.process-note a {
+  font-weight: 600;
 }
 
 .verification-panel {
@@ -998,8 +1130,14 @@ a.phase-mark {
   margin: 0;
 }
 
+.site-footer nav {
+  display: flex;
+  gap: var(--space-xl);
+}
+
 @media (max-width: 48rem) {
   .hero,
+  .document-intake,
   .section-grid,
   .principle,
   .mission-controls,
@@ -1016,8 +1154,10 @@ a.phase-mark {
     grid-template-columns: 1fr;
   }
 
-  .hero {
-    min-height: auto;
+  .options-disclosure,
+  .mission-action,
+  .mission-progress {
+    grid-column: 1;
   }
 
   .hero-aside {
@@ -1026,6 +1166,10 @@ a.phase-mark {
 
   .site-footer {
     grid-template-columns: 1fr;
+  }
+
+  .process-note {
+    grid-template-columns: 1fr 1fr;
   }
 
   .output-grid,

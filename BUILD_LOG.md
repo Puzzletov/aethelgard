@@ -2068,3 +2068,32 @@ historical work.
   contains the approved Worker endpoint and public site key and contains no
   relative analysis route. Architecture drift is none; production remains on
   the confirmed rollback state pending protected-main owner review.
+
+### 106. Pre-release UX refinement
+
+- **READY FOR OWNER REVIEW** on 2026-09-07. Replaced the homepage's oversized
+  portfolio-first sequence with one action-first workspace: compact mission
+  statement, immediate document selection/drop target, and a short boundary
+  explanation. Trust, verifier and sample remain primary navigation; the case
+  study remains available from the footer and all signed sample artifacts stay
+  on the dedicated `/sample` route.
+- The existing document mission now progressively reveals its controls. The
+  default Full/PDF options are collapsed until requested, Turnstile is not
+  loaded before a document passes local preflight, and real mission-stage events
+  drive the bounded progress display. Selecting or removing a document clears
+  prior result/download state. No parser, redaction, network, provider, report,
+  signing, quota or persistence behavior changed.
+- Rendered the static production build in actual desktop Chrome and Edge at
+  1280, 1440 and 1920 widths. Both browsers matched in the empty and selected
+  states; the selected-state proof exposed options, verification and the action
+  only after selection and recorded zero local/session-storage writes. Keyboard
+  focus, reduced motion, dashboard, downloads, Safe Mode, verifier and
+  supporting routes retain their existing deterministic proofs.
+- Focused UX/sample tests, the complete root/frontend suite, production dry-run
+  build, strict typecheck/lint, Chrome/Edge dashboard/download/verifier proofs,
+  network-boundary proof, Doctor, architecture lint/hash, exact-zero, license
+  and zero-vulnerability audits all pass. Architecture hash remains
+  `56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2`.
+  Production was not deployed or otherwise mutated; the owner-confirmed Pages
+  rollback deployment remains `f721c0c7-e17c-4e37-b17e-2618ba92a522` pending
+  review and separate Task 4.12 authorization.
