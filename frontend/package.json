@@ -12,8 +12,8 @@
   "dependencies": {
     "compromise": "14.16.0",
     "franc-min": "6.2.0",
-    "next": "16.3.3",
-    "pyodide": "314.0.5",
+    "next": "16.3.4",
+    "pyodide": "314.0.6",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "recharts": "3.10.1"
