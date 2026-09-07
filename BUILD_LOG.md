@@ -2097,3 +2097,40 @@ historical work.
   Production was not deployed or otherwise mutated; the owner-confirmed Pages
   rollback deployment remains `f721c0c7-e17c-4e37-b17e-2618ba92a522` pending
   review and separate Task 4.12 authorization.
+
+### 107. General document input regression correction
+
+- **READY FOR OWNER REVIEW** on 2026-09-07. The shared browser preflight path
+  instantiated the complete parser Worker—including its static Pyodide/parser
+  dependency graph—before it could validate any format. In the production-style
+  static runtime this exceeded the controller deadline, and the controller then
+  incorrectly translated that runtime timeout into `archive_limit`. Because the
+  failure occurred before format-specific validation, ordinary TXT, CSV, PDF and
+  DOCX inputs all displayed the same container-safety message.
+- Five Whys: every format showed the archive message because the controller
+  returned one hard-coded archive failure at its deadline; it reached that
+  deadline while loading the full parser Worker for lightweight preflight;
+  existing proofs either called prevalidation directly or bundled that Worker
+  with Pyodide stubbed; the UX proof treated the observed cold-start timeout as
+  test-harness behavior and substituted a disposable preflight double; and the
+  release gate lacked a production-path, multi-format browser-selection proof.
+  Classification is **F — combination**: **E — production/static Worker-loading
+  defect**, followed by **C — controller/UI failure-mapping defect**. Stale UI
+  state was not the root cause.
+- Added a dedicated lightweight preflight module Worker with no parser/Pyodide
+  imports. The controller now retries once in a fresh Worker and maps crash,
+  timeout and allocation faults distinctly instead of presenting them as
+  hostile-container findings. Selection epochs clear prior errors immediately
+  and prevent late results from replacing the current selection. No canonical
+  size, archive, timeout, security, privacy or output bound changed.
+- Deterministic Chrome and Edge proofs pass minimal TXT, CSV, PDF and DOCX from
+  selection through real preflight to parser entry. The hostile corpus passes
+  47 cases per browser, including archive/magic/text failures with distinct
+  mappings. The network/storage proof records zero raw-source, unredacted-text,
+  filename or PII-map egress and zero application storage writes.
+- The complete corrective gate passes root/frontend regressions, strict types
+  and lint, production static build, Worker dry-runs, architecture lint/hash,
+  Doctor and exact-zero checks. Architecture hash remains
+  `56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2`.
+  Production was not modified; Task 4.12 remains paused and the confirmed Pages
+  rollback deployment remains `f721c0c7-e17c-4e37-b17e-2618ba92a522`.
