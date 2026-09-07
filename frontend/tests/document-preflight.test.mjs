@@ -133,19 +133,14 @@ test("encrypted or active PDFs and binary text inputs are rejected", async () =>
 test("hostile processing is isolated in one bounded disposable module Worker", async () => {
   const [runner, worker] = await Promise.all([
     readFile(new URL("../input/preflight/run-preflight.ts", import.meta.url), "utf8"),
-    readFile(new URL("../workers/parser.worker.ts", import.meta.url), "utf8"),
+    readFile(new URL("../workers/preflight.worker.ts", import.meta.url), "utf8"),
   ]);
   assert.match(runner, /PREFLIGHT_TIMEOUT_MS = 10_000/);
   assert.match(runner, /new Worker\([\s\S]*type: "module"/);
   assert.match(runner, /worker\.terminate\(\)/);
   assert.match(runner, /postMessage\([\s\S]*\[buffer\]/);
   assert.match(worker, /prevalidateDocument/);
-  assert.match(worker, /parseDocx/);
-  assert.match(worker, /parsePptx/);
-  assert.match(worker, /parseXlsx/);
-  assert.match(worker, /parseCsv/);
-  assert.match(worker, /parseTxt/);
-  assert.ok(worker.indexOf("await prevalidateDocument") < worker.lastIndexOf("await parseValidated"));
+  assert.doesNotMatch(worker, /parseDocx|parsePptx|parseXlsx|parseCsv|parseTxt|pyodide/u);
   assert.match(worker, /bytes\.fill\(0\)/);
   assert.doesNotMatch(`${runner}\n${worker}`, /fetch\(|XMLHttpRequest|localStorage|sessionStorage|indexedDB|caches\./);
 });

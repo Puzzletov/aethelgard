@@ -123,7 +123,7 @@ export async function runProof() {
     const bytes = Uint8Array.from(atob(fixture.bytes), (value) => value.charCodeAt(0));
     const file = new File([bytes], fixture.name, { type: "application/octet-stream" });
     const result = await runDocumentPreflight({ file, format: fixture.format, byteLength: bytes.byteLength },
-      () => trackedWorker("/boundary/parser-worker.js"));
+      () => trackedWorker("/boundary/preflight-worker.js"));
     bytes.fill(0);
     if (!result.ok) throw new Error("preflight_failed:" + fixture.format);
     const sources = [{ schema_version: "1", ordinal: 1, reference: references[index], content: privateText }];
@@ -142,7 +142,7 @@ export async function runProof() {
   }
   const invalid = new File(["not-a-pdf"], "invalid.pdf", { type: "application/pdf" });
   const failed = await runDocumentPreflight({ file: invalid, format: "pdf", byteLength: invalid.size },
-    () => trackedWorker("/boundary/parser-worker.js"));
+    () => trackedWorker("/boundary/preflight-worker.js"));
   if (failed.ok) throw new Error("invalid_document_accepted");
   const resourceUrls = performance.getEntriesByType("resource").filter((entry) => entry.startTime >= selectionStarted)
     .map((entry) => entry.name).filter((url) => !requests.some((request) => request.url === url));
@@ -181,7 +181,7 @@ function pageProof(fixtureJson) {
 
 const modules = Object.freeze({
   "/boundary/preflight-controller.js": await bundle("frontend/input/preflight/run-preflight.ts"),
-  "/boundary/parser-worker.js": await bundle("frontend/workers/parser.worker.ts", true),
+  "/boundary/preflight-worker.js": await bundle("frontend/workers/preflight.worker.ts"),
   "/boundary/redaction-controller.js": await bundle("frontend/input/redaction/run-redaction.ts"),
   "/boundary/redaction-worker.js": await bundle("frontend/input/redaction/redaction-worker.ts"),
   "/proof-asset.js": "export const asset = true;",

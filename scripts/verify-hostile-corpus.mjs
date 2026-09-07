@@ -70,7 +70,7 @@ async function execute(fixture) {
   if (!selection.ok) actual = selection.code;
   else {
     const result = await runDocumentPreflight(selection.document,
-      () => new Worker("/hostile/parser-worker.js", { type: "module" }));
+      () => new Worker("/hostile/preflight-worker.js", { type: "module" }));
     actual = result.ok ? "unexpected_pass" : result.code;
   }
   bytes.fill(0);
@@ -92,7 +92,7 @@ export async function runProof() {
 const modules = Object.freeze({
   "/hostile/document-input.js": await bundle("frontend/input/document-input.ts"),
   "/hostile/preflight-controller.js": await bundle("frontend/input/preflight/run-preflight.ts"),
-  "/hostile/parser-worker.js": await bundle("frontend/workers/parser.worker.ts", true),
+  "/hostile/preflight-worker.js": await bundle("frontend/workers/preflight.worker.ts"),
 });
 const pageSource = PAGE_SOURCE.replace("__HOSTILE_CASES__", JSON.stringify(browserCases()));
 const results = [];

@@ -78,3 +78,13 @@ test("the complete mission surface uses one restrained accessible visual system"
   assert.match(dashboard, /className="executive-summary"/);
   assert.doesNotMatch(`${picker}\n${dashboard}`, /dangerouslySetInnerHTML|tabIndex=\{[1-9]\}/u);
 });
+
+test("a new selection clears and supersedes every prior preflight result", async () => {
+  const picker = await readText("components/document-picker.tsx");
+  const begin = picker.indexOf("const current = ++inspection.current");
+  const clear = picker.indexOf("setPreflightError(null)", begin);
+  const awaitPreflight = picker.indexOf("await runDocumentPreflight", clear);
+  assert.ok(begin >= 0 && clear > begin && awaitPreflight > clear);
+  assert.match(picker, /current !== inspection\.current/u);
+  assert.match(picker, /inspection\.current \+= 1;[\s\S]*setPreflightError\(null\)/u);
+});

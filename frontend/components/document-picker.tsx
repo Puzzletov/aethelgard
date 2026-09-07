@@ -4,7 +4,7 @@ import { type ChangeEvent, type DragEvent, useCallback, useEffect, useRef, useSt
 
 import type { MissionOutcome, MissionStage } from "../analysis/browser-mission";
 import { DOCUMENT_ACCEPT, type BrowserInputResult, selectBrowserDocument } from "../input/document-input";
-import { runDocumentPreflight } from "../input/preflight/run-preflight";
+import { preflightRuntimeMessage, runDocumentPreflight } from "../input/preflight/run-preflight";
 import type { TurnstileController } from "../security/turnstile-client";
 import type { SafeMode } from "../../src/contracts/safe-mode";
 import { AnalysisDashboard } from "./analysis-dashboard";
@@ -37,14 +37,22 @@ function useDocumentSelection() {
   const [result, setResult] = useState<BrowserInputResult | null>(null);
   const [checking, setChecking] = useState(false);
   const [preflightError, setPreflightError] = useState<string | null>(null);
+  const inspection = useRef(0);
   async function inspect(files: FileList | readonly File[]) {
+    const current = ++inspection.current;
     const next = selectBrowserDocument(files);
     setPreflightError(null);
     if (!next.ok) { setResult(next); return; }
     setResult(null); setChecking(true);
-    const preflight = await runDocumentPreflight(next.document);
-    setChecking(false);
-    if (preflight.ok) setResult(next); else setPreflightError(preflight.message);
+    try {
+      const preflight = await runDocumentPreflight(next.document);
+      if (current !== inspection.current) return;
+      if (preflight.ok) setResult(next); else setPreflightError(preflight.message);
+    } catch (error) {
+      if (current === inspection.current) setPreflightError(preflightRuntimeMessage(error));
+    } finally {
+      if (current === inspection.current) setChecking(false);
+    }
   }
   function handleSelection(event: ChangeEvent<HTMLInputElement>) {
     void inspect(event.currentTarget.files ?? []);
@@ -55,6 +63,7 @@ function useDocumentSelection() {
     if (!checking) void inspect(event.dataTransfer.files);
   }
   function clearSelection() {
+    inspection.current += 1;
     setResult(null); setPreflightError(null);
     if (input.current !== null) input.current.value = "";
   }
