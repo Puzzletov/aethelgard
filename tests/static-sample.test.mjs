@@ -24,11 +24,11 @@ function mlPublic(raw) {
   ]), format: "der", type: "spki" });
 }
 
-test("static sample is bounded, explicitly synthetic, and linked from Pages", async () => {
+test("static sample is bounded, explicitly synthetic, and linked from its Pages route", async () => {
   const [pdf, manifestBytes, report, source, keys, page] = await Promise.all([
     readFile(new URL(names.pdf, directory)), readFile(new URL(names.manifest, directory)),
     json(names.report), readFile(new URL(names.source, directory), "utf8"), json(names.keys),
-    readFile(new URL("../frontend/app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../frontend/app/sample/page.tsx", import.meta.url), "utf8"),
   ]);
   assert.ok(pdf.byteLength <= 8_388_608);
   assert.ok(manifestBytes.byteLength <= 32_768);
@@ -38,14 +38,13 @@ test("static sample is bounded, explicitly synthetic, and linked from Pages", as
   assert.doesNotMatch(source, /@|https?:|\+?\d[\d ()-]{7,}\d|Puzzletov|possi/iu);
   assert.match(page, /Synthetic static sample — not a live analysis/u);
   for (const name of Object.values(names)) assert.match(page, new RegExp(name.replaceAll(".", "\\."), "u"));
-  assert.match(page, /href="\/sample"/u);
   assert.equal(report.verification.ed25519_key_id, keys.ed25519[0].public_key_id);
   assert.equal(report.verification.mldsa65_key_id, keys.mldsa65[0].public_key_id);
 });
 
 test("sample presentation is static, accessible and links both verification paths", async () => {
   const page = await readFile(new URL("../frontend/app/sample/page.tsx", import.meta.url), "utf8");
-  assert.match(page, /Synthetic sample — not a live analysis/);
+  assert.match(page, /Synthetic static sample — not a live analysis/);
   assert.match(page, /requires no live AI, Worker or Browser Run capacity/);
   assert.match(page, /<AnalysisDashboard result=/);
   assert.match(page, /href="\/verify"/);

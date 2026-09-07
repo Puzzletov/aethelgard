@@ -48,9 +48,15 @@ test("the shell exposes only the approved browser mission control", async () => 
   assert.doesNotMatch(`${page}\n${picker}`, /chat|email|BYOK|dangerouslySetInnerHTML/i);
   assert.match(page, /DocumentPicker/);
   assert.match(page, /Skip to main content/);
-  assert.match(page, /Operating principles/);
+  assert.match(page, /Document analysis\. Nothing kept\./);
+  for (const href of ["/trust", "/verify", "/sample", "/case-study"]) {
+    assert.match(page, new RegExp(`href="${href}"`, "u"));
+  }
   assert.match(picker, /AnalysisDashboard/);
   assert.match(picker, /TurnstileWidget/);
+  assert.match(picker, /onDrop={handleDrop}/);
+  assert.match(picker, /<details className="options-disclosure">/);
+  assert.match(picker, /state\.result\?\.ok === true \? <div className="mission-action">/);
 });
 
 test("the complete mission surface uses one restrained accessible visual system", async () => {
@@ -60,6 +66,7 @@ test("the complete mission surface uses one restrained accessible visual system"
     readText("components/analysis-dashboard.tsx"),
   ]);
   assert.match(styles, /\.mission-controls/);
+  assert.match(styles, /\.mission-progress/);
   assert.match(styles, /\.analysis-dashboard/);
   assert.match(styles, /\.executive-summary/);
   assert.match(styles, /@media \(prefers-reduced-motion: reduce\)/);

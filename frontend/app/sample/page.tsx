@@ -20,6 +20,7 @@ const sources: readonly NormalizedSourceRecord[] = [
 const files = [
   ["Download PDF", "/sample/aethelgard-synthetic-sample.pdf"],
   ["Download detached signature", "/sample/aethelgard-synthetic-sample.sig.json"],
+  ["Download dashboard data", "/sample/aethelgard-synthetic-sample.report.json"],
   ["Download dedicated public keys", "/sample/aethelgard-synthetic-sample.signing-keys.json"],
   ["View synthetic source", "/sample/aethelgard-synthetic-sample.source.txt"],
 ] as const;
@@ -34,7 +35,7 @@ export default function SamplePage() {
     <main className="sample-page page-frame" id="sample-content">
       <header className="trust-intro">
         <p className="eyebrow">Pre-generated portfolio fallback</p>
-        <h1>Synthetic sample — not a live analysis.</h1>
+        <h1>Synthetic static sample — not a live analysis.</h1>
         <p>This report uses invented programme data. It requires no live AI, Worker or Browser Run capacity.</p>
         <ul className="sample-actions">{files.map(([label, href]) =>
           <li key={href}><a href={href}>{label}</a></li>)}</ul>

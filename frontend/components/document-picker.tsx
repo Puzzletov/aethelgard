@@ -1,6 +1,6 @@
 "use client";
 
-import { type ChangeEvent, useCallback, useRef, useState } from "react";
+import { type ChangeEvent, type DragEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import type { MissionOutcome, MissionStage } from "../analysis/browser-mission";
 import { DOCUMENT_ACCEPT, type BrowserInputResult, selectBrowserDocument } from "../input/document-input";
@@ -19,6 +19,7 @@ const STAGE_TEXT: Readonly<Record<MissionStage, string>> = Object.freeze({
   redaction: "Removing private information locally.", verification: "Preparing the private request.",
   analysis: "Running Strawman, Steelman, and Oracle analysis.", complete: "Analysis complete.",
 });
+const STAGES = Object.freeze(Object.keys(STAGE_TEXT) as MissionStage[]);
 const VERIFICATION_FAILURE = Object.freeze({ schema_version: "1", ok: false,
   category: "verification", code: "turnstile_required", message: "Complete a fresh verification challenge.",
   retry: "fresh_turnstile" } as const satisfies SafeMode);
@@ -36,15 +37,22 @@ function useDocumentSelection() {
   const [result, setResult] = useState<BrowserInputResult | null>(null);
   const [checking, setChecking] = useState(false);
   const [preflightError, setPreflightError] = useState<string | null>(null);
-  async function handleSelection(event: ChangeEvent<HTMLInputElement>) {
-    const next = selectBrowserDocument(event.currentTarget.files ?? []);
-    event.currentTarget.value = "";
+  async function inspect(files: FileList | readonly File[]) {
+    const next = selectBrowserDocument(files);
     setPreflightError(null);
     if (!next.ok) { setResult(next); return; }
     setResult(null); setChecking(true);
     const preflight = await runDocumentPreflight(next.document);
     setChecking(false);
     if (preflight.ok) setResult(next); else setPreflightError(preflight.message);
+  }
+  function handleSelection(event: ChangeEvent<HTMLInputElement>) {
+    void inspect(event.currentTarget.files ?? []);
+    event.currentTarget.value = "";
+  }
+  function handleDrop(event: DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    if (!checking) void inspect(event.dataTransfer.files);
   }
   function clearSelection() {
     setResult(null); setPreflightError(null);
@@ -53,16 +61,21 @@ function useDocumentSelection() {
   const error = result?.ok === false ? result.message : preflightError;
   const status = checking ? "Checking the document locally."
     : error ?? (result === null ? "No document selected." : selectionText(result));
-  return Object.freeze({ input, result, checking, error, status, handleSelection, clearSelection });
+  return Object.freeze({ input, result, checking, error, status, handleSelection, handleDrop,
+    clearSelection });
 }
 
 function DocumentControl({ state }: Readonly<{ state: ReturnType<typeof useDocumentSelection> }>) {
-  const { input, result, checking, error, status, handleSelection, clearSelection } = state;
-  return <div className="document-control">
-    <p id="document-help">PDF, DOCX, PPTX, XLSX, CSV, or TXT. Maximum 15 MiB. The file stays in this browser.</p>
-    <label className="file-label" htmlFor="document-file">Choose document</label>
+  const { input, result, checking, error, status, handleSelection, handleDrop, clearSelection } = state;
+  return <div className="document-control" onDragOver={(event) => event.preventDefault()}
+    onDrop={handleDrop}>
+    <label className="file-label" htmlFor="document-file">
+      <span>Choose a document</span>
+      <small>or drop it here</small>
+    </label>
     <input ref={input} className="file-input" id="document-file" type="file" accept={DOCUMENT_ACCEPT}
       aria-describedby="document-help document-status" disabled={checking} onChange={handleSelection} />
+    <p id="document-help">PDF, DOCX, PPTX, XLSX, CSV, or TXT · 15 MiB maximum</p>
     <div className="selection-row"><p id="document-status"
       className={error === null ? "selection-status" : "selection-status selection-error"}
       role={error === null ? "status" : "alert"}>{status}</p>
@@ -89,6 +102,17 @@ function MissionControls({ disabled, focus, outputs, setFocus, toggle }: Readonl
   </fieldset>;
 }
 
+function MissionProgress({ stage, running }: Readonly<{ stage: MissionStage | null; running: boolean }>) {
+  if (!running || stage === null) return null;
+  const current = STAGES.indexOf(stage);
+  return <div className="mission-progress" role="status" aria-live="polite">
+    <p>{STAGE_TEXT[stage]}</p>
+    <ol aria-label="Analysis progress">{STAGES.slice(0, -1).map((item, index) => <li key={item}
+      className={index < current ? "is-complete" : ""} aria-current={item === stage ? "step" : undefined}>
+      {STAGE_TEXT[item].replace(/\.$/u, "")}</li>)}</ol>
+  </div>;
+}
+
 export function DocumentPicker() {
   const state = useDocumentSelection();
   const controller = useRef<TurnstileController | null>(null);
@@ -96,9 +120,10 @@ export function DocumentPicker() {
   const [focus, setFocus] = useState<Focus>("full");
   const [outputs, setOutputs] = useState<readonly Output[]>(["pdf"]);
   const [running, setRunning] = useState(false);
-  const [progress, setProgress] = useState("Ready for a document.");
+  const [stage, setStage] = useState<MissionStage | null>(null);
   const [outcome, setOutcome] = useState<MissionOutcome | null>(null);
   const [completedOutputs, setCompletedOutputs] = useState<readonly Output[]>([]);
+  useEffect(() => { setOutcome(null); setStage(null); setCompletedOutputs([]); }, [state.result]);
   const onController = useCallback((value: TurnstileController | null) => { controller.current = value; }, []);
   const onReady = useCallback((ready: boolean) => setVerified(ready), []);
   function toggleOutput(output: Output, checked: boolean): void {
@@ -118,7 +143,7 @@ export function DocumentPicker() {
     try {
       const { runBrowserMission } = await import("../analysis/browser-mission");
       setOutcome(await runBrowserMission(state.result.document, focus, requestedOutputs, token,
-        (stage) => setProgress(STAGE_TEXT[stage]))); setCompletedOutputs(requestedOutputs);
+        setStage)); setCompletedOutputs(requestedOutputs);
     } catch {
       setOutcome({ result: CLIENT_FAILURE, sources: [] });
     } finally {
@@ -127,15 +152,23 @@ export function DocumentPicker() {
   }
   return <section className="document-intake page-frame" aria-labelledby="document-intake-title"
     aria-busy={state.checking || running}>
-    <div className="section-grid"><div><p className="section-label">Start locally</p>
-      <h2 id="document-intake-title">Select one document</h2></div><DocumentControl state={state} /></div>
-    <MissionControls disabled={running || state.result?.ok !== true} focus={focus} outputs={outputs}
-      setFocus={setFocus} toggle={toggleOutput} />
-    <div className="mission-action"><TurnstileWidget onController={onController} onReady={onReady} />
+    <div className="intake-heading"><p className="section-label">Start locally</p>
+      <h2 id="document-intake-title">Choose one document.</h2>
+      <p>No upload. No account. No stored copy.</p></div>
+    <DocumentControl state={state} />
+    {state.result?.ok === true ? <details className="options-disclosure">
+      <summary>Analysis options <span>{focus[0]?.toUpperCase()}{focus.slice(1)} · {outputs.map(
+        (output) => output.toUpperCase()).join(", ") || "None"}</span></summary>
+      <MissionControls disabled={running} focus={focus} outputs={outputs}
+        setFocus={setFocus} toggle={toggleOutput} />
+    </details> : null}
+    {state.result?.ok === true ? <div className="mission-action">
+    <TurnstileWidget onController={onController} onReady={onReady} />
     <button className="analyze-button" type="button"
       disabled={state.result?.ok !== true || !verified || running || outputs.length === 0}
       onClick={() => void analyze()}>Analyze document</button>
-    <p className="analysis-progress" role="status" aria-live="polite">{progress}</p></div>
+    </div> : null}
+    <MissionProgress stage={stage} running={running} />
     <AnalysisDashboard result={outcome?.result ?? null} sources={outcome?.sources ?? []} />
     {outcome?.response === undefined ? null : <DownloadControls response={outcome.response}
       expectedPdf={completedOutputs.includes("pdf")} />}
