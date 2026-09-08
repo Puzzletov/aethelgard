@@ -69,6 +69,29 @@ For signing-key compromise, stop signing, follow [KEY_ROTATION.md](KEY_ROTATION.
 retain the old public entries as `retired`, and resume only after both verifiers
 pass with the reviewed current keys. Never expose, download or log private seeds.
 
+## Privacy operations
+
+For a privacy inquiry or data-subject request, record only the requester's
+contact details and the minimum correspondence needed outside the application.
+Confirm scope and identity proportionately. Check the anonymous Aethelgard
+quota state, which cannot identify a person, and explain that documents,
+prompts, reports and jobs are not retained. Where the request concerns provider
+metadata, use the current Cloudflare, Groq or OpenRouter DPA support route; track
+the response and applicable deadline without copying document content.
+
+For a suspected personal-data breach, stop the affected release path, preserve
+non-content technical evidence, rotate exposed credentials under the incident
+procedure, identify affected processors and assess risk with the approved legal
+contact. Notify the competent authority or data subjects only according to the
+applicable legal decision and deadline. Do not retain source documents as
+incident evidence.
+
+Before accepting a provider, subprocessor, model-routing, retention, privacy or
+transfer-policy change, update `PRIVACY_COMPLIANCE.md`, verify the applicable
+DPA and safeguards, rerun privacy/network and no-logging gates, and obtain owner
+review. A new processor or an OpenRouter downstream-policy change is a release
+checkpoint, not an automatic configuration update.
+
 ## Quota
 
 Browser Run quota exhaustion and the public rate limit fail closed. Do not buy

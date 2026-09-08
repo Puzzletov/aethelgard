@@ -43,7 +43,7 @@ export default function SamplePage() {
       </header>
       <AnalysisDashboard result={report as ReportModel} sources={sources} />
     </main>
-    <footer className="site-footer page-frame"><p>Verify the PDF with its detached signature and dedicated sample keys.</p>
-      <a href="/">Return to analysis</a></footer>
+    <footer className="site-footer page-frame"><p>Verify the PDF with its detached signature and dedicated sample keys.</p><p>
+      <a href="/privacy">Privacy notice</a> · <a href="/">Return to analysis</a></p></footer>
   </>;
 }

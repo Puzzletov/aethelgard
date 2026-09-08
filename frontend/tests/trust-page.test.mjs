@@ -26,6 +26,14 @@ test("Trust claims preserve the approved limits without stronger marketing claim
   assert.doesNotMatch(claims, /malware-scanned|unhackable|detects all PII|stores no metadata/iu);
 });
 
+test("Trust and Privacy preserve the same provider-metadata boundary", async () => {
+  const [claims, privacy] = await Promise.all([read("trust/claims.ts"), read("app/privacy/page.tsx")]);
+  assert.match(claims, /metadata is outside Aethelgard application storage/);
+  assert.match(privacy, /Provider handling is separate from Aethelgard application storage/);
+  assert.match(privacy, /may still be personal data/);
+  assert.doesNotMatch(`${claims}\n${privacy}`, /no processor|no metadata is retained|anonymous AI/iu);
+});
+
 test("Trust route has accessible landmarks, headings and local navigation", async () => {
   const [page, home] = await Promise.all([read("app/trust/page.tsx"), read("app/page.tsx")]);
   assert.match(page, /href="#trust-content"/);

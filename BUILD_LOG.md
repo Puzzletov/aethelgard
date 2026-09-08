@@ -2134,3 +2134,39 @@ historical work.
   `56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2`.
   Production was not modified; Task 4.12 remains paused and the confirmed Pages
   rollback deployment remains `f721c0c7-e17c-4e37-b17e-2618ba92a522`.
+
+### 108. Final pre-release UI and privacy-readiness refinement
+
+- **BLOCKED pending owner/legal evidence** on 2026-09-08. The homepage now
+  presents one top-centred document workspace beneath the restrained heading
+  `Privacy-first document analysis.` and two-line local-boundary explanation.
+  Privacy is linked from the primary navigation and every product footer.
+  Production-style static renders at 1024, 1280, 1440 and 1920 pixels match in
+  desktop Chrome and Edge, keep the action in the first viewport and show no
+  horizontal overflow. Keyboard focus and reduced-motion proofs remain green.
+- Added the pre-release `/privacy` notice, an internal non-certification privacy
+  evidence register and privacy operations for inquiries, data-subject requests,
+  breaches and provider changes. Public wording distinguishes browser-local raw
+  material from redacted/pseudonymised content that may remain personal data,
+  and separates zero Aethelgard content history from provider metadata handling.
+  No cookie banner, consent box, analytics, telemetry, persistence or new service
+  was introduced.
+- Official Cloudflare and Groq terms provide DPAs and contractual transfer
+  mechanisms, subject to confirming the release accounts and settings. The code
+  enforces OpenRouter `data_collection: deny`, `zdr: true`, no provider fallback
+  and zero price. However, `openrouter/free` may select changing downstream model
+  providers while OpenRouter requires customers to review applicable Model
+  Terms. The repository therefore cannot identify a stable downstream processor,
+  processing country or contractual basis. This remains a **GDPR RELEASE
+  BLOCKER**; Architecture 2.1 and provider routing were not changed.
+- Owner/legal evidence is also required for the operator identity/contact and
+  supervisory authority, launch roles and Article 6 bases, DPA/account ownership,
+  Groq ZDR, OpenRouter account privacy settings, Turnstile mode/hostnames/
+  pre-clearance, transfer assessment, sensitive/children scope and launch Terms.
+- Focused privacy/UI tests pass 82/82. The complete root suite, strict typecheck
+  and lint, both Worker dry-runs, static build, route/artifact inspection,
+  architecture lint/hash, Doctor, licenses, exact-zero and root/frontend
+  vulnerability audits pass. Architecture hash remains
+  `56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2`.
+  Production was not deployed or mutated; Task 4.12 remains paused on the
+  owner-confirmed rollback deployment.

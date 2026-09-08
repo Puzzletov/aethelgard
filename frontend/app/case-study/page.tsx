@@ -66,6 +66,7 @@ export default function CaseStudyPage() {
         <a href="/verify">Verify a report locally</a>
       </nav>
     </main>
-    <footer className="site-footer page-frame"><p>Evidence over promises.</p><a href="/">Return to analysis</a></footer>
+    <footer className="site-footer page-frame"><p>Evidence over promises.</p><p>
+      <a href="/privacy">Privacy notice</a> · <a href="/">Return to analysis</a></p></footer>
   </>;
 }

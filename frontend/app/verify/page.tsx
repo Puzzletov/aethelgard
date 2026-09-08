@@ -21,7 +21,7 @@ export default function VerifyPage() {
       </header>
       <LocalVerifier />
     </main>
-    <footer className="site-footer page-frame"><p>No selected file is uploaded or stored.</p>
-      <a href="/trust">Read the trust boundary</a></footer>
+    <footer className="site-footer page-frame"><p>No selected file is uploaded or stored.</p><p>
+      <a href="/privacy">Privacy notice</a> · <a href="/trust">Read the trust boundary</a></p></footer>
   </>;
 }

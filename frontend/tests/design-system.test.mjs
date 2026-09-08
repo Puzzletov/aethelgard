@@ -48,8 +48,8 @@ test("the shell exposes only the approved browser mission control", async () => 
   assert.doesNotMatch(`${page}\n${picker}`, /chat|email|BYOK|dangerouslySetInnerHTML/i);
   assert.match(page, /DocumentPicker/);
   assert.match(page, /Skip to main content/);
-  assert.match(page, /Document analysis\. Nothing kept\./);
-  for (const href of ["/trust", "/verify", "/sample", "/case-study"]) {
+  assert.match(page, /Privacy-first document analysis\./);
+  for (const href of ["/trust", "/privacy", "/verify", "/sample", "/case-study"]) {
     assert.match(page, new RegExp(`href="${href}"`, "u"));
   }
   assert.match(picker, /AnalysisDashboard/);
@@ -68,6 +68,8 @@ test("the complete mission surface uses one restrained accessible visual system"
   assert.match(styles, /\.mission-controls/);
   assert.match(styles, /\.mission-progress/);
   assert.match(styles, /\.analysis-dashboard/);
+  assert.match(styles, /width: min\(100% - 4rem, 46rem\)/);
+  assert.match(styles, /font-size: clamp\(1\.75rem, 3vw, 2\.25rem\)/);
   assert.match(styles, /\.executive-summary/);
   assert.match(styles, /@media \(prefers-reduced-motion: reduce\)/);
   assert.match(styles, /button:focus-visible/);
