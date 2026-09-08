@@ -4,6 +4,7 @@ import test from "node:test";
 import worker from "../src/index.ts";
 
 const allowedOrigin = "https://aethelgard-3j9.pages.dev";
+const betaOrigin = "https://beta.aethelgard-3j9.pages.dev";
 const validEnvelope = Object.freeze({
   schema_version: "1",
   turnstile_token: "test-token",
@@ -25,6 +26,7 @@ function createEnv(rateLimitSuccess = true) {
     runtimeCalls,
     env: {
       ALLOWED_ORIGIN: allowedOrigin,
+      BETA_ALLOWED_ORIGIN: betaOrigin,
       ANALYZE_RATE_LIMIT: typeof rateLimitSuccess === "object" ? rateLimitSuccess : {
         async limit(input) {
           calls.push(input);
@@ -169,6 +171,21 @@ test("analysis accepts only the strict bounded redacted request", async () => {
   assert.equal(valid.headers.get("access-control-allow-origin"), allowedOrigin);
   assert.equal(validEnv.runtimeCalls[0].name, "global");
   assert.equal(validEnv.runtimeCalls[1].request.url, "https://trusted-runtime.internal/analyze");
+});
+
+test("analysis accepts only the exact production and beta origins", async () => {
+  for (const origin of [allowedOrigin, betaOrigin]) {
+    const accepted = createEnv();
+    const response = await worker.fetch(analyzeRequest(validEnvelope, { origin }), accepted.env);
+    assert.equal(response.status, 503, origin);
+    assert.equal(response.headers.get("access-control-allow-origin"), origin);
+    assert.equal(accepted.runtimeCalls.length, 2);
+  }
+  for (const origin of ["https://preview.aethelgard-3j9.pages.dev", "https://beta.evil.example"]) {
+    const rejected = createEnv();
+    assert.equal((await worker.fetch(analyzeRequest(validEnvelope, { origin }), rejected.env)).status, 403);
+    assert.equal(rejected.runtimeCalls.length, 0);
+  }
 });
 
 test("analysis fails closed when the streamed body exceeds its bound", async () => {

@@ -60,6 +60,7 @@ async function workerSizes() {
 
 async function publicCpuP99() {
   const env = { ALLOWED_ORIGIN: "https://aethelgard-3j9.pages.dev",
+    BETA_ALLOWED_ORIGIN: "https://beta.aethelgard-3j9.pages.dev",
     ANALYZE_RATE_LIMIT: { limit: async () => ({ success: true }) },
     TRUSTED_RUNTIME: { getByName: () => ({ fetch: async () => new Response("{}") }) } };
   const timings = [];

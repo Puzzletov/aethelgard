@@ -22,6 +22,11 @@ export interface TurnstileConfig {
   readonly secret: string;
   readonly expectedAction: string;
   readonly expectedHostname: string;
+  readonly betaHostname: string;
+}
+
+function hostnameIsAllowed(hostname: string | undefined, config: TurnstileConfig): boolean {
+  return hostname === config.expectedHostname || hostname === config.betaHostname;
 }
 
 export type TurnstileResult =
@@ -84,10 +89,10 @@ export async function verifyTurnstile(
   if (!parsed.data.success) return { ok: false, reason: "invalid" };
   if (parsed.data.metadata?.result_with_testing_key === true) {
     if (config.expectedAction !== "test") return { ok: false, reason: "action_mismatch" };
-    if (parsed.data.hostname !== config.expectedHostname) return { ok: false, reason: "hostname_mismatch" };
+    if (!hostnameIsAllowed(parsed.data.hostname, config)) return { ok: false, reason: "hostname_mismatch" };
     return { ok: true };
   }
   if (parsed.data.action !== config.expectedAction) return { ok: false, reason: "action_mismatch" };
-  if (parsed.data.hostname !== config.expectedHostname) return { ok: false, reason: "hostname_mismatch" };
+  if (!hostnameIsAllowed(parsed.data.hostname, config)) return { ok: false, reason: "hostname_mismatch" };
   return { ok: true };
 }

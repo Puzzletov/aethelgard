@@ -49,6 +49,7 @@ test("the shell exposes only the approved browser mission control", async () => 
   assert.match(page, /DocumentPicker/);
   assert.match(page, /Skip to main content/);
   assert.match(page, /Privacy-first document analysis\./);
+  assert.match(page, /Public beta — use public, synthetic or non-sensitive test documents only\./);
   for (const href of ["/trust", "/privacy", "/verify", "/sample", "/case-study"]) {
     assert.match(page, new RegExp(`href="${href}"`, "u"));
   }

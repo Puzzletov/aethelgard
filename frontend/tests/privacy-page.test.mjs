@@ -44,6 +44,7 @@ test("public claims reject unsupported privacy and security absolutes", async ()
 
 test("accountability register retains every unresolved release decision", async () => {
   const register = await read("../PRIVACY_COMPLIANCE.md");
+  assert.match(register, /public beta is limited to public, synthetic or non-sensitive test/u);
   for (const item of ["Controller identity", "Article 6", "Cloudflare", "Groq", "OpenRouter",
     "Turnstile", "GDPR RELEASE BLOCKER", "Article 28", "Article 9", "Terms"]) {
     assert.match(register, new RegExp(item, "u"));

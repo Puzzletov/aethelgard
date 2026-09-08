@@ -3,6 +3,11 @@
 Status: pre-release accountability checklist, not certification. Reviewed
 2026-09-08. Production promotion remains paused.
 
+The public beta is limited to public, synthetic or non-sensitive test
+documents. It is not approved for confidential, personal, special-category or
+regulated documents while the owner, account, contractual and OpenRouter items
+below remain unresolved.
+
 ## Processing inventory
 
 | Activity | Data | Location / recipient | Persistence | Current role / basis |

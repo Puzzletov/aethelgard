@@ -7,6 +7,7 @@ const root = new URL("../", import.meta.url);
 test("public edge configuration contains only public values and rate limiting", async () => {
   const config = await readFile(new URL("wrangler.toml", root), "utf8");
   assert.match(config, /ALLOWED_ORIGIN = "https:\/\/aethelgard-3j9\.pages\.dev"/);
+  assert.match(config, /BETA_ALLOWED_ORIGIN = "https:\/\/beta\.aethelgard-3j9\.pages\.dev"/);
   assert.match(config, /name = "ANALYZE_RATE_LIMIT"/);
   assert.match(config, /limit = 5/);
   assert.match(config, /period = 60/);
@@ -41,6 +42,7 @@ test("TrustedRuntime is private and has no dispatcher or public target", async (
   assert.match(config, /\[exports\.TrustedRuntime\]/);
   assert.match(config, /TURNSTILE_EXPECTED_ACTION = "analyze"/);
   assert.match(config, /TURNSTILE_EXPECTED_HOSTNAME = "aethelgard-3j9\.pages\.dev"/);
+  assert.match(config, /TURNSTILE_BETA_HOSTNAME = "beta\.aethelgard-3j9\.pages\.dev"/);
   assert.match(config, /required = \["TURNSTILE_SECRET", "GROQ_API_KEY", "OPENROUTER_API_KEY", "SIGNING_ED25519_PRIVATE_B64", "SIGNING_MLDSA65_SEED_B64"\]/);
   assert.match(config, /type = "CompiledWasm"/);
   assert.match(config, /\[browser\]\s+binding = "BROWSER"/m);

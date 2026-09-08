@@ -20,7 +20,7 @@ import {
 
 function allowedOrigin(request: Request, env: PublicEdgeEnv): string | undefined {
   const origin = request.headers.get("origin");
-  return origin === env.ALLOWED_ORIGIN ? origin : undefined;
+  return origin === env.ALLOWED_ORIGIN || origin === env.BETA_ALLOWED_ORIGIN ? origin : undefined;
 }
 
 function hasJsonContentType(request: Request): boolean {

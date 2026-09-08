@@ -20,6 +20,7 @@ export interface RateLimiter {
 
 export interface PublicEdgeEnv {
   readonly ALLOWED_ORIGIN: string;
+  readonly BETA_ALLOWED_ORIGIN: string;
   readonly ANALYZE_RATE_LIMIT: RateLimiter;
   readonly TRUSTED_RUNTIME: DurableObjectNamespace;
 }

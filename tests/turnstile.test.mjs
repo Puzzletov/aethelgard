@@ -8,6 +8,7 @@ const config = Object.freeze({
   secret: "1x0000000000000000000000000000000AA",
   expectedAction: "analyze",
   expectedHostname: "aethelgard-3j9.pages.dev",
+  betaHostname: "beta.aethelgard-3j9.pages.dev",
 });
 
 function jsonResponse(value, status = 200) {
@@ -89,6 +90,16 @@ test("Siteverify rejects the wrong action and hostname", async () => {
   });
 });
 
+test("Siteverify accepts the exact beta hostname and no other preview hostname", async () => {
+  const beta = createFetcher({ success: true, hostname: config.betaHostname, action: config.expectedAction });
+  const preview = createFetcher({ success: true, hostname: "preview.aethelgard-3j9.pages.dev",
+    action: config.expectedAction });
+  assert.deepEqual(await verifyTurnstile(dummyToken, config, beta.fetcher), { ok: true });
+  assert.deepEqual(await verifyTurnstile(dummyToken, config, preview.fetcher), {
+    ok: false, reason: "hostname_mismatch",
+  });
+});
+
 test("Siteverify bounds tokens, responses, and transport failures", async () => {
   const unused = createFetcher({ success: true });
   assert.deepEqual(await verifyTurnstile("", config, unused.fetcher), { ok: false, reason: "invalid" });
@@ -131,6 +142,8 @@ test("complete verification decision matrix returns one fixed result per attempt
       action: "login" }), { ok: false, reason: "action_mismatch" }],
     ["wrong_hostname", dummyToken, createFetcher({ success: true, hostname: "evil.example",
       action: config.expectedAction }), { ok: false, reason: "hostname_mismatch" }],
+    ["beta_hostname", dummyToken, createFetcher({ success: true, hostname: config.betaHostname,
+      action: config.expectedAction }), { ok: true }],
     ["replay", dummyToken, createFetcher({ success: false, "error-codes": ["timeout-or-duplicate"] }),
       { ok: false, reason: "invalid" }],
   ];

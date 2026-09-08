@@ -9,6 +9,7 @@ import {
   AUTHORITATIVE_ARCHITECTURE_SHA256,
   BUILD_PHASE,
   EXPECTED_ALLOWED_ORIGIN,
+  EXPECTED_BETA_ALLOWED_ORIGIN,
   EXPECTED_PRIVATE_BROWSER_BINDING,
   EXPECTED_MLDSA65_WASM_BYTES,
   EXPECTED_MLDSA65_WASM_SHA256,
@@ -78,6 +79,7 @@ check("architecture_hash", createHash("sha256").update(gitBlob(":ARCHITECTURE.md
 check("build_phase", BUILD_PHASE === "2");
 check("project_version", rootPackage.version === "0.0.1");
 check("public_origin", hasTomlAssignment(publicConfig, "ALLOWED_ORIGIN", `"${EXPECTED_ALLOWED_ORIGIN}"`));
+check("public_beta_origin", hasTomlAssignment(publicConfig, "BETA_ALLOWED_ORIGIN", `"${EXPECTED_BETA_ALLOWED_ORIGIN}"`));
 check("external_do_binding", [
   `name = "${EXPECTED_TRUSTED_RUNTIME.binding}"`,
   `class_name = "${EXPECTED_TRUSTED_RUNTIME.className}"`,

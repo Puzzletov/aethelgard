@@ -20,6 +20,7 @@ interface TrustedRuntimeEnv {
   readonly BROWSER: BrowserRun;
   readonly TURNSTILE_EXPECTED_ACTION: string;
   readonly TURNSTILE_EXPECTED_HOSTNAME: string;
+  readonly TURNSTILE_BETA_HOSTNAME: string;
   readonly TURNSTILE_SECRET: string;
   readonly GROQ_API_KEY: string;
   readonly OPENROUTER_API_KEY: string;
@@ -72,6 +73,7 @@ export class TrustedRuntime extends DurableObject<TrustedRuntimeEnv> {
       secret: this.env.TURNSTILE_SECRET,
       expectedAction: this.env.TURNSTILE_EXPECTED_ACTION,
       expectedHostname: this.env.TURNSTILE_EXPECTED_HOSTNAME,
+      betaHostname: this.env.TURNSTILE_BETA_HOSTNAME,
     });
     if (!result.ok && result.reason === "unavailable") {
       return errorResponse(503, "turnstile_unavailable", "Verification is unavailable.");

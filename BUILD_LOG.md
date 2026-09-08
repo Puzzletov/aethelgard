@@ -2170,3 +2170,33 @@ historical work.
   `56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2`.
   Production was not deployed or mutated; Task 4.12 remains paused on the
   owner-confirmed rollback deployment.
+
+### 109. Public-beta protected-main preparation
+
+- **READY FOR OWNER REVIEW** on 2026-09-08; no beta deployment or production
+  mutation was performed. Canonical `main` is GitHub-verified at
+  `3c13d069ef843bd754a2c05203a4bf2dc7cc0e4d` with all required checks green.
+  The stable production Pages response matches rollback deployment
+  `f721c0c7-e17c-4e37-b17e-2618ba92a522` byte-for-byte, and the public Worker
+  `/health` endpoint reports Architecture 2.1.
+- The public edge now permits exactly the production and approved
+  `https://beta.aethelgard-3j9.pages.dev` origins. TrustedRuntime accepts
+  Turnstile Siteverify results for exactly those two hostnames. Arbitrary Pages
+  preview and unrelated hostnames remain rejected; the public edge remains
+  secret-free and the private runtime boundary is unchanged.
+- The homepage carries the restrained notice `Public beta — use public,
+  synthetic or non-sensitive test documents only.` The internal privacy register
+  makes the same limitation explicit and preserves every known final GDPR
+  blocker. No provider routing, architecture, persistence, telemetry, paid path
+  or production behavior was added.
+- Twenty-three focused edge/Turnstile tests and nine focused UI/privacy tests
+  pass. The complete root/frontend suite, strict types/lint, both Worker
+  dry-runs, static build, architecture lint/hash, Doctor, license and exact-zero
+  gates pass. Chrome and Edge production-style renders match at 1440×900.
+  Architecture hash remains
+  `56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2`.
+- Before preview deployment, owner review must merge the protected-main PR and
+  Cloudflare Turnstile Hostname Management must add exactly
+  `beta.aethelgard-3j9.pages.dev`. Cloudflare CLI account authentication was not
+  available in this session, so the dashboard setting was not inspected or
+  changed. Task 4.12 remains paused.

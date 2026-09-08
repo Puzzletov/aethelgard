@@ -20,6 +20,7 @@ function Hero() {
       <p className="eyebrow">Private document reasoning</p>
       <h1 id="hero-title">Privacy-first document analysis.</h1>
       <p className="hero-deck">Analyze a business document.<br />Your original stays in this browser.</p>
+      <p className="beta-notice">Public beta — use public, synthetic or non-sensitive test documents only.</p>
     </section>
   );
 }
