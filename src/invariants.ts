@@ -3,9 +3,11 @@ export const AUTHORITATIVE_ARCHITECTURE_SHA256 = "56fdc13dcde678c35dc8ad0ab67c28
 export const BUILD_PHASE = "2";
 export const PUBLIC_SERVICE_NAME = "aethelgard-edge";
 export const EXPECTED_ALLOWED_ORIGIN = "https://aethelgard-3j9.pages.dev";
+export const EXPECTED_BETA_ALLOWED_ORIGIN = "https://beta.aethelgard-3j9.pages.dev";
 export const EXPECTED_PUBLIC_ROUTES = Object.freeze(["/analyze", "/health"] as const);
 export const EXPECTED_PUBLIC_ENV_NAMES = Object.freeze([
   "ALLOWED_ORIGIN",
+  "BETA_ALLOWED_ORIGIN",
   "ANALYZE_RATE_LIMIT",
   "TRUSTED_RUNTIME",
 ] as const);
@@ -34,6 +36,7 @@ export const FORBIDDEN_DEPENDENCIES = Object.freeze([
 
 interface PublicRuntimeShape {
   readonly ALLOWED_ORIGIN?: unknown;
+  readonly BETA_ALLOWED_ORIGIN?: unknown;
   readonly ANALYZE_RATE_LIMIT?: unknown;
   readonly TRUSTED_RUNTIME?: unknown;
 }
@@ -49,6 +52,7 @@ export function publicRuntimeInvariantsPass(env: PublicRuntimeShape): boolean {
     names.length === expectedNames.length &&
     names.every((name, index) => name === expectedNames[index]) &&
     env.ALLOWED_ORIGIN === EXPECTED_ALLOWED_ORIGIN &&
+    env.BETA_ALLOWED_ORIGIN === EXPECTED_BETA_ALLOWED_ORIGIN &&
     hasMethod(env.ANALYZE_RATE_LIMIT, "limit") &&
     hasMethod(env.TRUSTED_RUNTIME, "getByName")
   );

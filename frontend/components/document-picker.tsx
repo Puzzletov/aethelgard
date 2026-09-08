@@ -161,9 +161,7 @@ export function DocumentPicker() {
   }
   return <section className="document-intake page-frame" aria-labelledby="document-intake-title"
     aria-busy={state.checking || running}>
-    <div className="intake-heading"><p className="section-label">Start locally</p>
-      <h2 id="document-intake-title">Choose one document.</h2>
-      <p>No upload. No account. No stored copy.</p></div>
+    <h2 className="visually-hidden" id="document-intake-title">Choose a document</h2>
     <DocumentControl state={state} />
     {state.result?.ok === true ? <details className="options-disclosure">
       <summary>Analysis options <span>{focus[0]?.toUpperCase()}{focus.slice(1)} · {outputs.map(

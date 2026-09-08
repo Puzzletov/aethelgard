@@ -6,6 +6,7 @@ function SiteHeader() {
       <a className="wordmark" href="/" aria-label="Aethelgard home">Aethelgard</a>
       <nav className="primary-nav" aria-label="Primary navigation">
         <a href="/trust">Trust</a>
+        <a href="/privacy">Privacy</a>
         <a href="/verify">Verify</a>
         <a href="/sample">Sample</a>
       </nav>
@@ -16,14 +17,10 @@ function SiteHeader() {
 function Hero() {
   return (
     <section className="hero page-frame" aria-labelledby="hero-title">
-      <div>
-        <p className="eyebrow">Private document reasoning</p>
-        <h1 id="hero-title">Document analysis. Nothing kept.</h1>
-      </div>
-      <p className="hero-deck">
-        Turn one business document into a rigorous, source-linked brief. Your file,
-        unredacted text, and identity map stay in this browser.
-      </p>
+      <p className="eyebrow">Private document reasoning</p>
+      <h1 id="hero-title">Privacy-first document analysis.</h1>
+      <p className="hero-deck">Analyze a business document.<br />Your original stays in this browser.</p>
+      <p className="beta-notice">Public beta — use public, synthetic or non-sensitive test documents only.</p>
     </section>
   );
 }
@@ -31,10 +28,10 @@ function Hero() {
 function ProcessNote() {
   return (
     <aside className="process-note page-frame" aria-label="How Aethelgard handles your document">
-      <p><span>01</span> Read and redact locally</p>
-      <p><span>02</span> Analyze redacted text</p>
-      <p><span>03</span> Return a signed report</p>
-      <a href="/trust">See the exact boundary</a>
+      <p>Original stays local</p><span aria-hidden="true">·</span>
+      <p>Configured identifiers redacted locally</p><span aria-hidden="true">·</span>
+      <p>No application history</p>
+      <a href="/trust">Exact boundary</a>
     </aside>
   );
 }
@@ -44,6 +41,7 @@ function SiteFooter() {
     <footer className="site-footer page-frame">
       <p>Aethelgard — private by boundary, not by promise.</p>
       <nav aria-label="Project information">
+        <a href="/privacy">Privacy</a>
         <a href="/case-study">Case study</a>
         <span>Desktop Chrome and Edge</span>
       </nav>

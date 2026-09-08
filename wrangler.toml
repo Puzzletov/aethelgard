@@ -5,6 +5,7 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 ALLOWED_ORIGIN = "https://aethelgard-3j9.pages.dev"
+BETA_ALLOWED_ORIGIN = "https://beta.aethelgard-3j9.pages.dev"
 
 [[ratelimits]]
 name = "ANALYZE_RATE_LIMIT"
