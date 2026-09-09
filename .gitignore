@@ -7,6 +7,7 @@ dist/
 *.log
 frontend/.next/
 frontend/out/
+frontend/public/parser.worker.mjs
 backend/**/__pycache__/
 *.pyc
 *.tsbuildinfo

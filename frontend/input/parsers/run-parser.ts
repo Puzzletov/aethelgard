@@ -10,7 +10,7 @@ type WorkerFactory = () => Worker;
 const ALLOCATION_SIGNAL = Object.freeze({ schema_version: "1", ok: false, reason: "allocation" });
 
 function defaultWorker(): Worker {
-  return new Worker(new URL("../../workers/parser.worker.ts", import.meta.url), { type: "module" });
+  return new Worker("/parser.worker.mjs", { type: "module" });
 }
 
 function parseKind(format: DocumentFormat) {

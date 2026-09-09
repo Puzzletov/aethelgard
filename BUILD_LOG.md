@@ -2200,3 +2200,33 @@ historical work.
   `beta.aethelgard-3j9.pages.dev`. Cloudflare CLI account authentication was not
   available in this session, so the dashboard setting was not inspected or
   changed. Task 4.12 remains paused.
+
+### 110. Public-beta parser Worker packaging correction
+
+- **READY FOR BETA VERIFICATION** on 2026-09-09. Live synthetic TXT reached
+  lightweight preflight successfully, then both permitted heavyweight parser
+  attempts remained silent until the fixed 30-second deadline. Extraction,
+  language, redaction and `/analyze` were not reached; raw-source egress and
+  application storage writes remained zero.
+- Five Whys identified one packaging boundary: Next 16 Turbopack emitted the
+  application parser as a classic Worker; pinned Pyodide 314 rejects classic
+  Workers; preflight passed because its deliberately lightweight dependency
+  graph contains no Pyodide; existing parser proofs used explicit module Worker
+  bundles; and the production build lacked a proof binding that module bundle
+  to the shipped parser URL. Classification: **A — parser Worker packaging**.
+- The existing parser implementation now ships as one deterministic
+  `/parser.worker.mjs` module bundle. Its build externalizes only the already
+  pinned, self-hosted `/pyodide/pyodide.mjs`; no parser, provider, timeout,
+  resource, privacy or Safe Mode behavior changed. The generated bundle is a
+  disposable ignored build artifact and is copied into the static export.
+- The production-style artifact completed synthetic TXT, CSV, PDF and DOCX
+  parsing in desktop Edge and Chrome. TXT and DOCX continued through local
+  language/redaction and attempted only the approved public Worker; localhost
+  CORS then failed closed as expected. The complete serial root/frontend suite
+  passes 264 tests, with strict types/lint, production build, architecture
+  lint/hash, Doctor, dependency audit, license and exact-zero gates green.
+  Architecture hash remains
+  `56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2`.
+- Production was not deployed or mutated. Task 4.12 remains paused. The
+  correction still requires deployment to the existing `beta` Pages preview
+  and supported-browser live verification before owner retest.
