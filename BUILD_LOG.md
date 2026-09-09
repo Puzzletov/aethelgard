@@ -2230,3 +2230,16 @@ historical work.
 - Production was not deployed or mutated. Task 4.12 remains paused. The
   correction still requires deployment to the existing `beta` Pages preview
   and supported-browser live verification before owner retest.
+- **PUBLIC BETA READY FOR OWNER RETEST.** Preview deployment
+  `c316ba8a-74fb-419d-b139-c2f23a514d79` served the correction at the stable
+  `beta` alias. Synthetic TXT, CSV, PDF and DOCX each completed full local
+  parsing in both desktop Chrome and Edge. TXT, CSV and DOCX also passed the
+  local language/redaction boundary and attempted only the approved public
+  Worker; the deliberately invalid diagnostic Turnstile token then failed
+  closed. Across the matrix, unexpected egress and application storage writes
+  were zero. The signed sample PDF parsed correctly; its intentionally
+  presentation-oriented text failed the conservative English gate as designed.
+- The owner-confirmed real-browser Turnstile PASS remains authoritative and the
+  correction did not alter Turnstile. Fresh automated Chrome sessions cannot
+  independently solve the managed challenge, so the complete live AI/report/
+  signing journey remains an owner-retest item rather than an inferred PASS.
