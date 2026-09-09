@@ -27,7 +27,7 @@ export function TurnstileWidget({ onController, onReady }: TurnstileWidgetProps)
   return <div className="verification-panel">
     <p><span>Request verification</span>One challenge. Cleared after every attempt.</p>
     <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
-      strategy="afterInteractive" onLoad={() => setLoaded(true)} />
+      strategy="afterInteractive" onReady={() => setLoaded(true)} />
     <div className="turnstile-frame" ref={container} aria-label="Request verification" />
   </div>;
 }
