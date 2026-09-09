@@ -19,7 +19,7 @@ historical work.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Architecture execution-hardening EDR 37: **APPROVED**.
-- Task 1.10 normalized-score correction EDR 38: **APPROVED**.
+- Task 1.10 English-first correction EDR 39: **APPROVED**; EDR 38 superseded.
 - Frozen PII baseline: **APPROVED**.
 - Trusted PDF and hybrid-signing feasibility: **PASSED**.
 - External Durable Object direct binding: **PASSED**.
@@ -2226,7 +2226,7 @@ historical work.
   passes 264 tests, with strict types/lint, production build, architecture
   lint/hash, Doctor, dependency audit, license and exact-zero gates green.
   Architecture hash remains
-  `56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2`.
+  `c114314ce240788b20184d8f91a848e65195b7d3f0fe6e4add75c11e6ea2a40b`.
 - Production was not deployed or mutated. Task 4.12 remains paused. The
   correction still requires deployment to the existing `beta` Pages preview
   and supported-browser live verification before owner retest.
@@ -2243,3 +2243,21 @@ historical work.
   correction did not alter Turnstile. Fresh automated Chrome sessions cannot
   independently solve the managed challenge, so the complete live AI/report/
   signing journey remains an owner-retest item rather than an inferred PASS.
+
+### 111. Owner-approved English-first language correction
+
+- **IMPLEMENTED FOR BETA VERIFICATION** on 2026-09-09 under EDR 39. EDR 38 is
+  superseded: its fixed 2,000-basis-point `francAll` score gap systematically
+  rejected representative English even when `eng` ranked first. The accepted
+  contract now preserves the existing local evidence bounds and admits exactly
+  a valid top-ranked `eng`; another language, `und`, insufficient evidence and
+  malformed detector output still fail closed before redaction or network.
+- The frozen corpus now covers ordinary English at 29, 137 and 473 words,
+  international names/addresses/numbers, a short foreign phrase, German,
+  Swedish, French, empty and insufficient input. Separate detector-result
+  tests cover malformed/NaN/unexpected results and English ranked second.
+- Architecture 2.1 remains the approved topology and has exact Git-blob SHA-256
+  `c114314ce240788b20184d8f91a848e65195b7d3f0fe6e4add75c11e6ea2a40b`.
+  Privacy, English-only scope, exact-zero, providers, cryptography, persistence
+  and production state are unchanged. Production was not promoted; Task 4.12
+  remains paused.

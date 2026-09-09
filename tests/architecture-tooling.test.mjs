@@ -88,8 +88,8 @@ test("hardening promotes passing Phase 1.1 through 1.6 bounds without drift", ()
   assert.match(implementation["frontend/input/parsers/xlsx-parser.ts"], /MAX_XLSX_SHEETS = 200[\s\S]*MAX_XLSX_SOURCES = 100_000/);
 });
 
-test("Task 1.10 uses the approved normalized-score basis-point margin", () => {
-  assert.match(architecture, /round\(\(eng_score - runner_up_score\) \* 10,000\)/);
-  assert.match(architecture, /\| B-LANGUAGE-MARGIN \| 2,000 \| integer basis points \|/);
-  assert.doesNotMatch(architecture, /runner_up_distance|eng_distance|franc distance points/);
+test("Task 1.10 uses the approved English-first detector contract", () => {
+  assert.match(architecture, /Accept only when its first valid\s+ranked language is exactly `eng`/);
+  assert.doesNotMatch(architecture, /\| B-LANGUAGE-MARGIN \||round\(\(eng_score - runner_up_score\)/);
+  assert.match(architecture, /\| 39 \| Active \| Task 1\.10 English-first correction \|/);
 });

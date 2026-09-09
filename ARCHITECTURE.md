@@ -3,13 +3,13 @@
 **Project name:** Aethelgard
 **Document type:** Build Guide, System Architecture, and Project Tracker
 **Version:** 2.1
-**Date:** 2026-08-30
+**Date:** 2026-09-09
 **Status:** Approved for build
 **Language:** Simplified Technical English
 **Purpose:** Final system architecture, build guide, and phase authority
 **Supersedes:** Architecture 2.0 and all earlier architecture proposals and handoffs
 
-**Revision:** Execution hardening revision; Task 1.10 score-contract correction — 2026-08-30
+**Revision:** Execution hardening revision; Task 1.10 English-first correction — 2026-09-09
 
 ---
 
@@ -606,14 +606,16 @@ fail closed before document-derived content crosses the network.
 Apply Schema `S-LANGUAGE-DECISION`: normalize whitespace; take the leading
 `B-LANGUAGE-SAMPLE-CHARS`; require at least 40 alphabetic Unicode letters and
 at least 8 whitespace-separated letter-bearing tokens in that sample; then run
-pinned offline `francAll` from `franc-min`. Treat tuple values as normalized
-scores. Let `eng_score` be the first tuple's score and `runner_up_score` be the
-second tuple's score. Calculate the integer basis-point margin exactly as
-`round((eng_score - runner_up_score) * 10,000)`. Accept only when the first
-result is exactly `eng` and the margin is at least `B-LANGUAGE-MARGIN`.
-Reject every other, tied, mixed, uncertain, or insufficient-evidence result
-locally. Freeze clear English, English with international names, non-English,
-mixed-language, and short-text cases in tests.
+pinned offline `francAll` from `franc-min`. Accept only when its first valid
+ranked language is exactly `eng`. Reject another top-ranked language as
+non-English, and reject insufficient evidence, `und`, missing, malformed,
+unexpected, or non-finite detector output locally. The relative tuple values
+are ranking/distance-derived heuristics, not calibrated confidence
+probabilities, and no score-gap acceptance rule applies. Freeze representative
+ordinary English at approximately 30, 150, and 500 words, English with
+international names/addresses/numbers, English with a short foreign phrase,
+non-English, empty, insufficient, malformed-result, and English-ranked-second
+cases in tests.
 
 Do not add multilingual PII models.
 
@@ -2695,12 +2697,14 @@ preserved but Architecture 2.1 no longer follows that target.
 | 35 | Active | Turnstile Siteverify inside `TrustedRuntime` | Verification requires a secret. The existing private runtime preserves a genuinely secret-free edge without a new component. |
 | 36 | Active | Sequential one-task and one-phase governance | Prevents architecture drift, speculative scaffolding, and partially verified implementation. Every task has a signed logical commit and every phase stops at review. |
 | 37 | Active | Architecture 2.1 execution hardening | Canonical task contracts and Bounds, Schema, and Failure registries make implementation deterministic without changing topology, mission, privacy, cost, providers, or cryptography. Reject repeated architecture inference during implementation. |
-| 38 | Active | Task 1.10 normalized-score margin correction | Interpret `francAll` tuple values as normalized scores and require English to lead the runner-up by at least 2,000 integer basis points. Reject the incompatible distance terminology and subtraction order. |
+| 38 | Superseded by 39 | Task 1.10 normalized-score margin correction | The score-gap rule repaired an earlier arithmetic contradiction but incorrectly treated ranking scores as calibrated confidence and rejected representative English documents. |
+| 39 | Active | Task 1.10 English-first correction | After minimum evidence, accept exactly a valid top-ranked `eng`; reject another language, insufficient evidence, `und`, or malformed detector output locally. Remove score-gap acceptance and freeze a representative corpus. |
 
 Detailed active EDR artifacts are
 `docs/EDR_BROWSER_LOCAL_TRUST_BOUNDARY.md` and
-`docs/EDR_ARCHITECTURE_EXECUTION_HARDENING.md`, and
-`docs/EDR_LANGUAGE_SCORE_MARGIN.md`.
+`docs/EDR_ARCHITECTURE_EXECUTION_HARDENING.md`,
+`docs/EDR_LANGUAGE_SCORE_MARGIN.md`, and
+`docs/EDR_LANGUAGE_ENGLISH_FIRST.md`.
 
 ---
 
@@ -3440,11 +3444,11 @@ Allowed scope: Pinned offline franc-min adapter and frozen fixtures.
 Inputs: Word-bounded normalized content.
 Outputs: Schema `S-LANGUAGE-DECISION`.
 Required behavior: Apply exact Section 5.3 rule before redaction/network.
-Bounds: `B-LANGUAGE-MIN-LETTERS`, `B-LANGUAGE-MIN-TOKENS`, `B-LANGUAGE-MARGIN`, `B-LANGUAGE-SAMPLE-CHARS`.
+Bounds: `B-LANGUAGE-MIN-LETTERS`, `B-LANGUAGE-MIN-TOKENS`, `B-LANGUAGE-SAMPLE-CHARS`.
 Schemas: `S-LANGUAGE-DECISION`, `S-SAFE-MODE`.
 Failures: `F-UNSUPPORTED-LANGUAGE`.
 Forbidden: Online detection, translation, multilingual model, guessed acceptance, persistence.
-PASS: Frozen English/international-name cases pass; non-English/mixed/tied/short cases fail locally in Chrome/Edge.
+PASS: Representative English cases pass; non-English, empty, insufficient, malformed-result, and English-ranked-second cases fail locally in Chrome/Edge.
 
 ## Task 1.11 — Redaction Worker
 Purpose: Replace supported PII locally and retain a browser-only mapping.
@@ -3844,10 +3848,10 @@ Allowed scope: Additive local language fixtures and runner.
 Inputs: Section 13 fixture classes.
 Outputs: Schema `S-LANGUAGE-DECISION` per fixture.
 Required behavior: Apply exact Section 5.3 rule locally.
-Bounds: `B-LANGUAGE-MIN-LETTERS`, `B-LANGUAGE-MIN-TOKENS`, `B-LANGUAGE-MARGIN`, `B-LANGUAGE-SAMPLE-CHARS`.
+Bounds: `B-LANGUAGE-MIN-LETTERS`, `B-LANGUAGE-MIN-TOKENS`, `B-LANGUAGE-SAMPLE-CHARS`.
 Schemas: `S-LANGUAGE-DECISION`.
 Failures: `F-UNSUPPORTED-LANGUAGE`.
-Forbidden: Online call, threshold drift, translation.
+Forbidden: Online call, classification-contract drift, translation.
 PASS: Expected accept/reject matrix passes Chrome/Edge and no language-data request occurs.
 
 ## Task 3.4 — Prompt-injection fixtures release gate
@@ -4660,7 +4664,6 @@ implementation may silently truncate to satisfy a bound.
 | B-EXTRACTED-WORDS | 8,000 | Unicode word runs | Extracted document | `F-OVERSIZED-DOCUMENT` |
 | B-LANGUAGE-MIN-LETTERS | 40 | Unicode alphabetic letters | Language evidence | `F-UNSUPPORTED-LANGUAGE` below |
 | B-LANGUAGE-MIN-TOKENS | 8 | letter-bearing tokens | Language evidence | `F-UNSUPPORTED-LANGUAGE` below |
-| B-LANGUAGE-MARGIN | 2,000 | integer basis points | English normalized-score lead over runner-up | `F-UNSUPPORTED-LANGUAGE` below |
 | B-LANGUAGE-SAMPLE-CHARS | 20,000 | Unicode code points | Deterministic leading normalized sample | `F-UNSUPPORTED-LANGUAGE` if inconclusive |
 | B-PII-MAPPINGS | 10,000 | placeholders | One redaction operation | `F-PII-GATE-FAILURE` |
 | B-PLACEHOLDER-CHARS | 64 | ASCII chars | One placeholder | `F-PII-GATE-FAILURE` |
@@ -4798,11 +4801,11 @@ placeholder_count:int, must_redact_leaks:0}`. The placeholder mapping is
 deliberately absent and must be destroyed inside the Worker.
 
 ### S-LANGUAGE-DECISION
-Union `{schema_version:"1",accepted:true,language:"eng",letters:int,tokens:int,
-margin:int}` or `{schema_version:"1",accepted:false,reason:"insufficient"|
-"non_english"|"mixed_or_uncertain"}`. It applies the exact Section 5.3 rule.
-`margin` is exactly `round((eng_score - runner_up_score) * 10,000)` integer
-basis points, where the named scores are the first two `francAll` tuple values.
+Union `{schema_version:"1",accepted:true,language:"eng",letters:int,tokens:int}`
+or `{schema_version:"1",accepted:false,reason:"insufficient"|"non_english"|
+"mixed_or_uncertain"}`. It applies the exact Section 5.3 rule. The last reason
+is reserved for missing, malformed, unexpected, or non-finite detector output;
+another valid top-ranked language is `non_english`, and `und` is `insufficient`.
 
 ### S-FOCUS
 String enum `full|financial|strategic|security`.
