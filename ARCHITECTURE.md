@@ -3,13 +3,13 @@
 **Project name:** Aethelgard
 **Document type:** Build Guide, System Architecture, and Project Tracker
 **Version:** 2.1
-**Date:** 2026-09-09
+**Date:** 2026-09-10
 **Status:** Approved for build
 **Language:** Simplified Technical English
 **Purpose:** Final system architecture, build guide, and phase authority
 **Supersedes:** Architecture 2.0 and all earlier architecture proposals and handoffs
 
-**Revision:** Execution hardening revision; Task 1.10 English-first correction — 2026-09-09
+**Revision:** Execution hardening revision; Turnstile timeout correction — 2026-09-10
 
 ---
 
@@ -878,6 +878,10 @@ Bound the Turnstile token to the provider maximum.
 Treat it as single-use.
 
 After an analysis attempt, the frontend must obtain/reset to a fresh challenge before retrying.
+
+Siteverify has exactly one 10,000 ms attempt and fails closed. Do not retry a
+token. The previous 5,000 ms bound aborted a legitimate deployed Managed
+Turnstile validation before Siteverify completed.
 
 ---
 
@@ -2699,12 +2703,14 @@ preserved but Architecture 2.1 no longer follows that target.
 | 37 | Active | Architecture 2.1 execution hardening | Canonical task contracts and Bounds, Schema, and Failure registries make implementation deterministic without changing topology, mission, privacy, cost, providers, or cryptography. Reject repeated architecture inference during implementation. |
 | 38 | Superseded by 39 | Task 1.10 normalized-score margin correction | The score-gap rule repaired an earlier arithmetic contradiction but incorrectly treated ranking scores as calibrated confidence and rejected representative English documents. |
 | 39 | Active | Task 1.10 English-first correction | After minimum evidence, accept exactly a valid top-ranked `eng`; reject another language, insufficient evidence, `und`, or malformed detector output locally. Remove score-gap acceptance and freeze a representative corpus. |
+| 40 | Active | Turnstile Siteverify timeout correction | A legitimate deployed Managed validation reached the former 5,000 ms abort boundary at approximately 5,001 ms. Use one 10,000 ms attempt, matching Cloudflare's canonical Worker implementation; retain no retry, exact action/hostname checks and fail-closed behavior. |
 
 Detailed active EDR artifacts are
 `docs/EDR_BROWSER_LOCAL_TRUST_BOUNDARY.md` and
 `docs/EDR_ARCHITECTURE_EXECUTION_HARDENING.md`,
 `docs/EDR_LANGUAGE_SCORE_MARGIN.md`, and
-`docs/EDR_LANGUAGE_ENGLISH_FIRST.md`.
+`docs/EDR_LANGUAGE_ENGLISH_FIRST.md`, and
+`docs/EDR_TURNSTILE_TIMEOUT.md`.
 
 ---
 
@@ -4675,7 +4681,7 @@ implementation may silently truncate to satisfy a bound.
 | B-BODY-CHUNKS | 1,024 | chunks | Request read | Safe 400/413 |
 | B-BODY-READ-TIMEOUT-MS | 5,000 | ms | Request read | Safe 400 |
 | B-TURNSTILE-TOKEN-CHARS | 2,048 | UTF-16 code units | Token | `F-TURNSTILE-FAILURE` |
-| B-TURNSTILE-TIMEOUT-MS | 5,000 | ms | Siteverify | `F-TURNSTILE-FAILURE` |
+| B-TURNSTILE-TIMEOUT-MS | 10,000 | ms | One Siteverify attempt | `F-TURNSTILE-FAILURE`; fail closed; no retry |
 | B-TURNSTILE-RESPONSE-BYTES | 8,192 | bytes | Siteverify response | `F-TURNSTILE-FAILURE` |
 | B-REQUESTED-OUTPUTS | 3 | unique enum values | Analyze request | Strict schema rejection |
 | B-AI-REQUEST-BYTES | 524,288 | UTF-8 bytes | One provider request | Safe Mode before call |

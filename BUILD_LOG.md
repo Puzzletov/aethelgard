@@ -2271,3 +2271,24 @@ historical work.
   invalid diagnostic Turnstile token reached the analysis boundary and failed
   as analysis unavailable, not as a browser/language fault. The complete live
   provider/report/signing path still requires an owner-solved Turnstile journey.
+
+### 112. Owner-approved Turnstile Siteverify timeout correction
+
+- **IMPLEMENTED; LIVE BETA PROOF PENDING** on 2026-09-10 under EDR 40. Three
+  legitimate Managed Turnstile beta requests reached private `TrustedRuntime`
+  and returned HTTP 503 after approximately 5,001 ms before AI. The former
+  5,000 ms Siteverify bound was corrected to Cloudflare's canonical 10,000 ms
+  Worker timeout while retaining exactly one attempt, no retry, fail-closed
+  behavior, exact action/production-or-beta hostname checks, token reset and
+  omission of `remoteip`.
+- Deterministic proofs permit a valid response before the 10,000 ms deadline
+  and fail closed at the deadline. Invalid, expired/replayed, wrong-action,
+  wrong-hostname, non-2xx, malformed, oversized and unavailable Siteverify
+  outcomes remain rejected before AI, Browser Run, report generation or
+  signing. The focused gate passes 32 tests; the full root/frontend regression
+  gate passes 266 tests with strict types/lint, both Worker dry-runs and the
+  complete static Pages build green.
+- Architecture 2.1 keeps its approved topology and now has exact staged Git
+  blob SHA-256 `99d8050aa94cfbfb71ed96e5030d1add0d33558bb628de94f3b4bcd27bad5f9e`.
+  Privacy, providers, cryptography, persistence and exact-zero behavior are
+  unchanged. Production Pages was not promoted and Task 4.12 remains paused.

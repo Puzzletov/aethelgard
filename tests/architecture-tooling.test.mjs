@@ -92,4 +92,5 @@ test("Task 1.10 uses the approved English-first detector contract", () => {
   assert.match(architecture, /Accept only when its first valid\s+ranked language is exactly `eng`/);
   assert.doesNotMatch(architecture, /\| B-LANGUAGE-MARGIN \||round\(\(eng_score - runner_up_score\)/);
   assert.match(architecture, /\| 39 \| Active \| Task 1\.10 English-first correction \|/);
+  assert.match(architecture, /\| 40 \| Active \| Turnstile Siteverify timeout correction \|/);
 });

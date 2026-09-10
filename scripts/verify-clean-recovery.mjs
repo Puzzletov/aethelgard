@@ -6,7 +6,7 @@ import { promisify } from "node:util";
 
 const execute = promisify(execFile);
 const repository = "https://github.com/Puzzletov/aethelgard.git";
-const architectureSha256 = "c114314ce240788b20184d8f91a848e65195b7d3f0fe6e4add75c11e6ea2a40b";
+const architectureSha256 = "99d8050aa94cfbfb71ed96e5030d1add0d33558bb628de94f3b4bcd27bad5f9e";
 const wallLimitMs = 1_800_000;
 
 function argument(name) {
