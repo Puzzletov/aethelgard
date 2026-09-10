@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const sourceUrl = new URL("../security/turnstile-client.ts", import.meta.url);
+const widgetUrl = new URL("../components/turnstile-widget.tsx", import.meta.url);
 
 test("frontend Turnstile uses only the public key and analyze action", async () => {
   const source = await readFile(sourceUrl, "utf8");
@@ -18,4 +19,10 @@ test("frontend Turnstile clears and resets after an attempt", async () => {
   assert.match(source, /resetAfterAttempt/);
   assert.match(source, /api\.reset\(widgetId\)/);
   assert.match(source, /expired-callback/);
+});
+
+test("conditionally mounted Turnstile initializes when its script is already ready", async () => {
+  const source = await readFile(widgetUrl, "utf8");
+  assert.match(source, /strategy="afterInteractive" onReady=/);
+  assert.doesNotMatch(source, /onLoad=/);
 });

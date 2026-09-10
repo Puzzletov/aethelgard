@@ -19,7 +19,7 @@ test("the pinned local language gate passes its frozen corpus in Chrome and Edge
   for (const item of report.results) {
     assert.equal(item.status, "ok");
     assert.equal(item.schema_version, "1");
-    assert.equal(item.fixture_count, 9);
+    assert.equal(item.fixture_count, fixtures.fixtures.length);
     assert.deepEqual(item.decisions, fixtures.fixtures.map((fixture) => ({
       id: fixture.id, decision: fixture.expected,
     })));

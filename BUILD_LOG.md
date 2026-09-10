@@ -19,7 +19,7 @@ historical work.
 - Exact-zero account gate: **PASSED** on 2026-08-27.
 - Browser-local trust-boundary EDR: **APPROVED**.
 - Architecture execution-hardening EDR 37: **APPROVED**.
-- Task 1.10 normalized-score correction EDR 38: **APPROVED**.
+- Task 1.10 English-first correction EDR 39: **APPROVED**; EDR 38 superseded.
 - Frozen PII baseline: **APPROVED**.
 - Trusted PDF and hybrid-signing feasibility: **PASSED**.
 - External Durable Object direct binding: **PASSED**.
@@ -2200,3 +2200,95 @@ historical work.
   `beta.aethelgard-3j9.pages.dev`. Cloudflare CLI account authentication was not
   available in this session, so the dashboard setting was not inspected or
   changed. Task 4.12 remains paused.
+
+### 110. Public-beta parser Worker packaging correction
+
+- **READY FOR BETA VERIFICATION** on 2026-09-09. Live synthetic TXT reached
+  lightweight preflight successfully, then both permitted heavyweight parser
+  attempts remained silent until the fixed 30-second deadline. Extraction,
+  language, redaction and `/analyze` were not reached; raw-source egress and
+  application storage writes remained zero.
+- Five Whys identified one packaging boundary: Next 16 Turbopack emitted the
+  application parser as a classic Worker; pinned Pyodide 314 rejects classic
+  Workers; preflight passed because its deliberately lightweight dependency
+  graph contains no Pyodide; existing parser proofs used explicit module Worker
+  bundles; and the production build lacked a proof binding that module bundle
+  to the shipped parser URL. Classification: **A — parser Worker packaging**.
+- The existing parser implementation now ships as one deterministic
+  `/parser.worker.mjs` module bundle. Its build externalizes only the already
+  pinned, self-hosted `/pyodide/pyodide.mjs`; no parser, provider, timeout,
+  resource, privacy or Safe Mode behavior changed. The generated bundle is a
+  disposable ignored build artifact and is copied into the static export.
+- The production-style artifact completed synthetic TXT, CSV, PDF and DOCX
+  parsing in desktop Edge and Chrome. TXT and DOCX continued through local
+  language/redaction and attempted only the approved public Worker; localhost
+  CORS then failed closed as expected. The complete serial root/frontend suite
+  passes 264 tests, with strict types/lint, production build, architecture
+  lint/hash, Doctor, dependency audit, license and exact-zero gates green.
+  Architecture hash remains
+  `c114314ce240788b20184d8f91a848e65195b7d3f0fe6e4add75c11e6ea2a40b`.
+- Production was not deployed or mutated. Task 4.12 remains paused. The
+  correction still requires deployment to the existing `beta` Pages preview
+  and supported-browser live verification before owner retest.
+- **PUBLIC BETA READY FOR OWNER RETEST.** Preview deployment
+  `c316ba8a-74fb-419d-b139-c2f23a514d79` served the correction at the stable
+  `beta` alias. Synthetic TXT, CSV, PDF and DOCX each completed full local
+  parsing in both desktop Chrome and Edge. TXT, CSV and DOCX also passed the
+  local language/redaction boundary and attempted only the approved public
+  Worker; the deliberately invalid diagnostic Turnstile token then failed
+  closed. Across the matrix, unexpected egress and application storage writes
+  were zero. The signed sample PDF parsed correctly; its intentionally
+  presentation-oriented text failed the conservative English gate as designed.
+- The owner-confirmed real-browser Turnstile PASS remains authoritative and the
+  correction did not alter Turnstile. Fresh automated Chrome sessions cannot
+  independently solve the managed challenge, so the complete live AI/report/
+  signing journey remains an owner-retest item rather than an inferred PASS.
+
+### 111. Owner-approved English-first language correction
+
+- **IMPLEMENTED FOR BETA VERIFICATION** on 2026-09-09 under EDR 39. EDR 38 is
+  superseded: its fixed 2,000-basis-point `francAll` score gap systematically
+  rejected representative English even when `eng` ranked first. The accepted
+  contract now preserves the existing local evidence bounds and admits exactly
+  a valid top-ranked `eng`; another language, `und`, insufficient evidence and
+  malformed detector output still fail closed before redaction or network.
+- The frozen corpus now covers ordinary English at 29, 137 and 473 words,
+  international names/addresses/numbers, a short foreign phrase, German,
+  Swedish, French, empty and insufficient input. Separate detector-result
+  tests cover malformed/NaN/unexpected results and English ranked second.
+- Architecture 2.1 remains the approved topology and has exact Git-blob SHA-256
+  `c114314ce240788b20184d8f91a848e65195b7d3f0fe6e4add75c11e6ea2a40b`.
+  Privacy, English-only scope, exact-zero, providers, cryptography, persistence
+  and production state are unchanged. Production was not promoted; Task 4.12
+  remains paused.
+- Beta-only deployment `d8f856f1-b499-4fb8-9353-ab557350aed7` serves signed
+  correction commit `6f581b41601750cebe5125416ccfb18a5fade477` at the stable
+  beta alias. On that live artifact, synthetic clear-English TXT, PDF and DOCX
+  pass local preflight, parsing, extraction and language in both Chrome and
+  Edge; German fails locally with the correct language Safe Mode. Captured TXT
+  and DOCX requests omitted the synthetic raw person name, contained its local
+  placeholder and used only the five approved request fields. A deliberately
+  invalid diagnostic Turnstile token reached the analysis boundary and failed
+  as analysis unavailable, not as a browser/language fault. The complete live
+  provider/report/signing path still requires an owner-solved Turnstile journey.
+
+### 112. Owner-approved Turnstile Siteverify timeout correction
+
+- **IMPLEMENTED; LIVE BETA PROOF PENDING** on 2026-09-10 under EDR 40. Three
+  legitimate Managed Turnstile beta requests reached private `TrustedRuntime`
+  and returned HTTP 503 after approximately 5,001 ms before AI. The former
+  5,000 ms Siteverify bound was corrected to Cloudflare's canonical 10,000 ms
+  Worker timeout while retaining exactly one attempt, no retry, fail-closed
+  behavior, exact action/production-or-beta hostname checks, token reset and
+  omission of `remoteip`.
+- Deterministic proofs permit a valid response before the 10,000 ms deadline
+  and fail closed at the deadline. Invalid, expired/replayed, wrong-action,
+  wrong-hostname, non-2xx, malformed, oversized and unavailable Siteverify
+  outcomes remain rejected before AI, Browser Run, report generation or
+  signing. The focused gate passes 32 tests; the full root/frontend regression
+  gate passes 266 tests with strict types/lint, both Worker dry-runs and the
+  complete static Pages build green.
+- Architecture 2.1 keeps its approved topology and now has exact staged Git
+  blob SHA-256 `99d8050aa94cfbfb71ed96e5030d1add0d33558bb628de94f3b4bcd27bad5f9e`.
+  Privacy, providers, cryptography, persistence and exact-zero behavior are
+  unchanged. Production Pages was not promoted and Task 4.12 remains paused.

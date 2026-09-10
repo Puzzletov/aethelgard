@@ -56,7 +56,7 @@ const mismatches = decisions.filter((item, index) =>
   JSON.stringify(item.decision) !== JSON.stringify(fixtures.fixtures[index].expected));
 self.postMessage({ status: "ok", schema_version: "1", fixture_count: decisions.length,
   decisions, mismatches, language_data_requests: languageDataRequests,
-  passed: decisions.length === 9 && mismatches.length === 0 && languageDataRequests === 0 });
+  passed: decisions.length === fixtures.fixtures.length && mismatches.length === 0 && languageDataRequests === 0 });
 `;
 }
 

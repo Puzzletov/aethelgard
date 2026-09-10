@@ -26,7 +26,7 @@ npm run verify:report -- frontend/public/sample/aethelgard-synthetic-sample.pdf 
 ```
 
 The architecture hash must equal
-`56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2`.
+`99d8050aa94cfbfb71ed96e5030d1add0d33558bb628de94f3b4bcd27bad5f9e`.
 `S-ZERO-COST-RESULT` must report all four costs, paid fallbacks and automatic
 top-ups as zero. Stop on any failure.
 

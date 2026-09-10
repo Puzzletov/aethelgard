@@ -3,6 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "parser:worker": "node ../scripts/build-parser-worker.mjs",
+    "prebuild": "npm run parser:worker",
+    "predev": "npm run parser:worker",
     "dev": "next dev",
     "build": "next build",
     "lint": "tsc --noEmit --noUnusedLocals --noUnusedParameters --noImplicitReturns --noFallthroughCasesInSwitch",

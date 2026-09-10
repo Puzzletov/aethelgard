@@ -155,7 +155,24 @@ test("complete verification decision matrix returns one fixed result per attempt
     { ok: false, reason: "unavailable" });
 });
 
-test("the fixed Siteverify deadline cancels one in-flight request", async () => {
+test("a response before the 10,000 ms Siteverify deadline may complete", async () => {
+  const nativeTimeout = AbortSignal.timeout;
+  let requestedMs = 0;
+  AbortSignal.timeout = (milliseconds) => {
+    requestedMs = milliseconds;
+    return new AbortController().signal;
+  };
+  try {
+    const result = await verifyTurnstile(dummyToken, config, createFetcher({ success: true,
+      hostname: config.expectedHostname, action: config.expectedAction }).fetcher);
+    assert.deepEqual(result, { ok: true });
+    assert.equal(requestedMs, 10_000);
+  } finally {
+    AbortSignal.timeout = nativeTimeout;
+  }
+});
+
+test("the 10,000 ms Siteverify deadline cancels the one in-flight request", async () => {
   const nativeTimeout = AbortSignal.timeout;
   const controller = new AbortController();
   let requestedMs = 0;
@@ -166,7 +183,7 @@ test("the fixed Siteverify deadline cancels one in-flight request", async () => 
         () => reject(new DOMException("deadline", "TimeoutError")), { once: true })));
     controller.abort();
     assert.deepEqual(await pending, { ok: false, reason: "unavailable" });
-    assert.equal(requestedMs, 5_000);
+    assert.equal(requestedMs, 10_000);
   } finally {
     AbortSignal.timeout = nativeTimeout;
   }
