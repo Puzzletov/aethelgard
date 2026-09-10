@@ -2261,3 +2261,13 @@ historical work.
   Privacy, English-only scope, exact-zero, providers, cryptography, persistence
   and production state are unchanged. Production was not promoted; Task 4.12
   remains paused.
+- Beta-only deployment `d8f856f1-b499-4fb8-9353-ab557350aed7` serves signed
+  correction commit `6f581b41601750cebe5125416ccfb18a5fade477` at the stable
+  beta alias. On that live artifact, synthetic clear-English TXT, PDF and DOCX
+  pass local preflight, parsing, extraction and language in both Chrome and
+  Edge; German fails locally with the correct language Safe Mode. Captured TXT
+  and DOCX requests omitted the synthetic raw person name, contained its local
+  placeholder and used only the five approved request fields. A deliberately
+  invalid diagnostic Turnstile token reached the analysis boundary and failed
+  as analysis unavailable, not as a browser/language fault. The complete live
+  provider/report/signing path still requires an owner-solved Turnstile journey.
