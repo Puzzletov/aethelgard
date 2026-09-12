@@ -10,6 +10,7 @@ const siteverifySchema = z.object({
   challenge_ts: z.string().max(64).optional(),
   hostname: z.string().max(253).optional(),
   "error-codes": z.array(z.string().max(64)).max(16).optional(),
+  messages: z.array(z.string().max(256)).max(16).optional(),
   action: z.string().max(64).optional(),
   cdata: z.string().max(255).optional(),
   metadata: z.object({

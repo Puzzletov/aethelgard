@@ -2292,3 +2292,31 @@ historical work.
   blob SHA-256 `99d8050aa94cfbfb71ed96e5030d1add0d33558bb628de94f3b4bcd27bad5f9e`.
   Privacy, providers, cryptography, persistence and exact-zero behavior are
   unchanged. Production Pages was not promoted and Task 4.12 remains paused.
+
+### 113. Cloudflare Turnstile isolation proof
+
+- **TRANSPORT PASS; PRODUCTION RESPONSE CLASSIFICATION FIXED LOCALLY** on
+  2026-09-12. A disposable remote Cloudflare Worker used the production
+  `verifyTurnstile` helper and Cloudflare's official test credentials. Workers
+  global `fetch` reached Siteverify directly; the always-pass control returned
+  HTTP 200 JSON with `success:true` in 8 ms. The official always-fail malformed
+  control returned HTTP 200 JSON with `success:false` and
+  `invalid-input-response` in 6 ms. No Workers runtime error was raised.
+- The live Siteverify response contains bounded top-level `messages` and
+  `metadata` fields. The strict production schema already accepted the known
+  metadata field but rejected `messages`, collapsing a prompt Cloudflare
+  rejection into `turnstile_unavailable`. The smallest correction admits only
+  a maximum of 16 strings of 256 characters while retaining strict rejection
+  of unknown or unbounded data. The real production secret plus Cloudflare's
+  dummy token returned the collapsed 503 in 953 ms and 90 ms controls, proving
+  this was not the 10-second transport deadline.
+- The focused Turnstile suite passes 10 tests. The complete root/frontend
+  suite, strict typecheck/lint, both Worker dry-runs, static Pages build,
+  architecture lint/hash, Doctor, dependency audit, license gate and
+  exact-zero gate pass. The disposable Worker and its local files were removed;
+  no test credential entered a production resource or Git.
+- The private runtime correction is not deployed in this evidence state, and
+  the complete Groq/report/signing/dashboard path was not claimed: an isolated
+  Worker cannot retrieve or copy the existing non-exportable production AI and
+  signing secrets. Production Pages remains unpromoted, PR #28 remains open,
+  and Task 4.12 remains paused.

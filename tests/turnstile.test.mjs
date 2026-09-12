@@ -65,7 +65,8 @@ test("the provider-marked test response is accepted only by explicit test config
 });
 
 test("Siteverify rejects invalid and replayed tokens", async () => {
-  const invalid = createFetcher({ success: false, "error-codes": ["invalid-input-response"] });
+  const invalid = createFetcher({ success: false, "error-codes": ["invalid-input-response"],
+    messages: [] });
   const replay = createFetcher({ success: false, "error-codes": ["timeout-or-duplicate"] });
   assert.deepEqual(await verifyTurnstile(dummyToken, config, invalid.fetcher), {
     ok: false,
@@ -170,6 +171,22 @@ test("a response before the 10,000 ms Siteverify deadline may complete", async (
   } finally {
     AbortSignal.timeout = nativeTimeout;
   }
+});
+
+test("Siteverify accepts Cloudflare's bounded messages field without weakening strict parsing", async () => {
+  const valid = createFetcher({ success: true, hostname: config.expectedHostname,
+    action: config.expectedAction, "error-codes": [], messages: [] });
+  const invalid = createFetcher({ success: false, "error-codes": ["invalid-input-response"],
+    messages: ["validation failed"] });
+  const unbounded = createFetcher({ success: false, "error-codes": ["invalid-input-response"],
+    messages: ["x".repeat(257)] });
+  assert.deepEqual(await verifyTurnstile(dummyToken, config, valid.fetcher), { ok: true });
+  assert.deepEqual(await verifyTurnstile(dummyToken, config, invalid.fetcher), {
+    ok: false, reason: "invalid",
+  });
+  assert.deepEqual(await verifyTurnstile(dummyToken, config, unbounded.fetcher), {
+    ok: false, reason: "unavailable",
+  });
 });
 
 test("the 10,000 ms Siteverify deadline cancels the one in-flight request", async () => {
