@@ -2384,3 +2384,16 @@ historical work.
   local extraction and 912 ms provider latency. TXT passed immediately
   afterward with zero PII egress and zero browser storage writes. Production,
   beta and the excluded report/orchestration layers remained unchanged.
+
+### 119. Golden-path XLSX input integration
+
+- **PASS** on 2026-09-14. A representative synthetic XLSX passed the existing
+  Office archive preflight, disposable Python parser Worker, source
+  normalization, English gate and local PII redaction. Its sole outbound
+  request contained no original synthetic identifier; one Groq call returned a
+  strict validated analysis and the browser rendered it.
+- The composed Chrome proof completed in 28,492 ms, including 24,186 ms cold
+  local extraction and 877 ms provider latency. TXT passed immediately
+  afterward in 6,462 ms with zero PII egress and zero browser storage writes.
+  All six input formats now pass the isolated one-call flow. Production, beta
+  and the excluded report/orchestration layers remained unchanged.

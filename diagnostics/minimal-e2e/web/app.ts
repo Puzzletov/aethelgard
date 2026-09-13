@@ -58,7 +58,7 @@ function render(analysis: BaselineAnalysis): void {
 
 async function selectFile(file: File): Promise<void> {
   const selected = selectBrowserDocument([file]);
-  if (!selected.ok || !["txt", "pdf", "docx", "csv", "pptx"].includes(selected.document.format)) {
+  if (!selected.ok || !["txt", "pdf", "docx", "csv", "pptx", "xlsx"].includes(selected.document.format)) {
     throw new Error("invalid_document");
   }
   let sources;

@@ -13,13 +13,13 @@
   <main>
     <p class="eyebrow">Isolated diagnostic — synthetic data only</p>
     <h1>Minimal Aethelgard golden path</h1>
-    <p>TXT, PDF, DOCX, CSV, or PPTX → local redaction → one Groq request → finished analysis.</p>
-    <label class="file">Choose a synthetic document<input id="document" type="file" accept=".txt,.pdf,.docx,.csv,.pptx"></label>
+    <p>TXT, PDF, DOCX, CSV, PPTX, or XLSX → local redaction → one Groq request → finished analysis.</p>
+    <label class="file">Choose a synthetic document<input id="document" type="file" accept=".txt,.pdf,.docx,.csv,.pptx,.xlsx"></label>
     <label>Analysis focus<select id="focus"><option value="full">Full</option><option value="financial">Financial</option>
       <option value="strategic">Strategic</option><option value="security">Security</option></select></label>
     <div id="turnstile-widget" aria-label="Test request verification"></div>
     <button id="analyze" type="button" disabled>Analyze document</button>
-    <p id="status" role="status">Select a synthetic TXT, PDF, DOCX, CSV, or PPTX document.</p>
+    <p id="status" role="status">Select a synthetic TXT, PDF, DOCX, CSV, PPTX, or XLSX document.</p>
     <section id="result" hidden aria-labelledby="result-title">
       <h2 id="result-title">Analysis</h2>
       <h3>Executive summary</h3><p id="summary"></p>
