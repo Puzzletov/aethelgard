@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>Aethelgard minimal golden path</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
+  <script src="/app.js" type="module"></script>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">Isolated diagnostic — synthetic data only</p>
+    <h1>Minimal Aethelgard golden path</h1>
+    <p>TXT → local redaction → one Groq request → finished analysis.</p>
+    <label class="file">Choose synthetic TXT<input id="document" type="file" accept="text/plain,.txt"></label>
+    <label>Analysis focus<select id="focus"><option value="full">Full</option><option value="financial">Financial</option>
+      <option value="strategic">Strategic</option><option value="security">Security</option></select></label>
+    <div id="turnstile-widget" aria-label="Test request verification"></div>
+    <button id="analyze" type="button" disabled>Analyze document</button>
+    <p id="status" role="status">Select a synthetic TXT document.</p>
+    <section id="result" hidden aria-labelledby="result-title">
+      <h2 id="result-title">Analysis</h2>
+      <h3>Executive summary</h3><p id="summary"></p>
+      <h3>Findings</h3><ul id="findings"></ul>
+      <h3>Risks</h3><ul id="risks"></ul>
+      <h3>Recommendations</h3><ul id="recommendations"></ul>
+    </section>
+    <details><summary>Privacy-safe stage trace</summary><ol id="trace"></ol></details>
+  </main>
+</body>
+</html>

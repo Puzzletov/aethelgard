@@ -1,0 +1,17 @@
+name = "aethelgard-minimal-edge"
+main = "edge.ts"
+compatibility_date = "2026-08-04"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+preview_urls = false
+
+[observability]
+enabled = false
+
+[vars]
+ALLOWED_ORIGIN = "https://golden-path.aethelgard-3j9.pages.dev"
+
+[[durable_objects.bindings]]
+name = "MINIMAL_RUNTIME"
+class_name = "MinimalRuntime"
+script_name = "aethelgard-minimal-runtime"

@@ -175,7 +175,8 @@ test("a response before the 10,000 ms Siteverify deadline may complete", async (
 
 test("Siteverify accepts Cloudflare's bounded messages field without weakening strict parsing", async () => {
   const valid = createFetcher({ success: true, hostname: config.expectedHostname,
-    action: config.expectedAction, "error-codes": [], messages: [] });
+    action: config.expectedAction, "error-codes": [], messages: [],
+    challenge_ts: "2026-09-13T12:00:00.000Z", metadata: { interactive: false } });
   const invalid = createFetcher({ success: false, "error-codes": ["invalid-input-response"],
     messages: ["validation failed"] });
   const unbounded = createFetcher({ success: false, "error-codes": ["invalid-input-response"],

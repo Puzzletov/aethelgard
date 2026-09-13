@@ -2320,3 +2320,20 @@ historical work.
   Worker cannot retrieve or copy the existing non-exportable production AI and
   signing secrets. Production Pages remains unpromoted, PR #28 remains open,
   and Task 4.12 remains paused.
+
+### 114. Minimal golden-path heartbeat
+
+- **PASS** on 2026-09-13. The permanent isolated control is synthetic TXT to
+  browser-local extraction and PII redaction, one Turnstile verification, one
+  `openai/gpt-oss-20b` request, strict four-field result validation and safe
+  browser rendering. The automated official-test-key mode passed with zero raw
+  PII egress and zero browser storage writes; test credentials are confined to
+  disposable resources and cannot activate in production.
+- The owner independently passed the equivalent real Managed Turnstile smoke
+  at `managed-golden-path.aethelgard-3j9.pages.dev`, including Siteverify, one
+  Groq call and rendered analysis. The shared strict Siteverify schema now
+  accepts Cloudflare's bounded `metadata.interactive` boolean as well as its
+  bounded `messages` field; unknown and unbounded structures still fail closed.
+- The new Groq credential is active in both deployed consumers, so the old key
+  is safe for owner revocation. Production and beta were not changed, PR #28
+  remains open, and Task 4.12 remains paused.

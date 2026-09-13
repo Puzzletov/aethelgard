@@ -15,6 +15,7 @@ const siteverifySchema = z.object({
   cdata: z.string().max(255).optional(),
   metadata: z.object({
     ephemeral_id: z.string().max(128).optional(),
+    interactive: z.boolean().optional(),
     result_with_testing_key: z.boolean().optional(),
   }).strict().optional(),
 }).strict();
