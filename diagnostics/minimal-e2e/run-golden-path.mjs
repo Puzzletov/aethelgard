@@ -15,7 +15,7 @@ const fixture = [`Person | ${originals[0]}`, `Organization | ${originals[1]}`,
   `Customer: ${originals[5]}`,
   "Revenue increased by twelve percent while supplier concentration created delivery risk."].join("\n");
 const format = process.argv[2] ?? "txt";
-if (!["txt", "pdf", "docx", "csv"].includes(format)) throw new Error("unsupported_proof_format");
+if (!["txt", "pdf", "docx", "csv", "pptx"].includes(format)) throw new Error("unsupported_proof_format");
 
 function pdfObject(identifier, body) {
   return Buffer.from(`${identifier} 0 obj\n${body}\nendobj\n`, "ascii");
@@ -56,9 +56,24 @@ function syntheticDocx(text) {
     { name: "_rels/.rels", content: relationships }, { name: "word/document.xml", content: document }]);
 }
 
+function syntheticPptx(text) {
+  const contentTypes = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/ppt/presentation.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"/><Override PartName="/ppt/slides/slide1.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slide+xml"/></Types>`;
+  const rootRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="ppt/presentation.xml"/></Relationships>`;
+  const presentation = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><p:presentation xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"><p:sldIdLst><p:sldId id="256" r:id="rId1"/></p:sldIdLst><p:sldSz cx="9144000" cy="6858000"/><p:notesSz cx="6858000" cy="9144000"/></p:presentation>`;
+  const presentationRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide" Target="slides/slide1.xml"/></Relationships>`;
+  const paragraphs = text.split("\n").map((line) => `<a:p><a:r><a:t>${line}</a:t></a:r></a:p>`).join("");
+  const slide = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"><p:cSld><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr/><p:sp><p:nvSpPr><p:cNvPr id="2" name="Synthetic text"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr/><p:txBody><a:bodyPr/><a:lstStyle/>${paragraphs}</p:txBody></p:sp></p:spTree></p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sld>`;
+  return buildZip([{ name: "[Content_Types].xml", content: contentTypes }, { name: "_rels/.rels", content: rootRels },
+    { name: "ppt/presentation.xml", content: presentation },
+    { name: "ppt/_rels/presentation.xml.rels", content: presentationRels },
+    { name: "ppt/slides/slide1.xml", content: slide }]);
+}
+
 function fixtureBytes() {
   if (format === "pdf") return syntheticPdf(fixture);
   if (format === "docx") return syntheticDocx(fixture);
+  if (format === "pptx") return syntheticPptx(fixture);
   return fixture;
 }
 

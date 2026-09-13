@@ -2372,3 +2372,15 @@ historical work.
   no parser/privacy change was made. One bounded retry passed in 23,505 ms with
   19,011 ms cold local extraction and 1,020 ms provider latency. TXT passed
   afterward. Production and beta remained unchanged.
+
+### 118. Golden-path PPTX input integration
+
+- **PASS** on 2026-09-13. A representative synthetic PPTX passed the existing
+  Office archive preflight, disposable Python parser Worker, source
+  normalization, English gate and local PII redaction. Its sole outbound
+  request contained no original synthetic identifier; one Groq call returned a
+  strict validated analysis and the browser rendered it.
+- The composed Chrome proof completed in 34,097 ms, including 28,963 ms cold
+  local extraction and 912 ms provider latency. TXT passed immediately
+  afterward with zero PII egress and zero browser storage writes. Production,
+  beta and the excluded report/orchestration layers remained unchanged.

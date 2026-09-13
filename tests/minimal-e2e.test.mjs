@@ -97,6 +97,6 @@ test("PDF integration reuses the existing local parser, language gate, and redac
   assert.match(app, /normalizeSourceRecords\(parsed\.value\)/u);
   assert.match(app, /evaluateEnglishLanguage\(sources\)\.accepted/u);
   assert.match(app, /redactRequest\(\{ schema_version: "1", sources \}\)/u);
-  assert.match(html, /accept="\.txt,\.pdf,\.docx,\.csv"/u);
+  assert.match(html, /accept="\.txt,\.pdf,\.docx,\.csv,\.pptx"/u);
   assert.doesNotMatch(app, /openrouter|strawman|steelman|oracle|browser run|signing/iu);
 });
