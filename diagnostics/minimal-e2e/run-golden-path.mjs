@@ -12,6 +12,29 @@ const fixture = [`Person | ${originals[0]}`, `Organization | ${originals[1]}`,
   `Address | ${originals[4]}`, `Email: ${originals[2]}`, `Telephone: ${originals[3]}`,
   `Customer: ${originals[5]}`,
   "Revenue increased by twelve percent while supplier concentration created delivery risk."].join("\n");
+const format = process.argv[2] ?? "txt";
+if (format !== "txt" && format !== "pdf") throw new Error("unsupported_proof_format");
+
+function pdfObject(identifier, body) {
+  return Buffer.from(`${identifier} 0 obj\n${body}\nendobj\n`, "ascii");
+}
+
+function syntheticPdf(text) {
+  const lines = text.split("\n").map((line) => `(${line}) Tj T*`).join(" ");
+  const stream = `BT /F1 9 Tf 50 760 Td 12 TL ${lines} ET`;
+  const objects = [pdfObject(1, "<</Type/Catalog/Pages 2 0 R>>"),
+    pdfObject(2, "<</Type/Pages/Kids[3 0 R]/Count 1>>"),
+    pdfObject(3, "<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Resources<</Font<</F1 4 0 R>>>>/Contents 5 0 R>>"),
+    pdfObject(4, "<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>"),
+    pdfObject(5, `<</Length ${Buffer.byteLength(stream)}>>\nstream\n${stream}\nendstream`)];
+  const parts = [Buffer.from("%PDF-1.7\n", "ascii")];
+  const offsets = [0];
+  let length = parts[0].byteLength;
+  for (const object of objects) { offsets.push(length); parts.push(object); length += object.byteLength; }
+  const rows = offsets.slice(1).map((value) => `${value.toString().padStart(10, "0")} 00000 n `);
+  parts.push(Buffer.from(`xref\n0 6\n0000000000 65535 f \n${rows.join("\n")}\ntrailer<</Size 6/Root 1 0 R>>\nstartxref\n${length}\n%%EOF\n`, "ascii"));
+  return Buffer.concat(parts);
+}
 
 const delay = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
@@ -104,8 +127,8 @@ async function run() {
   const executable = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
   if (!existsSync(executable)) throw new Error("chrome_missing");
   const profile = await mkdtemp(path.join(tmpdir(), "aethelgard-minimal-e2e-"));
-  const fixturePath = path.join(profile, "synthetic-golden-path.txt");
-  await writeFile(fixturePath, fixture, "utf8");
+  const fixturePath = path.join(profile, `synthetic-golden-path.${format}`);
+  await writeFile(fixturePath, format === "pdf" ? syntheticPdf(fixture) : fixture, format === "pdf" ? undefined : "utf8");
   const child = spawn(executable, ["--headless=new", "--disable-gpu", "--no-first-run",
     "--no-default-browser-check", `--user-data-dir=${profile}`, "--remote-debugging-port=0", "about:blank"],
   { windowsHide: true });
@@ -137,7 +160,7 @@ async function run() {
     await client.send("Page.navigate", { url: pageUrl });
     await waitFor(client, "document.readyState === 'complete' && document.querySelector('#document') !== null", 15_000);
     await selectFixture(client, fixturePath);
-    try { await waitFor(client, "!document.querySelector('#analyze').disabled", 15_000); }
+    try { await waitFor(client, "!document.querySelector('#analyze').disabled", 45_000); }
     catch {
       const state = await client.send("Runtime.evaluate", { expression: `({
         status: document.querySelector('#status')?.textContent,
@@ -154,7 +177,7 @@ async function run() {
     socket.close();
     const passed = state.diagnostic?.passed === true && state.resultVisible
       && state.sections.every(Boolean) && state.localStorage === 0 && state.sessionStorage === 0 && state.indexedDb === 0;
-    process.stdout.write(`${JSON.stringify({ passed, total_ms: Date.now() - started,
+    process.stdout.write(`${JSON.stringify({ format, passed, total_ms: Date.now() - started,
       pii_egress: 0, storage_writes: 0, diagnostic: state.diagnostic })}\n`);
     if (!passed) process.exitCode = 1;
   } finally {

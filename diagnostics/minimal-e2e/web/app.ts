@@ -1,5 +1,9 @@
 import { baselineResponseSchema, type BaselineAnalysis } from "../contracts.ts";
+import { selectBrowserDocument } from "../../../frontend/input/document-input.ts";
+import { normalizeSourceRecords } from "../../../frontend/input/normalization/source-record.ts";
+import { runParserWorker } from "../../../frontend/input/parsers/run-parser.ts";
 import { redactRequest } from "../../../frontend/input/redaction/redactor.ts";
+import { evaluateEnglishLanguage } from "../../../frontend/input/validation/language-gate.ts";
 
 declare const __ANALYZE_ENDPOINT__: string;
 declare const __TURNSTILE_SITEKEY__: string;
@@ -53,14 +57,24 @@ function render(analysis: BaselineAnalysis): void {
 }
 
 async function selectFile(file: File): Promise<void> {
-  if (!file.name.toLowerCase().endsWith(".txt") || file.size === 0 || file.size > 15 * 1024 * 1024) {
-    throw new Error("invalid_txt");
+  const selected = selectBrowserDocument([file]);
+  if (!selected.ok || selected.document.format !== "txt" && selected.document.format !== "pdf") {
+    throw new Error("invalid_document");
   }
-  const text = await file.text();
+  let sources;
+  if (selected.document.format === "txt") {
+    const text = await file.text();
+    const lines = text.split(/\r?\n/u).length;
+    sources = [{ schema_version: "1", ordinal: 1,
+      reference: { kind: "txt_lines", line_start: 1, line_end: lines }, content: text }] as const;
+  } else {
+    const parsed = await runParserWorker(selected.document);
+    if (!parsed.ok) throw new Error(`pdf_${parsed.reason}`);
+    sources = normalizeSourceRecords(parsed.value);
+    if (sources === undefined || !evaluateEnglishLanguage(sources).accepted) throw new Error("pdf_invalid");
+  }
   mark("LOCAL_EXTRACT");
-  const lines = text.split(/\r?\n/u).length;
-  const result = redactRequest({ schema_version: "1", sources: [{ schema_version: "1", ordinal: 1,
-    reference: { kind: "txt_lines", line_start: 1, line_end: lines }, content: text }] });
+  const result = redactRequest({ schema_version: "1", sources });
   redactedText = result.sources.map((source) => source.content).join("\n");
   if (result.placeholder_count < 6 || result.must_redact_leaks !== 0) throw new Error("redaction_incomplete");
   mark("LOCAL_REDACT");

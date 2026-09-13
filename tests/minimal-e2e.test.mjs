@@ -89,3 +89,14 @@ test("managed proof changes only Turnstile configuration and remains isolated", 
   assert.match(runtime, /TURNSTILE_SECRET_KEY/u);
   assert.doesNotMatch(runtime, /openrouter|strawman|steelman|oracle|browser run|signing/iu);
 });
+
+test("PDF integration reuses the existing local parser, language gate, and redactor", async () => {
+  const app = await readFile(new URL("../diagnostics/minimal-e2e/web/app.ts", import.meta.url), "utf8");
+  const html = await readFile(new URL("../diagnostics/minimal-e2e/web/index.html", import.meta.url), "utf8");
+  assert.match(app, /runParserWorker\(selected\.document\)/u);
+  assert.match(app, /normalizeSourceRecords\(parsed\.value\)/u);
+  assert.match(app, /evaluateEnglishLanguage\(sources\)\.accepted/u);
+  assert.match(app, /redactRequest\(\{ schema_version: "1", sources \}\)/u);
+  assert.match(html, /accept="\.txt,\.pdf"/u);
+  assert.doesNotMatch(app, /openrouter|strawman|steelman|oracle|browser run|signing/iu);
+});

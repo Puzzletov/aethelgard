@@ -2337,3 +2337,15 @@ historical work.
 - The new Groq credential is active in both deployed consumers, so the old key
   is safe for owner revocation. Production and beta were not changed, PR #28
   remains open, and Task 4.12 remains paused.
+
+### 115. Golden-path PDF input integration
+
+- **PASS** on 2026-09-13. The isolated heartbeat now accepts synthetic PDF via
+  the existing disposable parser Worker, hostile-document preflight,
+  self-hosted Pyodide/pdfminer parser, source normalization, English gate and
+  local redactor. All synthetic identifiers were absent from the sole outbound
+  analysis request; strict one-call Groq validation and browser rendering passed.
+- The composed Chrome proof completed in 30,071 ms, including 24,929 ms cold
+  local extraction and 857 ms provider latency. The immutable TXT control then
+  passed again with zero PII egress. Production and beta were unchanged; later
+  formats and all excluded report/orchestration layers remain absent.

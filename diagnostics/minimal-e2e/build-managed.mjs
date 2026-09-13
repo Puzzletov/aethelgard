@@ -16,5 +16,15 @@ await Promise.all([
     bundle: true, format: "esm", platform: "browser", minify: true, sourcemap: false,
     define: { __TURNSTILE_SITEKEY__: JSON.stringify(sitekey), __TURNSTILE_ACTION__: JSON.stringify("analyze"),
       __ANALYZE_ENDPOINT__: JSON.stringify(endpoint) }, logLevel: "silent" }),
+  build({ entryPoints: [path.join(directory, "..", "..", "frontend", "workers", "parser.worker.ts")],
+    outfile: path.join(output, "parser.worker.mjs"), bundle: true, format: "esm", platform: "browser",
+    target: ["chrome120"], minify: true, sourcemap: false, legalComments: "none", logLevel: "silent",
+    plugins: [{ name: "self-hosted-pyodide", setup(workerBuild) {
+      workerBuild.onResolve({ filter: /^pyodide$/ }, () => ({ path: "/pyodide/pyodide.mjs", external: true }));
+    } }] }),
+  cp(path.join(directory, "..", "..", "frontend", "public", "pyodide"), path.join(output, "pyodide"),
+    { recursive: true }),
+  cp(path.join(directory, "..", "..", "frontend", "public", "parser"), path.join(output, "parser"),
+    { recursive: true }),
 ]);
 process.stdout.write("managed minimal-e2e build PASS\n");
