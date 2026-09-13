@@ -58,7 +58,7 @@ function render(analysis: BaselineAnalysis): void {
 
 async function selectFile(file: File): Promise<void> {
   const selected = selectBrowserDocument([file]);
-  if (!selected.ok || !["txt", "pdf", "docx"].includes(selected.document.format)) {
+  if (!selected.ok || !["txt", "pdf", "docx", "csv"].includes(selected.document.format)) {
     throw new Error("invalid_document");
   }
   let sources;
@@ -100,9 +100,10 @@ async function analyze(): Promise<void> {
   if (!response.ok || !parsed.success) {
     const stage = typeof value === "object" && value !== null && "stage" in value ? String(value.stage) : "UNKNOWN";
     const error = typeof value === "object" && value !== null && "error" in value ? String(value.error) : undefined;
+    const telemetry = typeof value === "object" && value !== null && "telemetry" in value ? value.telemetry : undefined;
     element("status").textContent = `FAIL ${stage} HTTP ${response.status}`;
     window.__AETHELGARD_DIAGNOSTIC__ = Object.freeze({ stages: [...trace], failure: stage,
-      http_status: response.status, error });
+      http_status: response.status, error, telemetry });
     return;
   }
   render(parsed.data.analysis);

@@ -2361,3 +2361,14 @@ historical work.
   local extraction and 1,356 ms provider latency. TXT passed again immediately
   afterward. Production, beta, the AI flow and excluded later layers were not
   changed.
+
+### 117. Golden-path CSV input integration
+
+- **PASS** on 2026-09-13. Synthetic UTF-8 CSV passed the existing text
+  preflight, disposable parser Worker, source normalization, English gate and
+  local redaction. The outbound proof found zero original identifiers; the
+  one-call Groq result validated and rendered in Chrome.
+- The first composed attempt reached Groq but received a provider HTTP failure;
+  no parser/privacy change was made. One bounded retry passed in 23,505 ms with
+  19,011 ms cold local extraction and 1,020 ms provider latency. TXT passed
+  afterward. Production and beta remained unchanged.

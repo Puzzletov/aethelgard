@@ -15,7 +15,7 @@ const fixture = [`Person | ${originals[0]}`, `Organization | ${originals[1]}`,
   `Customer: ${originals[5]}`,
   "Revenue increased by twelve percent while supplier concentration created delivery risk."].join("\n");
 const format = process.argv[2] ?? "txt";
-if (!["txt", "pdf", "docx"].includes(format)) throw new Error("unsupported_proof_format");
+if (!["txt", "pdf", "docx", "csv"].includes(format)) throw new Error("unsupported_proof_format");
 
 function pdfObject(identifier, body) {
   return Buffer.from(`${identifier} 0 obj\n${body}\nendobj\n`, "ascii");
