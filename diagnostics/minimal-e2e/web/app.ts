@@ -58,7 +58,7 @@ function render(analysis: BaselineAnalysis): void {
 
 async function selectFile(file: File): Promise<void> {
   const selected = selectBrowserDocument([file]);
-  if (!selected.ok || selected.document.format !== "txt" && selected.document.format !== "pdf") {
+  if (!selected.ok || !["txt", "pdf", "docx"].includes(selected.document.format)) {
     throw new Error("invalid_document");
   }
   let sources;
@@ -69,9 +69,11 @@ async function selectFile(file: File): Promise<void> {
       reference: { kind: "txt_lines", line_start: 1, line_end: lines }, content: text }] as const;
   } else {
     const parsed = await runParserWorker(selected.document);
-    if (!parsed.ok) throw new Error(`pdf_${parsed.reason}`);
+    if (!parsed.ok) throw new Error(`${selected.document.format}_${parsed.reason}`);
     sources = normalizeSourceRecords(parsed.value);
-    if (sources === undefined || !evaluateEnglishLanguage(sources).accepted) throw new Error("pdf_invalid");
+    if (sources === undefined || !evaluateEnglishLanguage(sources).accepted) {
+      throw new Error(`${selected.document.format}_invalid`);
+    }
   }
   mark("LOCAL_EXTRACT");
   const result = redactRequest({ schema_version: "1", sources });

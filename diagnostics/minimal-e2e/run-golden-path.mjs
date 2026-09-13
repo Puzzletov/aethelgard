@@ -4,6 +4,8 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
+import { buildZip } from "../../frontend/tests/zip-fixture.mjs";
+
 const pageUrl = "https://golden-path.aethelgard-3j9.pages.dev/";
 const analyzeUrl = "https://aethelgard-minimal-edge.justbwas.workers.dev/analyze";
 const originals = ["Evelyn Marlowe", "Northstar Lantern Ltd", "evelyn.marlowe@example.invalid",
@@ -13,7 +15,7 @@ const fixture = [`Person | ${originals[0]}`, `Organization | ${originals[1]}`,
   `Customer: ${originals[5]}`,
   "Revenue increased by twelve percent while supplier concentration created delivery risk."].join("\n");
 const format = process.argv[2] ?? "txt";
-if (format !== "txt" && format !== "pdf") throw new Error("unsupported_proof_format");
+if (!["txt", "pdf", "docx"].includes(format)) throw new Error("unsupported_proof_format");
 
 function pdfObject(identifier, body) {
   return Buffer.from(`${identifier} 0 obj\n${body}\nendobj\n`, "ascii");
@@ -34,6 +36,30 @@ function syntheticPdf(text) {
   const rows = offsets.slice(1).map((value) => `${value.toString().padStart(10, "0")} 00000 n `);
   parts.push(Buffer.from(`xref\n0 6\n0000000000 65535 f \n${rows.join("\n")}\ntrailer<</Size 6/Root 1 0 R>>\nstartxref\n${length}\n%%EOF\n`, "ascii"));
   return Buffer.concat(parts);
+}
+
+function syntheticDocx(text) {
+  const contentTypes = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+<Default Extension="xml" ContentType="application/xml"/>
+<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+</Types>`;
+  const relationships = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`;
+  const paragraphs = text.split("\n").map((line) => `<w:p><w:r><w:t>${line}</w:t></w:r></w:p>`).join("");
+  const document = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${paragraphs}<w:sectPr/></w:body></w:document>`;
+  return buildZip([{ name: "[Content_Types].xml", content: contentTypes },
+    { name: "_rels/.rels", content: relationships }, { name: "word/document.xml", content: document }]);
+}
+
+function fixtureBytes() {
+  if (format === "pdf") return syntheticPdf(fixture);
+  if (format === "docx") return syntheticDocx(fixture);
+  return fixture;
 }
 
 const delay = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
@@ -128,7 +154,7 @@ async function run() {
   if (!existsSync(executable)) throw new Error("chrome_missing");
   const profile = await mkdtemp(path.join(tmpdir(), "aethelgard-minimal-e2e-"));
   const fixturePath = path.join(profile, `synthetic-golden-path.${format}`);
-  await writeFile(fixturePath, format === "pdf" ? syntheticPdf(fixture) : fixture, format === "pdf" ? undefined : "utf8");
+  await writeFile(fixturePath, fixtureBytes(), format === "txt" ? "utf8" : undefined);
   const child = spawn(executable, ["--headless=new", "--disable-gpu", "--no-first-run",
     "--no-default-browser-check", `--user-data-dir=${profile}`, "--remote-debugging-port=0", "about:blank"],
   { windowsHide: true });

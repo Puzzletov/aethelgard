@@ -2349,3 +2349,15 @@ historical work.
   local extraction and 857 ms provider latency. The immutable TXT control then
   passed again with zero PII egress. Production and beta were unchanged; later
   formats and all excluded report/orchestration layers remain absent.
+
+### 116. Golden-path DOCX input integration
+
+- **PASS** on 2026-09-13. A representative synthetic DOCX passed the existing
+  Office archive preflight, disposable Python parser Worker, source
+  normalization, English gate and local PII redaction. Its sole outbound
+  request contained no original synthetic identifier; one Groq call returned a
+  strict validated analysis and the browser rendered it.
+- The composed Chrome proof completed in 25,691 ms, including 20,840 ms cold
+  local extraction and 1,356 ms provider latency. TXT passed again immediately
+  afterward. Production, beta, the AI flow and excluded later layers were not
+  changed.
