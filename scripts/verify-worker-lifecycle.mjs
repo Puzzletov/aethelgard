@@ -28,7 +28,8 @@ async function bundle(entryPoint, parserTimeoutMs, externalPyodide = false) {
     },
   });
   const result = await build({ absWorkingDir: root, entryPoints: [entryPoint], bundle: true,
-    write: false, format: "esm", platform: "browser", target: ["chrome120"], logLevel: "silent", plugins });
+    write: false, format: "esm", platform: "browser", target: ["chrome120"], logLevel: "silent", plugins,
+    define: { "process.env.NEXT_PUBLIC_AETHELGARD_SIMPLE_BETA": '"0"' } });
   if (result.outputFiles.length !== 1) throw new Error("worker_lifecycle_bundle_invalid");
   return result.outputFiles[0].text;
 }
@@ -55,9 +56,8 @@ const content = "This project provides a clear independent analysis of the evide
 const reference = { kind: "txt_lines", line_start: 1, line_end: 1 };
 const parsed = { ok: true, schema_version: "1", format: "txt",
   sources: [{ line_start: 1, line_end: 1, content }] };
-const oracle = { schema_version: "1", executive_summary: "Safe synthetic result.",
-  findings: [{ id: "finding-1", title: "Finding", analysis: "Analysis", confidence: "high", evidence: [reference] }],
-  recommendations: [], risks: [], quantitative_candidates: [], critique_resolutions: [] };
+const analysis = { schema_version: "1", executive_summary: "Safe synthetic result.",
+  findings: ["Finding"], recommendations: ["Review the control."], risks: ["Delivery risk."] };
 const NativeWorker = globalThis.Worker;
 let workersCreated = 0; let workersTerminated = 0; let externalRequests = 0; let nextWorkerId = 0;
 const lifecycleEvents = [];
@@ -94,7 +94,7 @@ async function parserCrash() {
   const before = { created: workersCreated, terminated: workersTerminated };
   const eventStart = lifecycleEvents.length; const identities = []; let attempts = 0; let sends = 0;
   let recovered;
-  const result = await runBrowserMission(document(), "full", ["text"], "token", () => undefined, {
+  const result = await runBrowserMission(document(), "full", "token", () => undefined, {
     parseDocument: async value => {
       const parsedResult = await runParserWorker(value, () => {
         attempts += 1;
@@ -108,20 +108,20 @@ async function parserCrash() {
     },
     redact: async request => ({ schema_version: "1", sources: request.sources,
       placeholder_count: 0, must_redact_leaks: 0 }),
-    send: async () => { sends += 1; return oracle; },
+    send: async () => { sends += 1; return analysis; },
   });
-  return { attempts, sends, outcome: "ok" in result.result ? result.result : "oracle", identities,
+  return { attempts, sends, outcome: "ok" in result.result ? result.result : "analysis", identities,
     events: lifecycleEvents.slice(eventStart), recovered, ...counts(before) };
 }
 async function redactorCrash() {
   const before = { created: workersCreated, terminated: workersTerminated };
   let parserAttempts = 0; let redactorAttempts = 0; let sends = 0;
-  const result = await runBrowserMission(document(), "full", ["text"], "token", () => undefined, {
+  const result = await runBrowserMission(document(), "full", "token", () => undefined, {
     parseDocument: value => runParserWorker(value, () => { parserAttempts += 1;
       return temporaryWorker('self.onmessage=()=>self.postMessage(' + JSON.stringify(parsed) + ')'); }),
     redact: request => runRedactionWorker(request, () => { redactorAttempts += 1;
       return temporaryWorker('self.onmessage=()=>{throw new Error("' + privateCrash + '")}'); }),
-    send: async () => { sends += 1; return oracle; },
+    send: async () => { sends += 1; return analysis; },
   });
   return { parser_attempts: parserAttempts, redactor_attempts: redactorAttempts,
     sends, outcome: result.result, ...counts(before) };
@@ -133,11 +133,11 @@ async function parserTimeout() {
   timeoutDocument.file = { arrayBuffer: async () => { const value = new TextEncoder().encode(content).buffer;
     buffers.push(value); return value; } };
   const started = performance.now();
-  const result = await runBrowserMission(timeoutDocument, "full", ["text"], "token", () => undefined, {
+  const result = await runBrowserMission(timeoutDocument, "full", "token", () => undefined, {
     parseDocument: value => runParserWorkerTimed(value, () => { attempts += 1;
       return temporaryWorker("self.onmessage=()=>{while(true){}}"); }),
     redact: async () => { redactions += 1; throw new Error("redaction_forbidden"); },
-    send: async () => { sends += 1; return oracle; },
+    send: async () => { sends += 1; return analysis; },
   });
   const elapsedMs = Math.round(performance.now() - started);
   return { attempts, redactions, sends, elapsed_ms: elapsedMs,
@@ -150,7 +150,7 @@ async function parserAllocation(recover) {
   const value = document();
   value.file = { arrayBuffer: async () => { const buffer = new TextEncoder().encode(content).buffer;
     buffers.push(buffer); return buffer; } };
-  const result = await runBrowserMission(value, "full", ["text"], "token", () => undefined, {
+  const result = await runBrowserMission(value, "full", "token", () => undefined, {
     parseDocument: selected => runParserWorker(selected, () => {
       attempts += 1;
       return attempts === 1 || !recover ? allocationWorker(true)
@@ -158,20 +158,20 @@ async function parserAllocation(recover) {
     }),
     redact: async request => { redactions += 1; return { schema_version: "1", sources: request.sources,
       placeholder_count: 0, must_redact_leaks: 0 }; },
-    send: async () => { sends += 1; return oracle; },
+    send: async () => { sends += 1; return analysis; },
   });
   return { attempts, redactions, sends, buffers_released: buffers.every(buffer => buffer.byteLength === 0),
-    outcome: "ok" in result.result ? result.result : "oracle", ...counts(before) };
+    outcome: "ok" in result.result ? result.result : "analysis", ...counts(before) };
 }
 async function redactorAllocation() {
   const before = { created: workersCreated, terminated: workersTerminated };
   let parserAttempts = 0; let redactorAttempts = 0; let sends = 0;
-  const result = await runBrowserMission(document(), "full", ["text"], "token", () => undefined, {
+  const result = await runBrowserMission(document(), "full", "token", () => undefined, {
     parseDocument: selected => runParserWorker(selected, () => { parserAttempts += 1;
       return temporaryWorker('self.onmessage=()=>self.postMessage(' + JSON.stringify(parsed) + ')'); }),
     redact: request => runRedactionWorker(request, () => { redactorAttempts += 1;
       return allocationWorker(false); }),
-    send: async () => { sends += 1; return oracle; },
+    send: async () => { sends += 1; return analysis; },
   });
   return { parser_attempts: parserAttempts, redactor_attempts: redactorAttempts,
     sends, outcome: result.result, ...counts(before) };
@@ -185,9 +185,9 @@ export async function runProof() {
     const allocationTerminal = await parserAllocation(false);
     const redactorAllocationResult = await redactorAllocation();
     const expectedSafeMode = { schema_version: "1", ok: false, category: "privacy",
-      code: "redaction_failed", message: "Private information could not be removed safely.", retry: "fresh_document" };
+      code: "redaction_failed", message: "Document could not be processed.", retry: "fresh_document" };
     const expectedParserMode = { schema_version: "1", ok: false, category: "client_resource",
-      code: "parser_resource_failed", message: "This browser could not process the document safely.",
+      code: "parser_resource_failed", message: "Document could not be processed.",
       retry: "fresh_document" };
     const allocation = { bytes: 50331648, recovery: allocationRecovery,
       terminal: allocationTerminal, redactor: redactorAllocationResult };
@@ -195,7 +195,7 @@ export async function runProof() {
       external_requests: externalRequests };
     const crashDetailLeaked = JSON.stringify(result).includes(privateCrash);
     return { ...result, crash_detail_leaked: crashDetailLeaked,
-      passed: parser.attempts === 2 && parser.sends === 1 && parser.outcome === "oracle"
+      passed: parser.attempts === 2 && parser.sends === 1 && parser.outcome === "analysis"
         && parser.workers_created === 2 && parser.workers_terminated === 2
         && parser.identities.length === 2 && parser.identities[0] !== parser.identities[1]
         && JSON.stringify(parser.events) === JSON.stringify(['create:' + parser.identities[0],
@@ -212,7 +212,7 @@ export async function runProof() {
         && JSON.stringify(timeout.outcome) === JSON.stringify(expectedParserMode)
         && allocationRecovery.attempts === 2 && allocationRecovery.redactions === 1
         && allocationRecovery.sends === 1 && allocationRecovery.buffers_released
-        && allocationRecovery.outcome === "oracle"
+        && allocationRecovery.outcome === "analysis"
         && allocationTerminal.attempts === 2 && allocationTerminal.redactions === 0
         && allocationTerminal.sends === 0 && allocationTerminal.buffers_released
         && JSON.stringify(allocationTerminal.outcome) === JSON.stringify(expectedParserMode)

@@ -1,9 +1,9 @@
 import { serializeAnalyzeRequest, type NormalizedSourceRecord } from "../../src/contracts/analyze";
-import { analyzeResponseSchema, MAX_ANALYZE_RESPONSE_BYTES,
-  type AnalyzeResponse } from "../../src/contracts/analyze-response";
-import { parseDashboardOracle, type OracleOutput } from "../../src/contracts/oracle";
+import {
+  finishedAnalysisSchema,
+  type FinishedAnalysis,
+} from "../../src/contracts/finished-analysis";
 import { safeModeSchema, type SafeMode } from "../../src/contracts/safe-mode";
-import type { ReportModel } from "../../src/contracts/report-model";
 import type { SelectedDocument } from "../input/document-input";
 import { normalizeSourceRecords } from "../input/normalization/source-record";
 import type { NormalizedSourceRecord as LocalSourceRecord } from "../input/normalization/source-record";
@@ -13,55 +13,46 @@ import { evaluateEnglishLanguage } from "../input/validation/language-gate";
 import { enforceWordLimit } from "../input/validation/word-limit";
 
 const ANALYSIS_WALL_MS = 180_000;
-export const ANALYZE_ENDPOINT = "https://aethelgard.justbwas.workers.dev/analyze";
+const PUBLIC_ANALYZE_ENDPOINT = "https://aethelgard.justbwas.workers.dev/analyze";
+const BETA_ANALYZE_ENDPOINT = "https://aethelgard-managed-golden-edge.justbwas.workers.dev/analyze";
+export const ANALYZE_ENDPOINT = process.env.NEXT_PUBLIC_AETHELGARD_SIMPLE_BETA === "1"
+  ? BETA_ANALYZE_ENDPOINT : PUBLIC_ANALYZE_ENDPOINT;
 
-export type MissionStage = "local_parse" | "language" | "redaction" | "verification" | "analysis" | "complete";
-export type MissionResult = OracleOutput | ReportModel | SafeMode;
+export type MissionStage = "preparing" | "analyzing" | "reporting" | "complete";
+export type MissionResult = FinishedAnalysis | SafeMode;
 export interface MissionOutcome {
   readonly result: MissionResult;
   readonly sources: readonly NormalizedSourceRecord[];
-  readonly response?: AnalyzeResponse;
 }
 type Focus = "full" | "financial" | "strategic" | "security";
-type Output = "pdf" | "xlsx" | "text";
 
 export interface MissionDependencies {
   readonly parseDocument: (document: SelectedDocument) => Promise<ParserOperationResult>;
   readonly redact: (request: Parameters<typeof runRedactionWorker>[0]) => Promise<RedactionOperationResult>;
-  readonly send: (body: Uint8Array, sources: Parameters<typeof parseDashboardOracle>[1]) =>
-    Promise<MissionResult | AnalyzeResponse>;
+  readonly send: (body: Uint8Array) => Promise<MissionResult>;
 }
 
 const DOCUMENT_FAILURE = Object.freeze({ schema_version: "1", ok: false, category: "document",
-  code: "invalid_document", message: "The document could not be processed safely.", retry: "fresh_document" } as const);
+  code: "invalid_document", message: "Document could not be processed.", retry: "fresh_document" } as const);
 const LANGUAGE_FAILURE = Object.freeze({ schema_version: "1", ok: false, category: "language",
   code: "unsupported_language", message: "Use a clearly English document.", retry: "fresh_document" } as const);
 const PRIVACY_FAILURE = Object.freeze({ schema_version: "1", ok: false, category: "privacy",
-  code: "redaction_failed", message: "Private information could not be removed safely.", retry: "fresh_document" } as const);
+  code: "redaction_failed", message: "Document could not be processed.", retry: "fresh_document" } as const);
 const PARSER_RESOURCE_FAILURE = Object.freeze({ schema_version: "1", ok: false, category: "client_resource",
-  code: "parser_resource_failed", message: "This browser could not process the document safely.",
-  retry: "fresh_document" } as const);
+  code: "parser_resource_failed", message: "Document could not be processed.", retry: "fresh_document" } as const);
 const ANALYSIS_FAILURE = Object.freeze({ schema_version: "1", ok: false, category: "analysis",
-  code: "analysis_unavailable", message: "Analysis is unavailable. Try again later.", retry: "later" } as const);
+  code: "analysis_unavailable", message: "Analysis temporarily unavailable.", retry: "later" } as const);
 
-async function defaultSend(
-  body: Uint8Array, sources: Parameters<typeof parseDashboardOracle>[1],
-): Promise<MissionResult | AnalyzeResponse> {
+async function defaultSend(body: Uint8Array): Promise<MissionResult> {
   try {
     const response = await fetch(ANALYZE_ENDPOINT, { method: "POST", headers: { "content-type": "application/json" },
       body: new TextDecoder().decode(body), signal: AbortSignal.timeout(ANALYSIS_WALL_MS) });
-    const declared = Number(response.headers.get("content-length") ?? "0");
-    if (!response.ok || declared > MAX_ANALYZE_RESPONSE_BYTES) return ANALYSIS_FAILURE;
-    const bytes = new Uint8Array(await response.arrayBuffer());
-    if (bytes.byteLength > MAX_ANALYZE_RESPONSE_BYTES) return ANALYSIS_FAILURE;
-    const value: unknown = JSON.parse(new TextDecoder().decode(bytes));
+    if (!response.ok) return ANALYSIS_FAILURE;
+    const value: unknown = await response.json();
     const safe = safeModeSchema.safeParse(value);
     if (safe.success) return safe.data;
-    const complete = analyzeResponseSchema.safeParse(value);
-    if (!complete.success || !reportEvidenceBelongs(complete.data.dashboard, sources)) {
-      return ANALYSIS_FAILURE;
-    }
-    return complete.data;
+    const complete = finishedAnalysisSchema.safeParse(value);
+    return complete.success ? complete.data : ANALYSIS_FAILURE;
   } catch { return ANALYSIS_FAILURE; }
 }
 
@@ -91,41 +82,26 @@ async function parseWithRecovery(
 }
 
 export async function runBrowserMission(
-  document: SelectedDocument, focus: Focus, outputs: readonly Output[], token: string,
-  onStage: (stage: MissionStage) => void, dependencies: MissionDependencies = DEFAULT_DEPENDENCIES,
+  document: SelectedDocument, focus: Focus, token: string, onStage: (stage: MissionStage) => void,
+  dependencies: MissionDependencies = DEFAULT_DEPENDENCIES,
 ): Promise<MissionOutcome> {
-  onStage("local_parse");
+  onStage("preparing");
   const parsed = await parseWithRecovery(document, dependencies.parseDocument);
   if (!parsed.ok && parsed.reason !== "invalid") return { result: PARSER_RESOURCE_FAILURE, sources: [] };
   const local = localDocument(parsed);
   if (!isLocalSources(local)) return { result: local, sources: [] };
-  onStage("language");
   if (!evaluateEnglishLanguage(local).accepted) return { result: LANGUAGE_FAILURE, sources: [] };
-  onStage("redaction");
   let redaction: RedactionOperationResult;
   try { redaction = await dependencies.redact({ schema_version: "1", sources: local }); }
   catch { return { result: PRIVACY_FAILURE, sources: [] }; }
   if ("ok" in redaction) return { result: PRIVACY_FAILURE, sources: [] };
-  onStage("verification");
   let body: Uint8Array;
   try { body = serializeAnalyzeRequest({ redaction_result: redaction, turnstile_token: token,
-    focus, requested_outputs: [...outputs] }); } catch { return { result: PRIVACY_FAILURE, sources: [] }; }
-  onStage("analysis");
-  let result: MissionResult | AnalyzeResponse;
-  try { result = await dependencies.send(body, redaction.sources); }
-  catch { result = ANALYSIS_FAILURE; }
+    focus, requested_outputs: ["text"] }); } catch { return { result: PRIVACY_FAILURE, sources: [] }; }
+  onStage("analyzing");
+  let result: MissionResult;
+  try { result = await dependencies.send(body); } catch { result = ANALYSIS_FAILURE; }
+  onStage("reporting");
   onStage("complete");
-  return "dashboard" in result
-    ? { result: result.dashboard, sources: redaction.sources, response: result }
-    : { result, sources: redaction.sources };
-}
-
-function reportEvidenceBelongs(
-  report: ReportModel, sources: Parameters<typeof parseDashboardOracle>[1],
-): boolean {
-  const allowed = new Set(sources.map((source) => JSON.stringify(source.reference)));
-  const evidence = [...report.findings, ...report.recommendations, ...report.risks]
-    .flatMap((item) => item.evidence);
-  const chartEvidence = report.charts.flatMap((chart) => chart.points.flatMap((point) => point.evidence));
-  return [...evidence, ...chartEvidence].every((reference) => allowed.has(JSON.stringify(reference)));
+  return { result, sources: redaction.sources };
 }

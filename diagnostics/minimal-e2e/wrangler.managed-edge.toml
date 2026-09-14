@@ -10,6 +10,7 @@ enabled = false
 
 [vars]
 ALLOWED_ORIGIN = "https://managed-golden-path.aethelgard-3j9.pages.dev"
+BETA_ALLOWED_ORIGIN = "https://beta.aethelgard-3j9.pages.dev"
 
 [[durable_objects.bindings]]
 name = "MINIMAL_RUNTIME"

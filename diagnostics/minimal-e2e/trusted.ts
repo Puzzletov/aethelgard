@@ -17,6 +17,7 @@ interface Env {
   readonly TURNSTILE_SECRET_KEY?: string;
   readonly TURNSTILE_EXPECTED_ACTION?: string;
   readonly TURNSTILE_EXPECTED_HOSTNAME?: string;
+  readonly TURNSTILE_BETA_HOSTNAME?: string;
 }
 
 function turnstileSettings(env: Env) {
@@ -24,7 +25,7 @@ function turnstileSettings(env: Env) {
     secret: env.TURNSTILE_SECRET_KEY,
     expectedAction: env.TURNSTILE_EXPECTED_ACTION ?? "analyze",
     expectedHostname: env.TURNSTILE_EXPECTED_HOSTNAME ?? "",
-    betaHostname: env.TURNSTILE_EXPECTED_HOSTNAME ?? "",
+    betaHostname: env.TURNSTILE_BETA_HOSTNAME ?? env.TURNSTILE_EXPECTED_HOSTNAME ?? "",
   };
   if (env.TURNSTILE_TEST_SECRET !== undefined) return { secret: env.TURNSTILE_TEST_SECRET,
     expectedAction: "test", expectedHostname: "example.com", betaHostname: "example.com" };

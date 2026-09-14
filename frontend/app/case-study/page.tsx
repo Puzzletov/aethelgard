@@ -15,16 +15,16 @@ const decisions = [
     body: "The secret-free edge calls the private TrustedRuntime Durable Object directly through an external binding. A disposable proof showed that an intermediate dispatcher added no required security property, so it was removed.",
   },
   {
-    title: "Reasoning has a fixed shape",
-    body: "Only redacted source records enter the fixed Strawman, Steelman and Oracle sequence. Groq is attempted first; OpenRouter Free is the only bounded fallback. Invalid output, unavailable privacy controls or exhausted free capacity stops safely.",
+    title: "Reasoning stays inside one request",
+    body: "Only redacted source records enter one bounded Groq request. The model challenges a weak interpretation, considers its strongest alternative and returns one cohesive analysis. Invalid output or unavailable free capacity stops safely.",
   },
   {
-    title: "Rendering stays service-owned",
-    body: "TrustedRuntime builds a strict report model and escaped HTML, then Cloudflare Browser Run renders the PDF. User document bytes never enter Browser Run, and report generation remains bounded and ephemeral.",
+    title: "The MVP stops at the finished analysis",
+    body: "TrustedRuntime validates one strict finished-analysis schema and the browser renders it directly. Report generation and export layers remain inactive until separately reintroduced and proven.",
   },
   {
-    title: "Integrity is independently testable",
-    body: "The final PDF is hashed and signed over its exact bytes with Ed25519 and ML-DSA-65. A detached manifest, retained public keys, a browser verifier and a dependency-free CLI require the digest and both signatures to pass together.",
+    title: "The boundary remains independently testable",
+    body: "Deterministic browser proofs verify that raw documents, filenames, unredacted text and PII mappings do not enter the analysis request.",
   },
 ] as const;
 
@@ -50,8 +50,8 @@ export default function CaseStudyPage() {
       <section aria-labelledby="flow-title"><h2 id="flow-title">Runtime path</h2>
         <ol className="architecture-flow" aria-label="Aethelgard request and report flow">
           <li>Browser-local validation, parsing and redaction</li><li>Secret-free edge Worker</li>
-          <li>Private TrustedRuntime Durable Object</li><li>Redacted AI reasoning</li>
-          <li>Browser Run report rendering</li><li>Exact-byte hybrid signing</li><li>In-memory browser download</li>
+          <li>Private TrustedRuntime Durable Object</li><li>One redacted Groq analysis</li>
+          <li>Strict response validation</li><li>Browser-rendered finished analysis</li>
         </ol></section>
 
       <section aria-labelledby="decisions-title"><h2 id="decisions-title">Decisions and evidence</h2>

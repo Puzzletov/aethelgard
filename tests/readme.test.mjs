@@ -7,7 +7,7 @@ const root = new URL("../", import.meta.url);
 test("README is bounded, current and contains every required entry-point claim", async () => {
   const readme = await readFile(new URL("README.md", root), "utf8");
   assert.ok([...readme].length <= 20_000);
-  for (const phrase of ["Strawman → Steelman → Oracle", "Raw files, unredacted extracted text",
+  for (const phrase of ["one bounded Groq analysis request", "Raw files, unredacted extracted text",
     "GBP 0.00 and USD 0.00", "desktop\\s+Chrome and Edge", "does not claim to malware-scan",
     "Phase 4 trust and portfolio finish is\\s+in\\s+progress"]) assert.match(readme, new RegExp(phrase, "u"));
   assert.doesNotMatch(readme, /Cloud Run|FastAPI|Google Secret|email delivery|BYOK|Sentry/iu);

@@ -11,6 +11,7 @@ enabled = false
 [vars]
 TURNSTILE_EXPECTED_ACTION = "analyze"
 TURNSTILE_EXPECTED_HOSTNAME = "managed-golden-path.aethelgard-3j9.pages.dev"
+TURNSTILE_BETA_HOSTNAME = "beta.aethelgard-3j9.pages.dev"
 
 [exports.MinimalRuntime]
 type = "durable-object"

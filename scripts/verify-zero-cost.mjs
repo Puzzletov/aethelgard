@@ -23,9 +23,9 @@ required(/workers_dev = false[\s\S]*preview_urls = false/u.test(privateConfig),
   "The private runtime gained a public target.");
 required(/pages_build_output_dir = "\.\/out"/u.test(pagesConfig), "Pages is not static.");
 required(/8 \* 60 \* 1_000/u.test(quota), "The Browser Run daily guard changed.");
-required(/MAX_PROVIDER_ATTEMPTS_TOTAL = 6/u.test(orchestrator), "The provider attempt bound changed.");
-required(/openrouter_free/u.test(orchestrator) && !/paid|BYOK/iu.test(orchestrator),
-  "The provider route is not free-only.");
+required(/MAX_PROVIDER_ATTEMPTS_TOTAL = 1/u.test(orchestrator), "The provider attempt bound changed.");
+required(!/openrouter_free/u.test(orchestrator) && !/paid|BYOK/iu.test(orchestrator),
+  "The one-call provider route is not free-only.");
 required(/runs-on: ubuntu-24\.04/u.test(workflow) && !/self-hosted/u.test(workflow),
   "CI is not on the approved standard runner.");
 

@@ -138,7 +138,7 @@ test("request builder rejects unchecked intermediates and emits one bounded call
   const request = createOracleRequest("openrouter_free", sources, strawmanValue, steelmanValue);
   assert.ok(request);
   assert.equal(request.model_id, "openrouter/free");
-  assert.equal(request.max_output_tokens, 4_096);
+  assert.equal(request.max_output_tokens, 2_048);
   assert.equal(createOracleRequest("groq", sources, { ...strawmanValue, extra: true }, steelmanValue), undefined);
   assert.equal(createOracleRequest("groq", sources, strawmanValue, { ...steelmanValue, extra: true }), undefined);
 });

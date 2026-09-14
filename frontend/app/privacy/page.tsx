@@ -7,20 +7,19 @@ export const metadata: Metadata = {
 
 const processing = [
   ["Browser-local", "The raw document, unredacted extracted text and PII placeholder mapping remain in browser memory."],
-  ["One analysis request", "Configured identifiers are removed locally. Redacted source records, which may still be personal data, pass through Cloudflare to Groq or the eligible OpenRouter fallback. A Turnstile token and necessary technical request metadata are also processed."],
-  ["Aethelgard application state", "No document, prompt, report, account or analysis history is stored. Only the UTC date and aggregate Browser Run milliseconds persist for anonymous quota enforcement."],
+  ["One analysis request", "Configured identifiers are removed locally. Redacted source records, which may still be personal data, pass through Cloudflare to Groq. A Turnstile token and necessary technical request metadata are also processed."],
+  ["Aethelgard application state", "No document, prompt, report, account or analysis history is stored."],
 ] as const;
 
 const purposes = [
-  "Provide the document analysis and requested report.",
+  "Provide the requested document analysis.",
   "Verify that a request is not automated abuse before expensive processing.",
   "Secure and deliver the service and enforce its free usage bounds.",
 ] as const;
 
 const recipients = [
-  "Cloudflare delivers the site, routes the redacted request, evaluates Turnstile signals, executes the private runtime and renders requested PDF reports. Turnstile does not receive the document or form contents.",
+  "Cloudflare delivers the site, routes the redacted request, evaluates Turnstile signals and executes the private runtime. Turnstile does not receive the document or form contents.",
   "Groq is the first AI provider and receives only the bounded redacted analysis request.",
-  "OpenRouter is contacted only after an eligible Groq failure. Its free router may select a downstream model endpoint that satisfies the request's no-training and zero-data-retention filters. The exact downstream provider can vary.",
 ] as const;
 
 const rights = [
@@ -64,8 +63,8 @@ export default function PrivacyPage() {
         <ul>{recipients.map((recipient) => <li key={recipient}>{recipient}</li>)}</ul>
       </section>
       <section aria-labelledby="transfers-title"><h2 id="transfers-title">Transfers and retention</h2><div>
-        <p>Provider processing may occur outside the EEA and UK. Cloudflare, Groq and OpenRouter publish contractual transfer safeguards, including Standard Contractual Clauses, but their application to the operator's accounts must be confirmed before release. No EU-only routing is claimed.</p>
-        <p>Groq and OpenRouter retain operational usage metadata. Per-request OpenRouter routing requires zero content retention; Groq account-level Zero Data Retention still requires owner confirmation. Provider handling is separate from Aethelgard application storage.</p>
+        <p>Provider processing may occur outside the EEA and UK. Cloudflare and Groq publish contractual transfer safeguards, including Standard Contractual Clauses, but their application to the operator's accounts must be confirmed before release. No EU-only routing is claimed.</p>
+        <p>Groq may retain operational usage metadata. Its account-level Zero Data Retention setting still requires release confirmation. Provider handling is separate from Aethelgard application storage.</p>
       </div></section>
       <section aria-labelledby="cookies-title"><h2 id="cookies-title">Cookies and security signals</h2><div>
         <p>Aethelgard has no analytics, advertising or marketing trackers and writes no user-derived browser storage. Turnstile processes IP address, browser and security signals only when request verification is shown.</p>
@@ -81,7 +80,7 @@ export default function PrivacyPage() {
         <p>The service is intended for professional use and is not directed to children. Local redaction is risk reduction, not a guarantee. Until an Article 9 condition and contractual scope are approved, do not use the pre-release service for special-category data or children's data.</p>
       </div></section>
       <section aria-labelledby="security-title"><h2 id="security-title">Security and limits</h2><div>
-        <p>Controls include browser-local preprocessing, isolated parsers, local identifier redaction, strict request and response schemas, fail-closed processing, no application-content logging and exact-byte hybrid report signatures.</p>
+        <p>Controls include browser-local preprocessing, isolated parsers, local identifier redaction, strict request and response schemas, fail-closed processing and no application-content logging.</p>
         <p>No security control is absolute. A compromised browser or device can defeat the local boundary, and source files are not claimed to be malware-scanned.</p>
       </div></section>
     </main>

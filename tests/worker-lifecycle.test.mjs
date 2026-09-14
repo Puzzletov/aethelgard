@@ -21,7 +21,7 @@ test("parser and redactor crashes obey exact browser lifecycle policy", { timeou
   for (const result of proof.results) {
     assert.equal(result.parser.attempts, 2);
     assert.equal(result.parser.sends, 1);
-    assert.equal(result.parser.outcome, "oracle");
+    assert.equal(result.parser.outcome, "analysis");
     assert.equal(result.parser.workers_created, 2);
     assert.equal(result.parser.workers_terminated, 2);
     assert.equal(result.parser.identities.length, 2);
@@ -35,7 +35,7 @@ test("parser and redactor crashes obey exact browser lifecycle policy", { timeou
         content: "This project provides a clear independent analysis of the evidence and explains every recommendation in plain English for careful review." }] });
     assert.deepEqual(result.redactor, { parser_attempts: 1, redactor_attempts: 1, sends: 0,
       outcome: { schema_version: "1", ok: false, category: "privacy", code: "redaction_failed",
-        message: "Private information could not be removed safely.", retry: "fresh_document" },
+        message: "Document could not be processed.", retry: "fresh_document" },
       workers_created: 2, workers_terminated: 2 });
     assert.equal(result.timeout.attempts, 2);
     assert.equal(result.timeout.redactions, 0);
@@ -46,10 +46,10 @@ test("parser and redactor crashes obey exact browser lifecycle policy", { timeou
     assert.ok(result.timeout.elapsed_ms >= 180 && result.timeout.elapsed_ms <= 2_000);
     assert.deepEqual(result.timeout.outcome, { schema_version: "1", ok: false,
       category: "client_resource", code: "parser_resource_failed",
-      message: "This browser could not process the document safely.", retry: "fresh_document" });
+      message: "Document could not be processed.", retry: "fresh_document" });
     assert.equal(result.allocation.bytes, 50_331_648);
     assert.deepEqual(result.allocation.recovery, { attempts: 2, redactions: 1, sends: 1,
-      buffers_released: true, outcome: "oracle", workers_created: 2, workers_terminated: 2 });
+      buffers_released: true, outcome: "analysis", workers_created: 2, workers_terminated: 2 });
     assert.deepEqual(result.allocation.terminal, { attempts: 2, redactions: 0, sends: 0,
       buffers_released: true, outcome: result.timeout.outcome,
       workers_created: 2, workers_terminated: 2 });

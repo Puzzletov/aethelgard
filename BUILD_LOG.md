@@ -2411,3 +2411,28 @@ historical work.
   Production promotion and Task 4.12 remain paused; OpenRouter, report
   generation, Browser Run, signing, charts, exports and PII reinsertion are not
   active in this beta correction.
+
+### 121. One-call MVP beta integration
+
+- **PASS** on 2026-09-14. The polished six-format browser mission now uses the
+  proven local preflight/parser/redaction path, real Managed Turnstile, exactly
+  one `openai/gpt-oss-20b` request, strict `S-FINISHED-ANALYSIS` validation and
+  direct browser rendering. Full, Financial, Strategic and Security select four
+  fixed prompt variants; no methodology labels or inactive report/export layers
+  appear in the live mission.
+- The official-test Turnstile heartbeat passed synthetic TXT, PDF, DOCX, CSV,
+  PPTX and XLSX sequentially, followed by TXT again. Every journey made one
+  Groq call, rendered the result, wrote no browser application storage and sent
+  zero original identifiers, filenames, unredacted text or PII mappings.
+- Static beta deployment `64921768-17ed-4f2a-b150-1fd3d630d9d1` is live at
+  `https://beta.aethelgard-3j9.pages.dev`. All six public routes return HTTP
+  200; the artifact contains the real Aethelgard Turnstile site key, only the
+  isolated managed-edge analysis URL, and no official test credentials. The
+  managed edge accepts only the beta/heartbeat origins and the managed runtime
+  accepts only their exact Turnstile hostnames.
+- Focused one-call, injection, privacy, lifecycle, dashboard and Chrome/Edge
+  journey proofs pass. Frontend tests (83/83), strict typecheck/lint,
+  architecture lint/hash, Doctor, deterministic beta build and exact-zero gate
+  pass. Production Pages remains deployment `07425838-...` from source
+  `18c84b9`; it was not promoted. PR #28 remains the review vehicle and Task
+  4.12 remains paused pending owner beta confirmation.

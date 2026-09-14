@@ -3,13 +3,13 @@ import { z } from "zod";
 export const AI_REQUEST_MAX_BYTES = 524_288;
 export const AI_RESPONSE_MAX_BYTES = 262_144;
 export const AI_TIMEOUT_MS = 30_000;
-export const MODEL_OUTPUT_TOKENS = 4_096;
+export const MODEL_OUTPUT_TOKENS = 2_048;
 export const APPROVED_MODEL_IDS = Object.freeze({
   groq: "openai/gpt-oss-20b",
   openrouter_free: "openrouter/free",
 } as const);
 
-const stageSchema = z.enum(["strawman", "steelman", "oracle"]);
+const stageSchema = z.enum(["analysis", "strawman", "steelman", "oracle"]);
 const providerSchema = z.enum(["groq", "openrouter_free"]);
 const messageSchema = <T extends "system" | "user">(role: T) => z.strictObject({
   role: z.literal(role),
