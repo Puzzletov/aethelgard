@@ -35,13 +35,13 @@ def parse_pdf(path):
             if page_index > MAX_PDF_PAGES:
                 raise ValueError("page_count_limit")
             text = page_text(layout)
+            if not text:
+                continue
             total_points += len(text)
             if total_points > MAX_DOCUMENT_CODE_POINTS:
                 raise ValueError("document_limit")
             pages.append({"page": page_index, "content": text})
-    if not pages:
-        raise ValueError("no_pages")
-    if total_points == 0:
+    if not pages or total_points == 0:
         raise ValueError("no_text")
     return json.dumps(
         {"schema_version": "1", "format": "pdf", "pages": pages},

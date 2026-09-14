@@ -20,12 +20,13 @@ function records(content) {
 }
 
 const clearEnglish = "This project provides a clear independent analysis of the evidence and explains every recommendation in plain English for careful review.";
+const zeroPiiEnglish = "This independent business analysis explains revenue growth, supplier concentration, delivery risk, internal controls, and practical recommendations for executive review.";
 const internationalNames = "This project provides a clear independent analysis of the evidence and explains every recommendation in plain English for careful review with Renée Dubois and José Álvarez named as reviewers.";
 const clearFrench = "Cette analyse indépendante explique les preuves, identifie chaque risque important et présente des recommandations pratiques pour aider l'équipe à prendre une décision prudente.";
 const mixed = "The review explains the evidence and material risks for the project. Cette analyse explique aussi les preuves et les risques importants pour le projet.";
 
 test("clear English and English with international names pass", () => {
-  for (const content of [clearEnglish, internationalNames]) {
+  for (const content of [clearEnglish, internationalNames, zeroPiiEnglish]) {
     const result = evaluateEnglishLanguage(records(content));
     assert.equal(result.accepted, true);
     assert.equal(result.language, "eng");

@@ -57,6 +57,26 @@ test("valid local flow sends only canonical redacted sources and reports every s
   assert.equal(result.sources[0].content.includes("[PERSON_1]"), true);
 });
 
+test("zero-PII PDF and TXT content reaches exactly one analysis unchanged", async () => {
+  for (const format of ["pdf", "txt"]) {
+    const safe = "This independent business analysis explains revenue growth, supplier concentration, delivery risk, internal controls, and practical recommendations for executive review.";
+    const parsedSafe = { ok: true, value: format === "pdf"
+      ? { ok: true, schema_version: "1", format, pages: [{ page: 1, content: safe }] }
+      : { ok: true, schema_version: "1", format, sources: [{ line_start: 1, line_end: 1, content: safe }] } };
+    let sends = 0;
+    let outbound;
+    const result = await runBrowserMission({ ...document, format }, "full", "token", () => undefined, {
+      parseDocument: async () => parsedSafe,
+      redact: async ({ sources }) => ({ schema_version: "1", sources,
+        placeholder_count: 0, must_redact_leaks: 0 }),
+      send: async (body) => { sends += 1; outbound = JSON.parse(new TextDecoder().decode(body)); return oracle(); },
+    });
+    assert.equal(sends, 1);
+    assert.equal(outbound.sources[0].content, safe);
+    assert.equal(result.result.executive_summary, "A careful result.");
+  }
+});
+
 test("local document and privacy failures forbid the network", async () => {
   let sends = 0;
   const common = { redact: async () => { throw new Error("unreached"); },

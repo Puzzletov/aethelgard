@@ -78,7 +78,7 @@ async function selectFile(file: File): Promise<void> {
   mark("LOCAL_EXTRACT");
   const result = redactRequest({ schema_version: "1", sources });
   redactedText = result.sources.map((source) => source.content).join("\n");
-  if (result.placeholder_count < 6 || result.must_redact_leaks !== 0) throw new Error("redaction_incomplete");
+  if (result.must_redact_leaks !== 0) throw new Error("redaction_incomplete");
   mark("LOCAL_REDACT");
   element<HTMLButtonElement>("analyze").disabled = token === undefined;
   element("status").textContent = `${result.placeholder_count} synthetic identifiers redacted locally.`;

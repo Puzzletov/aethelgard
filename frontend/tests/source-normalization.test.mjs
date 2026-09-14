@@ -41,6 +41,13 @@ test("normalization preserves order and creates contiguous immutable ordinals", 
   assert.equal(input.sources[1].line_start, 3);
 });
 
+test("PDF normalization preserves non-empty original page numbers across blank pages", () => {
+  const result = normalizeSourceRecords(envelope("pdf", [
+    { page: 2, content: "First visible text" }, { page: 5, content: "Later visible text" },
+  ]));
+  assert.deepEqual(result?.map((record) => [record.ordinal, record.reference.page]), [[1, 2], [2, 5]]);
+});
+
 test("DOCX table cells normalize without filenames, metadata, or labels", () => {
   const result = normalizeSourceRecords(envelope("docx", [
     { kind: "table_cell", table: 1, row: 2, column: 3, content: "Cell" },
@@ -53,7 +60,7 @@ test("unknown fields, duplicate or invalid references, and missing schema fail c
   const invalid = [
     { ...envelope("pdf", [{ page: 1, content: "A" }]), extra: true },
     envelope("pdf", [{ page: 1, content: "A", filename: "private.pdf" }]),
-    envelope("pdf", [{ page: 2, content: "gap" }]),
+    envelope("pdf", [{ page: 2, content: "A" }, { page: 2, content: "duplicate" }]),
     envelope("docx", [{ kind: "paragraph", paragraph: 2, content: "A" }, { kind: "paragraph", paragraph: 1, content: "B" }]),
     envelope("csv", [{ row: 1, column: 1, content: "A" }, { row: 1, column: 1, content: "B" }]),
     envelope("xlsx", [{ sheet: 1, cell: "A0", content: "A" }]),

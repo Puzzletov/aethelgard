@@ -2436,3 +2436,27 @@ historical work.
   pass. Production Pages remains deployment `07425838-...` from source
   `18c84b9`; it was not promoted. PR #28 remains the review vehicle and Task
   4.12 remains paused pending owner beta confirmation.
+
+### 122. PDF blank-page and zero-PII correction
+
+- **PASS** on 2026-09-14. The first reproducible browser-local failure matching
+  the owner's generic PDF stop was extraction: pdfminer emitted empty records
+  for blank or image-only pages, while the TypeScript parser rejected every
+  empty page and required contiguous returned page numbers. The parser now
+  omits empty pages, preserves the original strictly increasing page numbers,
+  and still rejects an entirely empty or malformed PDF.
+- Zero PII was not the failing privacy contract in the canonical redactor: zero
+  detected identifiers is now explicitly covered as a successful identity
+  transformation with `placeholder_count: 0`, no mapping output, unchanged
+  safe content and exactly one analysis request. The same 19-word clear-English
+  synthetic fixture passes PDF extraction, language validation, zero-PII
+  redaction and PDF/TXT outbound preparation; the existing synthetic-PII PDF
+  path remains green with zero original-identifier egress.
+- The focused Chrome Pyodide/pdfminer proof skips a blank first page, retains
+  page 2, rejects the empty-PDF control and makes zero external parser requests.
+  The complete repository suite, strict typecheck/lint, deterministic beta
+  build, architecture lint, Doctor, license gate and exact-zero gate pass.
+- Preview deployment `9db8902e-d208-4c87-879b-389b6f11d0ac` is live at
+  `https://beta.aethelgard-3j9.pages.dev`; all six static routes return HTTP
+  200. Production remains unchanged at deployment `07425838-...` from source
+  `18c84b9`. PR #28 remains open and Task 4.12 remains paused.
