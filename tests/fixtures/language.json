@@ -1,14 +1,75 @@
 {
   "schema_version": "1",
   "fixtures": [
-    {"id":"clear-english-prose","class":"clear English prose","reference":"txt","content":"This project provides a clear independent analysis of the evidence and explains every recommendation in plain English for careful review.","expected":{"schema_version":"1","accepted":true,"language":"eng","letters":117,"tokens":20,"margin":2402}},
-    {"id":"english-table-content","class":"English table content","reference":"xlsx","content":"This project provides a clear independent analysis of the evidence and explains every recommendation in plain English for careful review.","expected":{"schema_version":"1","accepted":true,"language":"eng","letters":117,"tokens":20,"margin":2402}},
-    {"id":"english-international-names","class":"English with international names","reference":"txt","content":"This project provides a clear independent analysis of the evidence and explains every recommendation in plain English for careful review with Renée Dubois and José Álvarez named as reviewers.","expected":{"schema_version":"1","accepted":true,"language":"eng","letters":162,"tokens":29,"margin":2277}},
-    {"id":"spanish","class":"Spanish","reference":"txt","content":"Este analisis independiente explica las pruebas, identifica cada riesgo importante y presenta recomendaciones practicas para ayudar al equipo a tomar una decision prudente.","expected":{"schema_version":"1","accepted":false,"reason":"non_english"}},
-    {"id":"french","class":"French","reference":"txt","content":"Cette analyse independante explique les preuves, identifie chaque risque important et presente des recommandations pratiques pour aider l equipe a prendre une decision prudente.","expected":{"schema_version":"1","accepted":false,"reason":"mixed_or_uncertain"}},
-    {"id":"german","class":"German","reference":"txt","content":"Diese unabhangige Analyse erklart die Beweise, nennt jedes wichtige Risiko und gibt praktische Empfehlungen, damit das Team eine vorsichtige Entscheidung treffen kann.","expected":{"schema_version":"1","accepted":false,"reason":"non_english"}},
-    {"id":"swedish","class":"Swedish","reference":"txt","content":"Denna oberoende analys forklarar bevisen, identifierar varje viktig risk och ger praktiska rekommendationer som hjalper gruppen att fatta ett forsiktigt beslut.","expected":{"schema_version":"1","accepted":false,"reason":"non_english"}},
-    {"id":"mixed-ambiguous","class":"mixed-language ambiguous content","reference":"txt","content":"The review explains the evidence and material risks for the project. Cette analyse explique aussi les preuves et les risques importants pour le projet.","expected":{"schema_version":"1","accepted":false,"reason":"mixed_or_uncertain"}},
-    {"id":"insufficient-text","class":"insufficient textual content","reference":"txt","content":"This text is too short.","expected":{"schema_version":"1","accepted":false,"reason":"insufficient"}}
+    {
+      "id": "clear-english-short",
+      "class": "ordinary English business text around 30 words",
+      "reference": "txt",
+      "content": "The review explains the available evidence, identifies important business risks, and gives practical recommendations. Each recommendation names an owner, a deadline, and the information needed for a careful decision.",
+      "expected": {"schema_version":"1","accepted":true,"language":"eng","letters":182,"tokens":29}
+    },
+    {
+      "id": "clear-english-medium",
+      "class": "ordinary English business prose around 150 words",
+      "reference": "txt",
+      "content": "A careful business review begins by defining the decision, identifying the available evidence, and separating observed facts from assumptions. The team records each material risk, assigns an owner, and agrees on a practical deadline. Financial estimates are checked against source records, while operational claims are compared with delivery evidence. Recommendations explain both the expected benefit and the cost of delay. Independent reviewers challenge weak reasoning and note missing information. The final report uses plain language so that directors, employees, and advisers can understand the conclusion. It does not promise certainty. Instead, it describes confidence, limitations, and the next actions required. This method helps an organisation make a responsible decision without hiding disagreement or overstating what the evidence can prove. Before approval, the board confirms that each recommendation is proportionate, affordable, and supported by an accountable delivery plan.",
+      "expected": {"schema_version":"1","accepted":true,"language":"eng","letters":834,"tokens":137}
+    },
+    {
+      "id": "clear-english-long",
+      "class": "ordinary English business prose around 500 words",
+      "reference": "txt",
+      "content": "The management team began its quarterly review by agreeing on the decision that needed to be made. Members collected financial records, delivery reports, customer feedback, and the current risk register. They distinguished confirmed evidence from estimates and recorded where important information was still missing. This gave every reviewer the same starting point and prevented an early preference from being presented as a proven conclusion. The finance section compared actual spending with the approved budget. It explained the reasons for each material difference and identified costs that could arise during the next reporting period. Forecasts included their assumptions, ranges, and responsible owners. Where a number could not be verified, the report described the uncertainty instead of replacing it with a convenient estimate. The operational review considered whether planned work had been completed and whether the expected benefit had appeared. Delivery evidence included completed checks, unresolved incidents, supplier dependencies, and staff capacity. Reviewers examined both successful activity and delayed work. They also considered whether a temporary improvement could be sustained after the current project team moved to other priorities. Risk owners assessed the likelihood and impact of each material concern. They recorded existing controls, evidence that those controls operated, and the additional action required. High-priority recommendations included a named owner and a realistic completion date. Lower-priority observations remained visible but did not distract the board from decisions that required immediate attention. The review included a challenge stage. An independent colleague tested the strongest arguments supporting the proposal and then described the strongest reasonable objections. This process exposed weak assumptions, duplicated controls, and optimistic delivery dates. It also helped the team preserve useful work instead of rejecting the entire proposal because one part required correction. The final recommendation was written in plain English. It stated what should happen, why the evidence supported that action, what it would cost, and what could cause it to fail. It separated mandatory controls from optional improvements. The report did not promise certainty or claim that every risk could be removed. It explained the limits of the available evidence and the conditions under which the decision should be reviewed again. Before approval, the board checked that the recommendation was proportionate and affordable. Members confirmed who would monitor delivery and what evidence would demonstrate completion. They also agreed on a date for reviewing outcomes. The resulting decision was concise, traceable to source material, and useful to the people responsible for carrying it out. After the meeting, the secretary circulated the approved actions and recorded the evidence required from each owner. Progress would be reviewed monthly against the agreed dates. Any material delay, unexpected cost, or control failure would be raised promptly rather than hidden until the next quarterly meeting. This follow-up made the decision operational and gave the board a clear basis for changing course if later evidence challenged its original assumptions.",
+      "expected": {"schema_version":"1","accepted":true,"language":"eng","letters":2778,"tokens":473}
+    },
+    {
+      "id": "english-names-addresses-numbers",
+      "class": "English with international names, address and numbers",
+      "reference": "xlsx",
+      "content": "Renée Dubois and José Álvarez reviewed the programme at 14 King's Road, London, on 12 September. The team checked 27 controls, confirmed 24 results, and assigned the remaining actions to accountable managers before approving the English report.",
+      "expected": {"schema_version":"1","accepted":true,"language":"eng","letters":193,"tokens":33}
+    },
+    {
+      "id": "english-short-foreign-phrase",
+      "class": "Predominantly English with a short foreign phrase",
+      "reference": "txt",
+      "content": "The board reviewed the evidence and approved the proposed control plan. The chair thanked the visiting adviser with the phrase merci beaucoup, then returned to the English agenda, assigned each action, and confirmed the next review date.",
+      "expected": {"schema_version":"1","accepted":true,"language":"eng","letters":196,"tokens":37}
+    },
+    {
+      "id": "german",
+      "class": "German",
+      "reference": "txt",
+      "content": "Eine sorgfältige Geschäftsprüfung beginnt mit einer klaren Entscheidung und den verfügbaren Belegen. Das Team dokumentiert jedes wesentliche Risiko, benennt eine verantwortliche Person und vereinbart eine realistische Frist. Empfehlungen erklären Nutzen, Grenzen und die nächsten erforderlichen Schritte.",
+      "expected": {"schema_version":"1","accepted":false,"reason":"non_english"}
+    },
+    {
+      "id": "swedish",
+      "class": "Swedish",
+      "reference": "txt",
+      "content": "En noggrann verksamhetsgranskning börjar med ett tydligt beslut och tillgängliga bevis. Gruppen dokumenterar varje väsentlig risk, utser en ansvarig person och bestämmer en realistisk tidsfrist. Rekommendationerna förklarar nytta, begränsningar och nästa nödvändiga steg.",
+      "expected": {"schema_version":"1","accepted":false,"reason":"non_english"}
+    },
+    {
+      "id": "french",
+      "class": "French",
+      "reference": "txt",
+      "content": "Une analyse commerciale rigoureuse commence par une décision claire et des preuves disponibles. L'équipe documente chaque risque important, désigne une personne responsable et fixe un délai réaliste. Les recommandations expliquent les avantages, les limites et les prochaines étapes nécessaires.",
+      "expected": {"schema_version":"1","accepted":false,"reason":"non_english"}
+    },
+    {
+      "id": "empty",
+      "class": "Empty text",
+      "reference": "txt",
+      "content": "",
+      "expected": {"schema_version":"1","accepted":false,"reason":"insufficient"}
+    },
+    {
+      "id": "insufficient-text",
+      "class": "Insufficient textual evidence",
+      "reference": "txt",
+      "content": "This text is too short.",
+      "expected": {"schema_version":"1","accepted":false,"reason":"insufficient"}
+    }
   ]
 }

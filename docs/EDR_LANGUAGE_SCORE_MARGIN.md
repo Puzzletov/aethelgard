@@ -2,7 +2,7 @@
 
 Date: 2026-08-30
 
-Status: **Owner approved and incorporated into Architecture 2.1**
+Status: **Superseded by EDR 39 on 2026-09-09**
 
 ## Decision
 
@@ -29,8 +29,16 @@ points preserve the intended 20-percentage-point lead without floating output.
 - Existing runtime topology, privacy boundary, exact-zero policy, providers,
   cryptography, persistence rules, and phase sequence.
 
-## Binding consequence
+## Historical binding consequence
 
 Task 1.10 and Schema `S-LANGUAGE-DECISION` use `eng_score` and
 `runner_up_score` terminology. `B-LANGUAGE-MARGIN` is 2,000 integer basis
-points. Distance terminology is not valid for this contract.
+points. Distance terminology was not valid for that superseded contract; these
+requirements are no longer current after EDR 39.
+
+## Supersession
+
+Representative beta evidence later showed that valid ordinary English ranked
+first with margins from 170 to 1,425 basis points. The score-gap rule treated
+ranking/distance-derived heuristic values as calibrated confidence and caused
+systematic false rejection. EDR 39 replaces this acceptance contract.

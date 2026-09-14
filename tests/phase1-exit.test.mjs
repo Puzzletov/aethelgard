@@ -7,7 +7,7 @@ import { requiredProofBrowserNames } from "../scripts/browser-parser-proof.mjs";
 
 const execute = promisify(execFile);
 
-test("real browser document reaches a valid Oracle in exactly three calls", { timeout: 90_000 }, async () => {
+test("real browser document reaches a valid finished analysis in exactly one call", { timeout: 90_000 }, async () => {
   const { stdout } = await execute(process.execPath, ["scripts/verify-phase1-journey.mjs"], {
     cwd: new URL("../", import.meta.url), timeout: 80_000, windowsHide: true,
   });
@@ -16,9 +16,9 @@ test("real browser document reaches a valid Oracle in exactly three calls", { ti
   assert.deepEqual(proof.results.map((result) => result.browser).sort(),
     [...requiredProofBrowserNames()].sort());
   for (const result of proof.results) {
-    assert.equal(result.valid_oracle, true);
+    assert.equal(result.valid_finished_analysis, true);
     assert.equal(result.analyze_requests, 1);
-    assert.deepEqual(result.provider_calls, ["strawman:groq", "steelman:groq", "oracle:groq"]);
+    assert.deepEqual(result.provider_calls, ["analysis:groq"]);
     assert.equal(result.raw_or_pii_egress, false);
     assert.equal(result.storage_writes, 0);
     assert.equal(result.workers_created, 2);

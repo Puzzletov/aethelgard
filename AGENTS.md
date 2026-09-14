@@ -25,9 +25,8 @@ runtime beyond proving the failure is runtime-specific.
 - Phase 1 Tasks 1.1–1.22 and its exit gate are complete and merged in PR #11.
 - Phase 2 Tasks 2.1–2.14 and its exit gate are complete and merged in PR #16.
 - Phase 3 Tasks 3.1–3.26 and its exit gate are complete and merged in PR #18.
-- Phase 4 is owner-authorized on `phase/4-trust-portfolio`, one task at a time.
-- Tasks 4.1–4.11 are passed. Task 4.12 production promotion requires owner
-  review of the Phase 4 pull request before it begins.
+- Phase 4 Tasks 4.1–4.11 are passed. Task 4.12 is paused while the
+  owner-approved one-call MVP golden spine is integrated and tested on beta.
 
 ## Task protocol
 
@@ -47,7 +46,9 @@ run the full gate, report PASS/BLOCKED, update the phase PR, and stop.
   inside the externally bound private `TrustedRuntime` Durable Object.
 - Add no dispatcher, server parser, Google runtime, email, BYOK, Sentry,
   UptimeRobot, MCP, OCR, paid fallback or unapproved dependency.
-- AI is exactly Strawman → Steelman → Oracle.
+- MVP AI is exactly one Groq request returning one strict cohesive finished
+  analysis. The prompt performs challenge and synthesis internally; do not
+  expose or make separate Strawman, Steelman, or Oracle calls.
 - Every final PDF is signed over exact bytes with SHA-256, Ed25519 and
   ML-DSA-65; expose no generic signer.
 - Desktop Chrome and Edge are the supported parser runtimes.

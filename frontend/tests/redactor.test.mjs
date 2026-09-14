@@ -57,6 +57,15 @@ test("equal exact values reuse stable counters and distinct values advance them"
   assert.equal(result.placeholder_count, 2);
 });
 
+test("zero detected identifiers is an unchanged successful redaction", () => {
+  const content = "This independent business analysis explains revenue growth, supplier concentration, delivery risk, internal controls, and practical recommendations for executive review.";
+  const result = redactRequest(request(content));
+  assert.equal(result.placeholder_count, 0);
+  assert.equal(result.must_redact_leaks, 0);
+  assert.equal(result.sources[0].content, content);
+  assert.equal("mapping" in result, false);
+});
+
 test("unknown request fields, invalid records, and the mapping bound fail closed", () => {
   assert.throws(() => redactRequest({ ...request("safe text"), extra: true }), /invalid_redaction_request/);
   assert.throws(() => redactRequest({ schema_version: "1", sources: [sourceRecord("text", 2)] }),

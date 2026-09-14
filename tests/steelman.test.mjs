@@ -112,7 +112,7 @@ test("request builder rejects unvalidated inputs and emits one bounded call", ()
   const request = createSteelmanRequest("openrouter_free", sources, strawmanValue);
   assert.ok(request);
   assert.equal(request.model_id, "openrouter/free");
-  assert.equal(request.max_output_tokens, 4_096);
+  assert.equal(request.max_output_tokens, 2_048);
   assert.equal(createSteelmanRequest("groq", [{ ...sources[0], filename: "private.pdf" }], strawmanValue), undefined);
   assert.equal(createSteelmanRequest("groq", sources, { ...strawmanValue, extra: true }), undefined);
 });

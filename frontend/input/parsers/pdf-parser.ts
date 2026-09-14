@@ -17,8 +17,8 @@ const PDFMINER_WHEEL: PythonAsset = Object.freeze({
 });
 const PDF_PARSER_SOURCE: PythonAsset = Object.freeze({
   path: "/parser/pdf_parser.py",
-  bytes: 1_649,
-  sha256: "d6d30c0ffd379bb2f392a36e5fc8410366c0d7bd89da8e6f667fa553dbb16437",
+  bytes: 1_657,
+  sha256: "3ddf5fb72307bd639692f5852b53f18714344b78ed97bb32906787bb1b0f622f",
 });
 
 export interface PdfPageText {
@@ -34,16 +34,17 @@ function failedPdfParse(): PdfParserResult {
   return Object.freeze({ ok: false, code: "pdf_parse_failed", message: "The PDF text could not be read safely." });
 }
 
-function validatePage(value: unknown, expectedPage: number): PdfPageText | undefined {
+function validatePage(value: unknown, previousPage: number): PdfPageText | undefined {
   if (typeof value !== "object" || value === null) return undefined;
   if (Object.keys(value).sort().join("\0") !== "content\0page") return undefined;
   const page = Reflect.get(value, "page");
   const content = Reflect.get(value, "content");
-  if (page !== expectedPage || typeof content !== "string" || content.length === 0
+  if (!Number.isSafeInteger(page) || Number(page) <= previousPage || Number(page) > MAX_PDF_PAGES
+    || typeof content !== "string" || content.length === 0
     || content.length > MAX_PDF_PAGE_CODE_POINTS) {
     return undefined;
   }
-  return Object.freeze({ page, content });
+  return Object.freeze({ page: Number(page), content });
 }
 
 function validatePdfOutput(value: unknown): PdfParserResult {
@@ -54,12 +55,14 @@ function validatePdfOutput(value: unknown): PdfParserResult {
   if (!Array.isArray(pages) || pages.length === 0 || pages.length > MAX_PDF_PAGES) return failedPdfParse();
   const checked: PdfPageText[] = [];
   let total = 0;
+  let previousPage = 0;
   for (let index = 0; index < pages.length; index += 1) {
-    const page = validatePage(pages[index], index + 1);
+    const page = validatePage(pages[index], previousPage);
     if (page === undefined) return failedPdfParse();
     total += page.content.length;
     if (total > MAX_PDF_DOCUMENT_CODE_POINTS) return failedPdfParse();
     checked.push(page);
+    previousPage = page.page;
   }
   return Object.freeze({ ok: true, schema_version: "1", format: "pdf", pages: Object.freeze(checked) });
 }

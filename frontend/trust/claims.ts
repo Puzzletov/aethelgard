@@ -15,11 +15,6 @@ export const trustClaims = [
     body: "The AI provider temporarily processes redacted business text. Raw source files and unredacted extracted text are never sent to the AI provider.",
   },
   {
-    id: "anonymous_quota_state",
-    title: "Minimal quota state",
-    body: "Aethelgard persists only the UTC date and aggregate Browser Run milliseconds for anonymous quota enforcement.",
-  },
-  {
     id: "provider_metadata_limit",
     title: "Platform metadata",
     body: "Cloudflare and the selected AI provider may process operational or accounting metadata outside Aethelgard application storage.",
@@ -40,11 +35,6 @@ export const trustClaims = [
     body: "Aethelgard does not claim to malware-scan source files. It rejects hostile document structures before isolated local parsing.",
   },
   {
-    id: "hybrid_exact_byte_signing",
-    title: "Exact-byte integrity",
-    body: "Every final PDF is hashed with SHA-256 and signed over its exact bytes with both Ed25519 and ML-DSA-65. All checks must pass.",
-  },
-  {
     id: "exact_zero",
     title: "Exact-zero operation",
     body: "Aethelgard uses approved free capacity only and fails closed when required free quota is unavailable. It has no paid fallback.",
@@ -52,9 +42,8 @@ export const trustClaims = [
 ] as const;
 
 export const externalProcessors = [
-  "Cloudflare routes the redacted request, verifies Turnstile and renders the final report PDF in Browser Run.",
-  "Groq processes the three analysis stages when its approved privacy controls and free capacity are available.",
-  "OpenRouter Free is the only bounded fallback and must satisfy the same privacy controls.",
+  "Cloudflare routes the redacted request, verifies Turnstile and executes the private runtime.",
+  "Groq processes one bounded analysis request when its approved privacy controls and free capacity are available.",
 ] as const;
 
 export const honestLimits = [

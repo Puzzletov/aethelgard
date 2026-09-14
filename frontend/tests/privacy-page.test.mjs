@@ -26,9 +26,9 @@ test("Privacy distinguishes local data, pseudonymised requests, and provider met
   const page = await read("app/privacy/page.tsx");
   assert.match(page, /raw document, unredacted extracted text and PII placeholder mapping remain in browser memory/u);
   assert.match(page, /may still be personal data/u);
-  assert.match(page, /Only the UTC date and aggregate Browser Run milliseconds persist/u);
+  assert.match(page, /No document, prompt, report, account or analysis history is stored/u);
   assert.match(page, /Turnstile does not receive the document or form contents/u);
-  assert.match(page, /exact downstream provider can vary/u);
+  assert.match(page, /pass through Cloudflare to Groq/u);
   assert.match(page, /Provider handling is separate from Aethelgard application storage/u);
   assert.match(page, /cannot retrieve a document or report it never stored/u);
 });

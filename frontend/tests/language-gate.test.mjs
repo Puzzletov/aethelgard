@@ -20,25 +20,25 @@ function records(content) {
 }
 
 const clearEnglish = "This project provides a clear independent analysis of the evidence and explains every recommendation in plain English for careful review.";
+const zeroPiiEnglish = "This independent business analysis explains revenue growth, supplier concentration, delivery risk, internal controls, and practical recommendations for executive review.";
 const internationalNames = "This project provides a clear independent analysis of the evidence and explains every recommendation in plain English for careful review with Renée Dubois and José Álvarez named as reviewers.";
 const clearFrench = "Cette analyse indépendante explique les preuves, identifie chaque risque important et présente des recommandations pratiques pour aider l'équipe à prendre une décision prudente.";
 const mixed = "The review explains the evidence and material risks for the project. Cette analyse explique aussi les preuves et les risques importants pour le projet.";
 
 test("clear English and English with international names pass", () => {
-  for (const content of [clearEnglish, internationalNames]) {
+  for (const content of [clearEnglish, internationalNames, zeroPiiEnglish]) {
     const result = evaluateEnglishLanguage(records(content));
     assert.equal(result.accepted, true);
     assert.equal(result.language, "eng");
-    assert.ok(result.margin >= 2_000);
   }
 });
 
-test("non-English, mixed or uncertain, and insufficient samples fail closed", () => {
+test("non-English and insufficient samples fail closed", () => {
   assert.deepEqual(evaluateEnglishLanguage(records(clearFrench)), {
     schema_version: "1", accepted: false, reason: "non_english",
   });
   assert.deepEqual(evaluateEnglishLanguage(records(mixed)), {
-    schema_version: "1", accepted: false, reason: "mixed_or_uncertain",
+    schema_version: "1", accepted: false, reason: "non_english",
   });
   assert.deepEqual(evaluateEnglishLanguage(records("This text is too short.")), {
     schema_version: "1", accepted: false, reason: "insufficient",
@@ -56,4 +56,19 @@ test("whitespace normalization and the leading 20,000-code-point sample are dete
 test("language gate source is local-only and has no persistence or fallback", () => {
   assert.doesNotMatch(source, /fetch\s*\(|XMLHttpRequest|localStorage|sessionStorage|indexedDB/i);
   assert.doesNotMatch(source, /translate|fallback|multilingual model/i);
+});
+
+test("detector results are validated and only English ranked first passes", () => {
+  assert.equal(evaluateEnglishLanguage(records(clearEnglish), () => [["eng", 0.1], ["deu", 1]])?.accepted, true);
+  assert.deepEqual(evaluateEnglishLanguage(records(clearEnglish), () => [["deu", 1], ["eng", 0.9]]), {
+    schema_version: "1", accepted: false, reason: "non_english",
+  });
+  for (const ranking of [[], [["eng", Number.NaN]], [["English", 1]], [["eng", 2]]]) {
+    assert.deepEqual(evaluateEnglishLanguage(records(clearEnglish), () => ranking), {
+      schema_version: "1", accepted: false, reason: "mixed_or_uncertain",
+    });
+  }
+  assert.deepEqual(evaluateEnglishLanguage(records(clearEnglish), () => [["und", 1]]), {
+    schema_version: "1", accepted: false, reason: "insufficient",
+  });
 });

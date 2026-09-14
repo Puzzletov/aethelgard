@@ -8,10 +8,11 @@ test("case study is bounded and matches the approved architecture decisions", as
   const page = await readFile(pageUrl, "utf8");
   assert.ok([...page].length <= 40_000);
   for (const phrase of ["Exact-zero changed the boundary", "disposable browser module Workers",
-    "external binding", "Strawman, Steelman and Oracle", "OpenRouter Free",
-    "Browser Run", "Ed25519 and ML-DSA-65", "digest and both signatures to pass together"]) {
+    "external binding", "Reasoning stays inside one request", "one bounded Groq request",
+    "MVP stops at the finished analysis", "Strict response validation", "raw documents"]) {
     assert.match(page, new RegExp(phrase, "u"));
   }
+  assert.doesNotMatch(page, /Strawman, Steelman and Oracle|OpenRouter Free/iu);
   assert.doesNotMatch(page, /Cloud Run|FastAPI|server-side parsing is current|unhackable/iu);
 });
 

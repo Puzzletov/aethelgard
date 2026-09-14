@@ -1,0 +1,13 @@
+name = "aethelgard-minimal-runtime"
+main = "trusted.ts"
+compatibility_date = "2026-08-04"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+preview_urls = false
+
+[observability]
+enabled = false
+
+[exports.MinimalRuntime]
+type = "durable-object"
+storage = "sqlite"

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 import { AnalysisDashboard } from "../../components/analysis-dashboard";
-import type { NormalizedSourceRecord } from "../../input/normalization/source-record";
 import type { ReportModel } from "../../../src/contracts/report-model";
+import type { FinishedAnalysis } from "../../../src/contracts/finished-analysis";
 import report from "../../public/sample/aethelgard-synthetic-sample.report.json";
 
 export const metadata: Metadata = {
@@ -10,12 +10,14 @@ export const metadata: Metadata = {
   description: "A pre-generated synthetic Aethelgard report with independently verifiable signatures.",
 };
 
-const sources: readonly NormalizedSourceRecord[] = [
-  { schema_version: "1", ordinal: 1, content: "Nine control reviews are complete.",
-    reference: { kind: "txt_lines", line_start: 2, line_end: 2 } },
-  { schema_version: "1", ordinal: 2, content: "Three control reviews remain outstanding.",
-    reference: { kind: "txt_lines", line_start: 3, line_end: 3 } },
-];
+const sample = report as ReportModel;
+const finished: FinishedAnalysis = {
+  schema_version: "1",
+  executive_summary: sample.executive_summary,
+  findings: sample.findings.map((item) => `${item.title}: ${item.analysis}`),
+  risks: sample.risks.map((item) => item.text),
+  recommendations: sample.recommendations.map((item) => `${item.title}: ${item.action}`),
+};
 
 const files = [
   ["Download PDF", "/sample/aethelgard-synthetic-sample.pdf"],
@@ -41,7 +43,7 @@ export default function SamplePage() {
           <li key={href}><a href={href}>{label}</a></li>)}</ul>
         <p><a className="primary-link" href="/verify">Open the local verifier</a></p>
       </header>
-      <AnalysisDashboard result={report as ReportModel} sources={sources} />
+      <AnalysisDashboard result={finished} />
     </main>
     <footer className="site-footer page-frame"><p>Verify the PDF with its detached signature and dedicated sample keys.</p><p>
       <a href="/privacy">Privacy notice</a> · <a href="/">Return to analysis</a></p></footer>

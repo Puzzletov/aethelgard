@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const SITEVERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
-const SITEVERIFY_TIMEOUT_MS = 5_000;
+const SITEVERIFY_TIMEOUT_MS = 10_000;
 const MAX_SITEVERIFY_RESPONSE_BYTES = 8 * 1024;
 const MAX_SITEVERIFY_CHUNKS = 16;
 
@@ -10,10 +10,12 @@ const siteverifySchema = z.object({
   challenge_ts: z.string().max(64).optional(),
   hostname: z.string().max(253).optional(),
   "error-codes": z.array(z.string().max(64)).max(16).optional(),
+  messages: z.array(z.string().max(256)).max(16).optional(),
   action: z.string().max(64).optional(),
   cdata: z.string().max(255).optional(),
   metadata: z.object({
     ephemeral_id: z.string().max(128).optional(),
+    interactive: z.boolean().optional(),
     result_with_testing_key: z.boolean().optional(),
   }).strict().optional(),
 }).strict();

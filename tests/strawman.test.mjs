@@ -116,7 +116,7 @@ test("focus is deterministic and one request covers each selected path", () => {
     const request = createStrawmanRequest("openrouter_free", focus, sources);
     assert.ok(request);
     assert.equal(request.model_id, "openrouter/free");
-    assert.equal(request.max_output_tokens, 4_096);
+    assert.equal(request.max_output_tokens, 2_048);
   }
   assert.equal(createStrawmanRequest("groq", "legal", sources), undefined);
   assert.equal(createStrawmanRequest("groq", "full", [{ ...sources[0], filename: "private.pdf" }]), undefined);
