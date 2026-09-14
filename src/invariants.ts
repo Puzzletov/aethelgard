@@ -1,5 +1,5 @@
 export const ARCHITECTURE_VERSION = "2.1";
-export const AUTHORITATIVE_ARCHITECTURE_SHA256 = "99d8050aa94cfbfb71ed96e5030d1add0d33558bb628de94f3b4bcd27bad5f9e";
+export const AUTHORITATIVE_ARCHITECTURE_SHA256 = "cc6267d0b24cdb4bf529e8c561c257efd972787af7a636e33f87a51abb3591c1";
 export const BUILD_PHASE = "2";
 export const PUBLIC_SERVICE_NAME = "aethelgard-edge";
 export const EXPECTED_ALLOWED_ORIGIN = "https://aethelgard-3j9.pages.dev";

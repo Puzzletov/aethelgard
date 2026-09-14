@@ -2397,3 +2397,17 @@ historical work.
   afterward in 6,462 ms with zero PII egress and zero browser storage writes.
   All six input formats now pass the isolated one-call flow. Production, beta
   and the excluded report/orchestration layers remained unchanged.
+
+### 120. Owner-approved one-call MVP architecture correction
+
+- **PASS** on 2026-09-14. EDR 41 promotes the owner-verified six-format golden
+  spine to the canonical MVP contract: browser-local protection and redaction,
+  Managed Turnstile, exactly one `openai/gpt-oss-20b` request, strict cohesive
+  finished-analysis validation and browser rendering. Challenge and synthesis
+  remain fixed prompt requirements but no longer create separate network calls
+  or user-facing methodology sections.
+- Architecture 2.1 remains the versioned authority. Its new exact staged Git
+  blob SHA-256 is `cc6267d0b24cdb4bf529e8c561c257efd972787af7a636e33f87a51abb3591c1`.
+  Production promotion and Task 4.12 remain paused; OpenRouter, report
+  generation, Browser Run, signing, charts, exports and PII reinsertion are not
+  active in this beta correction.

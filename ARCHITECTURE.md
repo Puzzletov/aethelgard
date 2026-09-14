@@ -3,13 +3,13 @@
 **Project name:** Aethelgard
 **Document type:** Build Guide, System Architecture, and Project Tracker
 **Version:** 2.1
-**Date:** 2026-09-10
+**Date:** 2026-09-14
 **Status:** Approved for build
 **Language:** Simplified Technical English
 **Purpose:** Final system architecture, build guide, and phase authority
 **Supersedes:** Architecture 2.0 and all earlier architecture proposals and handoffs
 
-**Revision:** Execution hardening revision; Turnstile timeout correction — 2026-09-10
+**Revision:** Execution hardening revision; one-call MVP simplification — 2026-09-14
 
 ---
 
@@ -623,36 +623,24 @@ Do not add multilingual PII models.
 
 ## 5.4 Analysis
 
-The analysis pipeline contains exactly three model stages:
+The MVP analysis pipeline makes exactly **one AI provider request**.
 
-1. Strawman Analyst;
-2. Steelman Critic;
-3. Oracle Synthesizer.
+The fixed prompt requires the model to perform the reasoning sequence
+internally: identify the obvious or weak interpretation, challenge it,
+construct the strongest competing interpretation, and synthesize a balanced
+final judgment. Only Schema `S-FINISHED-ANALYSIS` is returned. Internal
+methodology and chain-of-thought are never requested, stored, or displayed.
 
-No Router agent.
-
-No separate Financial Specialist agent.
-
-No separate Strategic Specialist agent.
-
-No separate Security Specialist agent.
-
-The user chooses the desired lens deterministically:
-
-* `full`;
-* `financial`;
-* `strategic`;
-* `security`.
-
-For `full`, the Strawman handles the required lenses in one model request.
-
-Normal successful analysis therefore uses exactly **three AI requests**.
+No Router or specialist agent is used. The user chooses one deterministic
+focus: `full`, `financial`, `strategic`, or `security`. Each focus changes the
+fixed one-call prompt; `full` covers financial/operational,
+strategic/competitive, and security/compliance considerations.
 
 ---
 
 ## 5.5 Output
 
-After a valid Oracle result:
+After a valid finished analysis:
 
 * always show the browser dashboard;
 * PDF is the default downloadable report;
@@ -786,9 +774,7 @@ defined in a separate private Worker script
 |-- Turnstile Siteverify
 |-- full request Zod validation
 |-- privacy / provider / quota preflight
-|-- Strawman
-|-- Steelman
-|-- Oracle
+|-- one cohesive Groq analysis
 |-- deterministic report model
 |-- deterministic charts/output transforms
 |-- optional XLSX/text
@@ -1243,183 +1229,52 @@ Do not call AI merely to decide which AI to call.
 
 ---
 
-## 15.2 Stage 1 — Strawman Analyst
+## 15.2 One cohesive analysis request
 
-Input:
+Input is typed redacted source records plus Schema `S-FOCUS`. The fixed system
+prompt treats document content as untrusted evidence and instructs the model to
+perform the approved challenge-and-synthesis reasoning internally. It requests
+only the finished professional result: executive summary, findings, risks and
+recommendations.
 
-* typed redacted source records;
-* deterministic focus enum.
-
-For `full`, one call covers:
-
-* financial/operational;
-* strategic/competitive;
-* security/compliance
-
-in every `full` analysis.
-
-Output is exactly Schema `S-STRAWMAN-OUTPUT`:
-
-* findings;
-* evidence references;
-* confidence;
-* quantitative candidates;
-* risks;
-* assumptions.
-
-Every material finding has:
-
-* source reference;
-* High / Medium / Low confidence.
-
-Reject additional unknown fields.
+Output is exactly Schema `S-FINISHED-ANALYSIS`. Reject unknown fields,
+unbounded collections, empty content, invalid JSON, and any response that
+exposes methodology labels as report sections. Unchecked model text never
+enters the browser, report generation, chart generation, HTML, or signing.
 
 ---
 
-## 15.3 Stage 2 — Steelman Critic
+## 15.3 Model-call bound
 
-Input:
+Normal successful analysis is exactly one Groq Free request. The absolute
+provider-attempt maximum is one. There is no provider retry or fallback in the
+canonical MVP. Network, rate-limit, availability, policy, timeout, malformed
+JSON, and invalid-schema failures enter analysis Safe Mode.
 
-* redacted sources;
-* validated Strawman.
-
-Job:
-
-* attack weak reasoning;
-* find omissions;
-* identify nuance;
-* identify contradictions;
-* locate counter-evidence;
-* identify unsupported claims;
-* identify missed connections.
-
-Output is strict typed critique items.
-
-Every source-based critique cites source references where applicable.
+No unbounded retry and no "try until valid" behavior is allowed.
 
 ---
 
-## 15.4 Stage 3 — Oracle Synthesizer
+## 15.4 Provider design
 
-Input:
+The active MVP provider is **Groq Free** through one project-owned direct HTTPS
+adapter. The model is the reviewed lockfile/configuration value
+`openai/gpt-oss-20b`. No arbitrary endpoint, provider SDK, BYOK, paid route, or
+OpenRouter fallback is active. OpenRouter remains historical/future evidence
+and may be reintroduced only by a separate owner-approved, regression-proven
+layer.
 
-* redacted sources;
-* validated Strawman;
-* validated Steelman.
-
-Output is exactly Schema `S-ORACLE-OUTPUT`:
-
-* executive summary;
-* final findings;
-* recommendations;
-* risks;
-* confidence;
-* source references;
-* validated numeric candidates for deterministic charting.
-
-Every Steelman critique point must be:
-
-* resolved; or
-* explicitly marked unresolved.
-
-Unchecked model text never enters:
-
-* another AI stage;
-* report generation;
-* chart generation;
-* HTML;
-* signing.
+If the reviewed free model is unavailable or ceases to satisfy the complete
+bounded prompt/context/output requirements, enter Safe Mode and obtain owner
+review before changing the model or provider behavior.
 
 ---
 
-## 15.5 Model-call bound
-
-Normal successful analysis:
-
-**3 calls total.**
-
-Provider-failure policy:
-
-For each stage:
-
-1. one Groq attempt;
-2. if hard failure, one OpenRouter Free attempt;
-3. if that fails, Safe Mode.
-
-A hard failure includes:
-
-* network failure;
-* rate limit;
-* unavailable provider;
-* invalid schema;
-* invalid structured output;
-* provider policy failure;
-* timeout.
-
-A provider that fails is marked unavailable for the remainder of that request.
-
-Do not keep hitting it.
-
-Therefore:
-
-* normal = 3 calls;
-* absolute provider-attempt maximum = 6 calls.
-
-No unbounded retries.
-
-No "try until valid."
-
----
-
-## 15.6 Provider design
-
-Primary:
-
-**Groq Free**
-
-Fallback:
-
-**OpenRouter Free only**
-
-No other runtime provider.
-
-No arbitrary endpoint.
-
-No BYOK.
-
-No provider SDK zoo.
-
-Use one small project-owned direct HTTPS model router.
-
-Model IDs are configuration, not architecture.
-
-If a model disappears:
-
-* select another already allowed free compatible model by reviewed configuration; or
-* Safe Mode.
-
-Do not change architecture.
-
-Configured models must support the complete bounded prompt/context/output requirements.
-
----
-
-## 15.7 Provider privacy
+## 15.5 Provider privacy
 
 Before production live analysis:
 
 Groq account must have its available Zero Data Retention protection enabled.
-
-OpenRouter requests must enforce the approved privacy policy equivalent to:
-
-* ZDR required;
-* data collection denied;
-* required parameters supported;
-* free route only.
-
-If no free endpoint satisfies privacy requirements:
-
-Safe Mode.
 
 Never relax provider privacy requirements to obtain an answer.
 
@@ -1429,7 +1284,7 @@ Trust documentation must say:
 
 ---
 
-## 15.8 Prompt injection
+## 15.6 Prompt injection
 
 Treat all source-document content as untrusted data.
 
@@ -1456,7 +1311,7 @@ Keep adversarial prompt-injection fixtures.
 
 ## 16.1 Dashboard
 
-A valid Oracle result always produces the browser dashboard.
+A valid finished analysis always produces the browser result view.
 
 The dashboard is deterministic rendering of validated data.
 
@@ -1847,12 +1702,10 @@ Record separately:
 1. shell;
 2. Pyodide/parser readiness;
 3. local validate/parse/language/redact;
-4. Strawman;
-5. Steelman;
-6. Oracle;
-7. PDF;
-8. signing;
-9. total.
+4. one cohesive AI analysis;
+5. PDF;
+6. signing;
+7. total.
 
 Do not cherry-pick successful timings.
 
@@ -1948,7 +1801,7 @@ If PDF quota is unavailable:
 * clearly tell the UI;
 * never generate an unsigned substitute.
 
-A valid Oracle dashboard and non-PDF outputs may still be offered if that journey remains valid.
+A valid finished analysis may still be shown if that journey remains valid.
 
 Never call a paid renderer.
 
@@ -2069,7 +1922,6 @@ Doctor may verify:
 Doctor must not call:
 
 * Groq;
-* OpenRouter;
 * Browser Run
 
 merely to report health.
@@ -2140,16 +1992,11 @@ redactor failure
 -> Safe Mode
 ```
 
-### Groq failure
+### AI failure
 
 ```text
-Groq
--> one OpenRouter Free fallback
-```
-
-### Both AI paths fail
-
-```text
+Groq transport/schema/timeout failure
+-> no retry or fallback
 Safe Mode
 ```
 
@@ -2668,11 +2515,11 @@ preserved but Architecture 2.1 no longer follows that target.
 | 2 | Superseded by 20 | Python, FastAPI, and Cloud Run backend | Python had the strongest server parser ecosystem, but the exact-zero and trust-boundary review rejected server-side document processing. |
 | 3 | Active | Cloudflare Pages primary | Keeps static hosting with the edge provider at no cost. Reject adding a second live host. |
 | 4 | Active, revised | Cloudflare edge security and hybrid TLS | Managed TLS, Turnstile, route controls, and rate limiting avoid custom security machinery. The edge is now literally secret-free. |
-| 5 | Active | Project-owned direct HTTPS model router | Groq and OpenRouter need one small common interface. Reject LiteLLM and provider SDKs that add no required property. |
+| 5 | Active, revised by 41 | Project-owned direct HTTPS model adapter | One bounded Groq request needs only a small project-owned adapter. Reject LiteLLM, provider SDKs, arbitrary endpoints and an active fallback that add no current MVP property. |
 | 6 | Superseded by 23 | ReportLab server PDF | Pure Python avoided native PDF dependencies, but no server Python remains. Browser Run now creates service-owned exact PDF bytes. |
 | 7 | Superseded by 22 | ClamAV as a secondary defence | Known-signature scanning was defence in depth for a server upload boundary. That boundary is removed rather than replaced with a weaker scanner claim. |
-| 8 | Active, revised by 31 | Strawman, Steelman, Oracle analysis | Structured critique is the core agentic value. Architecture 2.1 keeps exactly these three stages. |
-| 9 | Superseded by 31 | Router chooses specialist agents | Deterministic user focus plus one Strawman call provides the required lenses with fewer calls and less failure surface. |
+| 8 | Superseded by 41 | Three-request Strawman, Steelman, Oracle analysis | The reasoning intent remains, but the proven golden spine showed that three network requests and intermediate schemas add failure surface without required MVP value. |
+| 9 | Superseded by 41 | Router or networked specialist stages | One deterministic focus changes one fixed prompt; the model performs challenge and synthesis internally and returns only the cohesive result. |
 | 10 | Active, revised | Deterministic extraction, charts, rendering, and signing | Fixed work belongs in checked code. These operations now run in the browser or trusted TypeScript runtime. |
 | 11 | Active | No chat in the core mission | Chat needs session state and does not serve the open-analyze-download mission. It is now out of scope, not deferred. |
 | 12 | Active, revised by 32 | Deterministic health checks; human-approved changes | Low-attention operation comes from Doctor and fixed fault reflexes. Reject autonomous code changes. |
@@ -2694,7 +2541,7 @@ preserved but Architecture 2.1 no longer follows that target.
 | 28 | Active | Zod schema-first TypeScript trusted runtime | One runtime schema validates public, internal, and AI data. Pydantic does not belong in the non-Python trusted runtime. |
 | 29 | Active | Minimal XLSX OOXML writer with tree-shaken `fflate` | Keeps optional spreadsheet output without server Python or a large workbook framework. Excel and LibreOffice compatibility is a release gate. |
 | 30 | Active | One anonymous Browser Run quota counter | A UTC date and aggregate milliseconds enforce the eight-minute application ceiling without user or job state. Reject relying only on the final platform limit. |
-| 31 | Active | Deterministic focus and exactly three AI stages | One focus enum plus Strawman, Steelman, and Oracle preserves the reasoning method while reducing quota use and failures. Normal success is exactly three model calls. |
+| 31 | Superseded by 41 | Deterministic focus and exactly three AI stages | This removed a Router but retained accidental distributed orchestration complexity and repeated source/provider failure surfaces. |
 | 32 | Active | Deterministic Doctor and fault reflexes | Known checks and bounded recovery paths provide low-attention operation. Reject a Technician AI or self-modifying repair. |
 | 33 | Active | Static signed portfolio sample | Keeps the portfolio demonstrable during live quota or provider failure without another runtime or host. |
 | 34 | Active | Persistent application logs disabled | Supports the no-copy privacy goal and removes another data processor. Use synthetic local fixtures and minimal public health output. |
@@ -2704,6 +2551,7 @@ preserved but Architecture 2.1 no longer follows that target.
 | 38 | Superseded by 39 | Task 1.10 normalized-score margin correction | The score-gap rule repaired an earlier arithmetic contradiction but incorrectly treated ranking scores as calibrated confidence and rejected representative English documents. |
 | 39 | Active | Task 1.10 English-first correction | After minimum evidence, accept exactly a valid top-ranked `eng`; reject another language, insufficient evidence, `und`, or malformed detector output locally. Remove score-gap acceptance and freeze a representative corpus. |
 | 40 | Active | Turnstile Siteverify timeout correction | A legitimate deployed Managed validation reached the former 5,000 ms abort boundary at approximately 5,001 ms. Use one 10,000 ms attempt, matching Cloudflare's canonical Worker implementation; retain no retry, exact action/hostname checks and fail-closed behavior. |
+| 41 | Active | One-call MVP analysis and golden-spine promotion | The owner-verified six-format golden path proves browser-local protection, Managed Turnstile, one Groq request, strict finished-analysis validation and browser rendering. Preserve the internal challenge-and-synthesis reasoning intent in one fixed prompt; reject three network stages, active OpenRouter fallback, intermediate schemas and user-facing methodology labels for the MVP. |
 
 Detailed active EDR artifacts are
 `docs/EDR_BROWSER_LOCAL_TRUST_BOUNDARY.md` and
@@ -2711,6 +2559,8 @@ Detailed active EDR artifacts are
 `docs/EDR_LANGUAGE_SCORE_MARGIN.md`, and
 `docs/EDR_LANGUAGE_ENGLISH_FIRST.md`, and
 `docs/EDR_TURNSTILE_TIMEOUT.md`.
+The current MVP analysis correction is detailed in
+`docs/EDR_ONE_CALL_MVP.md`.
 
 ---
 
@@ -3227,11 +3077,10 @@ Verify:
 
 Do not delete the last working copy of a required secret before replacement is verified.
 
-Required final private-runtime secrets:
+Required final private-runtime secrets for the currently active MVP path:
 
 * Turnstile;
 * Groq;
-* OpenRouter;
 * Ed25519;
 * ML-DSA-65.
 
@@ -3248,11 +3097,10 @@ Do not delete unrelated owner resources.
 
 Destructive external resource removal must follow normal owner review/authorization.
 
-The target after retirement is operational dependence only on:
+The active MVP target after retirement is operational dependence only on:
 
 * Cloudflare;
 * Groq;
-* OpenRouter;
 * GitHub.
 
 ---
@@ -3508,70 +3356,70 @@ Failures: `F-NETWORK-BOUNDARY-FAILURE`, `F-PII-GATE-FAILURE`.
 Forbidden: Binary, filename, prompt, provider, URL, API key, email, extra field.
 PASS: Exact/unknown/enums/references/size/double-validation tests pass; only redacted typed data serializes.
 
-## Task 1.15 — Groq/OpenRouter router
+## Task 1.15 — Groq transport
 Purpose: Provide one bounded free-only private model transport.
 Preconditions: Task 1.14 passed.
 Allowed scope: TrustedRuntime direct HTTPS adapter, reviewed config, privacy request, tests.
-Inputs: Stage identifier and validated stage request.
+Inputs: One validated finished-analysis request.
 Outputs: Schema `S-AI-TRANSPORT-RESULT` for immediate validation.
-Required behavior: Allow only configured Groq Free/OpenRouter Free; enforce privacy; keys remain private.
+Required behavior: Allow only configured Groq Free; enforce privacy; keys remain private; exactly one attempt.
 Bounds: `B-AI-REQUEST-BYTES`, `B-AI-TIMEOUT-MS`, `B-AI-RESPONSE-BYTES`, `B-MODEL-OUTPUT-TOKENS`.
 Schemas: `S-AI-TRANSPORT-REQUEST`, `S-AI-TRANSPORT-RESULT`.
-Failures: `F-GROQ-FAILURE`, `F-OPENROUTER-FAILURE`, `F-AI-TIMEOUT`, `F-INVALID-AI-SCHEMA`.
+Failures: `F-GROQ-FAILURE`, `F-AI-TIMEOUT`, `F-INVALID-AI-SCHEMA`.
 Forbidden: SDK, browser provider call, arbitrary/paid endpoint, BYOK, logging, persistence.
 PASS: Exact request/privacy/secret/timeout/size/HTTP/free-route/no-log tests pass.
 
-## Task 1.16 — Strawman schema and prompt
-Purpose: Produce first source-linked analysis stage.
+## Task 1.16 — Finished-analysis schema and prompt
+Purpose: Produce one cohesive finished analysis.
 Preconditions: Task 1.15 passed.
 Allowed scope: Fixed prompt, focus instructions, Zod schema, fixtures.
 Inputs: Trusted redacted sources and focus.
-Outputs: Schema `S-STRAWMAN-OUTPUT`.
-Required behavior: Source is data; every finding has confidence/evidence; full uses one call for three lenses.
-Bounds: `B-STRAWMAN-FINDINGS`, `B-EVIDENCE-REFERENCES`, `B-QUANTITATIVE-CANDIDATES`, `B-RISKS`, `B-ASSUMPTIONS`, `B-AI-RESPONSE-BYTES`, `B-MODEL-OUTPUT-TOKENS`.
-Schemas: `S-STRAWMAN-OUTPUT`, `S-FOCUS`.
+Outputs: Schema `S-FINISHED-ANALYSIS`.
+Required behavior: Source is data; perform challenge and strongest-competing-interpretation reasoning internally; return only the balanced finished result; focus changes the fixed prompt.
+Bounds: `B-FINISHED-ANALYSIS-ITEMS`, `B-FINISHED-ANALYSIS-TEXT-CHARS`, `B-AI-RESPONSE-BYTES`, `B-MODEL-OUTPUT-TOKENS`.
+Schemas: `S-FINISHED-ANALYSIS`, `S-FOCUS`.
 Failures: `F-INVALID-AI-SCHEMA`, `F-AI-TIMEOUT`.
 Forbidden: Tools, HTML, invented references, extra fields, specialist/router call.
 PASS: Golden valid and invalid/unknown/bound/reference/injection fixtures pass.
 
-## Task 1.17 — Steelman schema and prompt
-Purpose: Critique Strawman against the same evidence.
+## Task 1.17 — One-call analysis orchestration
+Purpose: Execute the validated one-call analysis path.
 Preconditions: Task 1.16 passed.
-Allowed scope: Fixed critic prompt, Zod schema, fixtures.
-Inputs: Redacted sources and Schema `S-STRAWMAN-OUTPUT`.
-Outputs: Schema `S-STEELMAN-OUTPUT`.
-Required behavior: Identify omissions/contradictions/counter-evidence/unsupported claims/nuance/connections; cite source-based items.
-Bounds: `B-STEELMAN-ITEMS`, `B-EVIDENCE-REFERENCES`, `B-AI-RESPONSE-BYTES`, `B-MODEL-OUTPUT-TOKENS`.
-Schemas: `S-STRAWMAN-OUTPUT`, `S-STEELMAN-OUTPUT`.
-Failures: `F-INVALID-AI-SCHEMA`, `F-AI-TIMEOUT`.
-Forbidden: Tools, HTML, unvalidated input, extra fields, report generation.
-PASS: Golden and invalid IDs/references/status/unknown/bounds/injection fixtures pass.
+Allowed scope: Fixed prompt, one Groq adapter, immediate strict validation and fixtures.
+Inputs: Redacted sources, Schema `S-FOCUS`, private Groq binding.
+Outputs: Schema `S-FINISHED-ANALYSIS` or `S-SAFE-MODE`.
+Required behavior: Build one fixed request, make one Groq attempt, immediately validate and expose no intermediate reasoning.
+Bounds: `B-PROVIDER-ATTEMPTS-TOTAL`, `B-AI-TIMEOUT-MS`, `B-ANALYSIS-WALL-MS`.
+Schemas: `S-AI-TRANSPORT-REQUEST`, `S-AI-TRANSPORT-RESULT`, `S-FINISHED-ANALYSIS`, `S-SAFE-MODE`.
+Failures: `F-GROQ-FAILURE`, `F-INVALID-AI-SCHEMA`, `F-AI-TIMEOUT`.
+Forbidden: Second call, fallback, tools, HTML, unvalidated input, extra fields, report generation.
+PASS: Golden one-call, invalid schema, transport failure, timeout, no-fallback and no-persistence fixtures pass.
 
-## Task 1.18 — Oracle schema and prompt
-Purpose: Produce final synthesis and resolve every critique.
+## Task 1.18 — Analysis-focus behavior
+Purpose: Make every allowed focus materially affect the one-call analysis.
 Preconditions: Task 1.17 passed.
-Allowed scope: Fixed prompt, Zod schema, resolution checks, fixtures.
-Inputs: Redacted sources plus validated Strawman and Steelman.
-Outputs: Schema `S-ORACLE-OUTPUT`.
-Required behavior: Resolve/mark every critique; source-link findings/recommendations/risks; expose validated numeric candidates only.
-Bounds: `B-ORACLE-FINDINGS`, `B-RECOMMENDATIONS`, `B-RISKS`, `B-EVIDENCE-REFERENCES`, `B-QUANTITATIVE-CANDIDATES`, `B-AI-RESPONSE-BYTES`, `B-MODEL-OUTPUT-TOKENS`.
-Schemas: `S-STRAWMAN-OUTPUT`, `S-STEELMAN-OUTPUT`, `S-ORACLE-OUTPUT`.
+Allowed scope: Fixed focus instructions and fixtures.
+Inputs: Schema `S-FOCUS` and representative redacted sources.
+Outputs: Four fixed prompt variants producing Schema `S-FINISHED-ANALYSIS`.
+Required behavior: Every focus adds its approved lens while preserving one request and one cohesive output.
+Bounds: `B-FINISHED-ANALYSIS-ITEMS`, `B-FINISHED-ANALYSIS-TEXT-CHARS`, `B-AI-REQUEST-BYTES`.
+Schemas: `S-FOCUS`, `S-FINISHED-ANALYSIS`.
 Failures: `F-INVALID-AI-SCHEMA`, `F-AI-TIMEOUT`.
-Forbidden: Tools, HTML, omitted critique, unchecked intermediate, invented evidence.
-PASS: Golden/complete resolution and missing/duplicate/reference/number/unknown/bound/injection fixtures pass.
+Forbidden: Decorative focus, second call, methodology label, tools, HTML, unchecked output.
+PASS: All four prompts differ by the exact lens and every case remains one call with the same strict output schema.
 
-## Task 1.19 — Bounded provider failover
-Purpose: Execute three stages with finite provider policy.
+## Task 1.19 — Bounded provider failure
+Purpose: Enforce the finite one-attempt provider policy.
 Preconditions: Task 1.18 passed.
-Allowed scope: Request-local orchestrator, availability state, timers, tests.
-Inputs: Validated request and three stage adapters.
-Outputs: Schema `S-ORACLE-OUTPUT` or `S-SAFE-MODE`.
-Required behavior: Each stage Groq once then OpenRouter Free once; failed provider unavailable for request; normal exactly 3 calls; wall stop.
-Bounds: `B-PROVIDER-ATTEMPTS-PER-STAGE`, `B-PROVIDER-ATTEMPTS-TOTAL`, `B-AI-TIMEOUT-MS`, `B-ANALYSIS-WALL-MS`.
-Schemas: `S-AI-TRANSPORT-RESULT`, `S-ORACLE-OUTPUT`, `S-SAFE-MODE`.
-Failures: `F-GROQ-FAILURE`, `F-OPENROUTER-FAILURE`, `F-AI-TIMEOUT`, `F-INVALID-AI-SCHEMA`.
-Forbidden: Retry loop, paid provider, resurrection, partial Oracle, persistence.
-PASS: All permutations prove 3 normal and ≤6 total attempts; invalid schema hard-fails; terminal faults stop later stages.
+Allowed scope: Request-local orchestrator, timer and tests.
+Inputs: Validated request and one Groq adapter.
+Outputs: Schema `S-FINISHED-ANALYSIS` or `S-SAFE-MODE`.
+Required behavior: Exactly one attempt; every transport/schema/timeout failure stops safely; wall stop.
+Bounds: `B-PROVIDER-ATTEMPTS-TOTAL`, `B-AI-TIMEOUT-MS`, `B-ANALYSIS-WALL-MS`.
+Schemas: `S-AI-TRANSPORT-RESULT`, `S-FINISHED-ANALYSIS`, `S-SAFE-MODE`.
+Failures: `F-GROQ-FAILURE`, `F-AI-TIMEOUT`, `F-INVALID-AI-SCHEMA`.
+Forbidden: Retry, fallback, paid provider, partial result, persistence.
+PASS: Failure matrix proves one normal and at most one total attempt; invalid schema and terminal faults return no partial result.
 
 ## Task 1.20 — Prompt-injection controls
 Purpose: Prove source instructions cannot control application or agents.
@@ -3581,20 +3429,20 @@ Inputs: Redacted hostile instruction records.
 Outputs: Validated stage schema or Safe Mode.
 Required behavior: Source is untrusted evidence; no tool/route/network/file/storage/signing/email/deployment capability.
 Bounds: `B-AI-REQUEST-BYTES`, `B-AI-RESPONSE-BYTES`, `B-MODEL-OUTPUT-TOKENS`.
-Schemas: `S-STRAWMAN-OUTPUT`, `S-STEELMAN-OUTPUT`, `S-ORACLE-OUTPUT`.
+Schemas: `S-FINISHED-ANALYSIS`.
 Failures: `F-INVALID-AI-SCHEMA`.
 Forbidden: Dynamic system prompt, model HTML, tools, source-controlled role/messages.
 PASS: Frozen direct/indirect/exfiltration/tool/HTML fixtures cannot alter destination/schema/order/control.
 
 ## Task 1.21 — Plain functional dashboard
-Purpose: Complete unstyled mission journey for valid Oracle results.
+Purpose: Complete unstyled mission journey for valid finished analysis.
 Preconditions: Task 1.20 passed.
 Allowed scope: Accessible UI states, escaped rendering, Turnstile reset, integration tests.
-Inputs: Local flow, focus/outputs, validated Oracle or Safe Mode.
-Outputs: Browser-only dashboard; downloads remain Phase 2.
-Required behavior: Show progress, links/confidence, clear faults, fresh challenge after attempt, escaped text.
+Inputs: Local flow, focus, validated finished analysis or Safe Mode.
+Outputs: Browser-only finished analysis; downloads remain a separately approved later layer.
+Required behavior: Show restrained prepare/analyze/report progress, four result sections, clear truthful faults, fresh challenge after attempt and escaped text; expose no methodology labels.
 Bounds: `B-UI-FINDINGS`, `B-UI-TEXT-CHARS`, `B-ANALYSIS-WALL-MS`, `B-FRONTEND-JS-GZIP-BYTES`.
-Schemas: `S-ORACLE-OUTPUT`, `S-SAFE-MODE`.
+Schemas: `S-FINISHED-ANALYSIS`, `S-SAFE-MODE`.
 Failures: `F-INVALID-DOCUMENT`, `F-UNSUPPORTED-LANGUAGE`, `F-PII-GATE-FAILURE`, `F-AI-TIMEOUT`, `F-QUOTA-EXHAUSTED`.
 Forbidden: Phase 2 finish, HTML, persistence, chat, email, BYOK, result route, upload fallback.
 PASS: Keyboard/semantic success/fault states pass Chrome/Edge; escaped, no persistence, JS bound.
@@ -3605,18 +3453,18 @@ Preconditions: Task 1.21 passed.
 Allowed scope: Fault orchestration, approved recovery, cancellation, cleanup, tests.
 Inputs: Injected local/provider/timeout/allocation faults.
 Outputs: Approved retry success or Schema `S-SAFE-MODE`.
-Required behavior: Parser gets one fresh Worker; redactor no retry; AI uses Task 1.19; terminal fault cancels later work, terminates/wipes, resets Turnstile, forbids improper egress.
+Required behavior: Parser gets one fresh Worker; redactor no retry; AI gets one attempt; terminal fault cancels later work, terminates/wipes, resets Turnstile, forbids improper egress.
 Bounds: `B-PARSER-RETRY-COUNT`, `B-REDACTION-RETRY-COUNT`, `B-PROVIDER-ATTEMPTS-TOTAL`, `B-ANALYSIS-WALL-MS`.
 Schemas: `S-SAFE-MODE`.
-Failures: `F-PARSER-CRASH`, `F-PARSER-TIMEOUT`, `F-PARSER-ALLOCATION`, `F-REDACTION-FAILURE`, `F-GROQ-FAILURE`, `F-OPENROUTER-FAILURE`, `F-AI-TIMEOUT`.
+Failures: `F-PARSER-CRASH`, `F-PARSER-TIMEOUT`, `F-PARSER-ALLOCATION`, `F-REDACTION-FAILURE`, `F-GROQ-FAILURE`, `F-AI-TIMEOUT`.
 Forbidden: Extra retry, partial output, silent degradation, network after privacy failure, Worker reuse.
 PASS: Fault matrix proves counts, cleanup, forbidden downstream absence, fresh-parser recovery, labelled Safe Mode, Phase 0 regression.
 
 ## PHASE 1 EXIT GATE
 Run complete Phase 1 plus Phase 0 regressions. PASS requires six formats,
 exact bounds, hostile/English/PII gates, zero forbidden egress/storage, real
-document to valid Oracle in exactly three normal calls, source/confidence links,
-bounded failover, Chrome/Edge, exact-zero, and Doctor. Report `PHASE 1 — PASS`
+document to valid finished analysis in exactly one call, four focus variants,
+Chrome/Edge, exact-zero, and Doctor. Report `PHASE 1 — PASS`
 or `PHASE 1 — BLOCKED`, then stop for Phase 2 owner authorization.
 
 ---
@@ -3642,14 +3490,14 @@ PASS: Visual regression, accessibility, keyboard, reduced-motion, font/network a
 Purpose: Organize validated analysis for fast professional reading.
 Preconditions: Task 2.1 passed.
 Allowed scope: Dashboard hierarchy, sections, source-link navigation, empty/fault states, tests.
-Inputs: Schema `S-ORACLE-OUTPUT`.
+Inputs: Schema `S-FINISHED-ANALYSIS`.
 Outputs: Deterministic accessible dashboard view model.
 Required behavior: Present executive summary, findings, recommendations, risks, confidence and evidence without changing content.
 Bounds: `B-UI-FINDINGS`, `B-UI-TEXT-CHARS`, `B-EVIDENCE-REFERENCES`.
-Schemas: `S-ORACLE-OUTPUT`, `S-SAFE-MODE`.
+Schemas: `S-FINISHED-ANALYSIS`, `S-SAFE-MODE`.
 Failures: `F-INVALID-AI-SCHEMA`.
 Forbidden: AI-generated layout/HTML, hidden evidence, chat, persistence.
-PASS: Golden Oracle renders exact hierarchy/order/links; empty and bound cases are accessible; no content mutation.
+PASS: Golden finished analysis renders the exact four-section hierarchy; bound cases are accessible; no content mutation or methodology labels.
 
 ## Task 2.3 — Recharts visualizations
 Purpose: Render accessible charts from validated deterministic chart data.
@@ -3665,14 +3513,14 @@ Forbidden: Raw AI data, invented number, decorative chart, remote library/CDN.
 PASS: Golden/accessibility/empty/invalid/bound cases pass and bundle remains within bound.
 
 ## Task 2.4 — Deterministic chart transforms
-Purpose: Convert Oracle numeric candidates into safe chart data.
+Purpose: Preserve the tested deterministic chart transform for a separately approved future output layer.
 Preconditions: Task 2.3 passed.
 Allowed scope: Validation/transformation functions and numeric fixtures.
-Inputs: Valid quantitative candidates from Schema `S-ORACLE-OUTPUT`.
+Inputs: Valid quantitative candidates from a separately approved report adapter.
 Outputs: Schema `S-CHART-DATA`.
 Required behavior: Validate finite numbers, units, context, evidence and compatible series; omit invalid candidates.
 Bounds: `B-QUANTITATIVE-CANDIDATES`, `B-CHARTS`, `B-CHART-POINTS`.
-Schemas: `S-ORACLE-OUTPUT`, `S-CHART-DATA`.
+Schemas: `S-CHART-DATA`.
 Failures: `F-INVALID-AI-SCHEMA`.
 Forbidden: Guessing, unit conversion without explicit rule, model call, persistence.
 PASS: Finite/unit/evidence/grouping/order/omission cases pass deterministically.
@@ -3861,14 +3709,14 @@ Forbidden: Online call, classification-contract drift, translation.
 PASS: Expected accept/reject matrix passes Chrome/Edge and no language-data request occurs.
 
 ## Task 3.4 — Prompt-injection fixtures release gate
-Purpose: Freeze adversarial source handling across all AI stages.
+Purpose: Freeze adversarial source handling across the one-call AI boundary.
 Preconditions: Task 3.3 passed.
 Allowed scope: Additive synthetic injection fixtures and mocked/live-free reviewed tests.
 Inputs: Direct, indirect, role, tool, exfiltration, HTML and signing-control attacks.
 Outputs: Valid schemas or Safe Mode without control-plane change.
-Required behavior: Preserve Task 1.20 protections and exact stage order.
+Required behavior: Preserve Task 1.20 protections and exactly one fixed request.
 Bounds: `B-AI-REQUEST-BYTES`, `B-AI-RESPONSE-BYTES`, `B-MODEL-OUTPUT-TOKENS`.
-Schemas: `S-STRAWMAN-OUTPUT`, `S-STEELMAN-OUTPUT`, `S-ORACLE-OUTPUT`.
+Schemas: `S-FINISHED-ANALYSIS`.
 Failures: `F-INVALID-AI-SCHEMA`.
 Forbidden: Tool capability, dynamic destination, ignored fixture.
 PASS: Every frozen attack fails to change routes, tools, schemas, report/signing control or privacy.
@@ -3942,12 +3790,12 @@ PASS: Zero user-data writes for every journey in Chrome/Edge.
 Purpose: Verify exact free-only outage reflexes.
 Preconditions: Task 3.9 passed.
 Allowed scope: Transport fault injection and orchestrator assertions.
-Inputs: Timeout, network, 429, 5xx, policy, invalid schema per provider/stage.
-Outputs: Fallback result or Safe Mode.
-Required behavior: Enforce Groq→OpenRouter Free and request-local unavailability.
+Inputs: Timeout, network, 429, 5xx, policy and invalid schema for the one Groq attempt.
+Outputs: Finished analysis or Safe Mode.
+Required behavior: Enforce exactly one Groq attempt and no fallback.
 Bounds: `B-PROVIDER-ATTEMPTS-PER-STAGE`, `B-PROVIDER-ATTEMPTS-TOTAL`, `B-AI-TIMEOUT-MS`, `B-ANALYSIS-WALL-MS`.
 Schemas: `S-AI-TRANSPORT-RESULT`, `S-SAFE-MODE`.
-Failures: `F-GROQ-FAILURE`, `F-OPENROUTER-FAILURE`, `F-AI-TIMEOUT`.
+Failures: `F-GROQ-FAILURE`, `F-AI-TIMEOUT`.
 Forbidden: Paid/third provider, extra retry, partial report.
 PASS: Full outage matrix proves exact attempts, cancellation and Safe Mode.
 
@@ -3972,7 +3820,7 @@ Inputs: Missing, extra, wrong-type, invalid-enum/reference and over-bound payloa
 Outputs: Fixed safe error or Safe Mode.
 Required behavior: Strict validation at browser, public ingress, trusted consumer and AI stages.
 Bounds: `B-SCHEMA-MUTATIONS`, `B-ANALYZE-BODY-BYTES`, `B-AI-RESPONSE-BYTES`.
-Schemas: `S-ANALYZE-REQUEST`, `S-TRUSTED-ANALYZE-REQUEST`, `S-STRAWMAN-OUTPUT`, `S-STEELMAN-OUTPUT`, `S-ORACLE-OUTPUT`, `S-ANALYZE-RESPONSE`.
+Schemas: `S-ANALYZE-REQUEST`, `S-TRUSTED-ANALYZE-REQUEST`, `S-FINISHED-ANALYSIS`.
 Failures: `F-INVALID-AI-SCHEMA`, `F-NETWORK-BOUNDARY-FAILURE`.
 Forbidden: Coercion of security fields, unknown-field stripping then acceptance.
 PASS: Mutation matrix fails at expected boundary with no later operation/logged content.
@@ -4061,7 +3909,7 @@ Preconditions: Task 3.18 passed.
 Allowed scope: Frozen representative local/synthetic corpus and timing harness.
 Inputs: Clean-cache/warm supported-format journeys and full analyses.
 Outputs: Stage median/p95 measurement report.
-Required behavior: Record shell, engine, local processing, three AI stages, PDF, signing and total; no cherry-picking.
+Required behavior: Record shell, engine, local processing, one AI request, PDF, signing and total when those layers are active; no cherry-picking.
 Bounds: `B-APP-SHELL-MS`, `B-ENGINE-COLD-MS`, `B-LOCAL-WARM-MS`, `B-ANALYSIS-MEDIAN-MS`, `B-ANALYSIS-WALL-MS`, `B-PDF-RENDER-MEDIAN-MS`, `B-SIGNING-MEDIAN-MS`.
 Schemas: `S-PERFORMANCE-RESULT`.
 Failures: `F-PERFORMANCE-GATE`.
@@ -4150,7 +3998,7 @@ PASS: Clean environment builds/tests/dry-runs and reproduces pinned assets; disp
 Purpose: Confirm release has no charge path before trust/release work.
 Preconditions: Task 3.25 passed.
 Allowed scope: Read-only account/config/billing inspection and signed owner checklist record.
-Inputs: Cloudflare, Groq, OpenRouter and GitHub target account configurations.
+Inputs: Cloudflare, Groq and GitHub target account configurations.
 Outputs: Exact-zero attestation in `BUILD_LOG.md` without secrets.
 Required behavior: Confirm Free-only routes, no paid overflow/top-up/second runtime and quota fail-closed controls.
 Bounds: `B-BROWSER-RUN-DAY-MS`, `B-RATE-ATTEMPTS`, `B-PROVIDER-ATTEMPTS-TOTAL`.
@@ -4281,7 +4129,7 @@ Preconditions: Task 4.8 passed.
 Allowed scope: Static case-study content and reviewed diagrams.
 Inputs: Architecture, EDRs and concise build evidence.
 Outputs: Portfolio case study.
-Required behavior: Explain exact-zero pivot, browser boundary, direct DO, three-stage AI, Browser Run and hybrid signing with limitations.
+Required behavior: Explain exact-zero pivot, browser boundary, direct DO, one-call cohesive AI analysis, Browser Run and hybrid signing with limitations.
 Bounds: `B-CASE-STUDY-CHARS`, `B-STATIC-ASSET-BYTES`.
 Schemas: `S-TRUST-CLAIMS`.
 Failures: `F-DOCUMENTATION-GATE`.
@@ -4343,7 +4191,7 @@ Trust page must explain:
 ### External processors
 
 * Cloudflare;
-* Groq or OpenRouter;
+* Groq;
 * Browser Run.
 
 ### Never stored by Aethelgard
@@ -4557,10 +4405,7 @@ rate / route / bounds
 v
 PRIVATE TRUSTEDRUNTIME
 Turnstile
-Groq -> OpenRouter Free
-Strawman
-Steelman
-Oracle
+one cohesive Groq analysis
 report
 Browser Run
 SHA-256
@@ -4588,7 +4433,6 @@ Runtime external relationships:
 ```text
 Cloudflare
 Groq
-OpenRouter
 GitHub
 ```
 
@@ -4687,17 +4531,17 @@ implementation may silently truncate to satisfy a bound.
 | B-AI-REQUEST-BYTES | 524,288 | UTF-8 bytes | One provider request | Safe Mode before call |
 | B-AI-TIMEOUT-MS | 30,000 | ms | One provider attempt | `F-AI-TIMEOUT` |
 | B-AI-RESPONSE-BYTES | 262,144 | bytes | One provider response | `F-INVALID-AI-SCHEMA` |
-| B-MODEL-OUTPUT-TOKENS | 4,096 | tokens | One provider attempt | Hard provider failure |
-| B-STRAWMAN-FINDINGS | 24 | items | Strawman | Strict schema rejection |
-| B-STEELMAN-ITEMS | 24 | items | Steelman | Strict schema rejection |
-| B-ORACLE-FINDINGS | 24 | items | Oracle | Strict schema rejection |
+| B-MODEL-OUTPUT-TOKENS | 2,048 | tokens | One provider attempt | Hard provider failure |
+| B-FINISHED-SUMMARY-CHARS | 2,000 | Unicode code points | Executive summary | Strict schema rejection |
+| B-FINISHED-ANALYSIS-ITEMS | 12 | items per collection | Findings, risks, recommendations | Strict schema rejection |
+| B-FINISHED-ANALYSIS-TEXT-CHARS | 1,200 | Unicode code points | One finished-analysis item | Strict schema rejection |
 | B-RECOMMENDATIONS | 16 | items | Oracle/report | Strict schema rejection |
 | B-RISKS | 16 | items | One AI stage/report | Strict schema rejection |
 | B-ASSUMPTIONS | 16 | items | Strawman | Strict schema rejection |
 | B-EVIDENCE-REFERENCES | 8 | refs per item | Any AI item | Strict schema rejection |
 | B-QUANTITATIVE-CANDIDATES | 24 | items | One stage/report | Strict schema rejection |
-| B-PROVIDER-ATTEMPTS-PER-STAGE | 2 | attempts | Groq then OpenRouter Free | Safe Mode after second |
-| B-PROVIDER-ATTEMPTS-TOTAL | 6 | attempts | Whole analysis | Safe Mode above |
+| B-PROVIDER-ATTEMPTS-PER-STAGE | 1 | attempt | One cohesive Groq analysis | Safe Mode after first |
+| B-PROVIDER-ATTEMPTS-TOTAL | 1 | attempt | Whole MVP analysis | Safe Mode above |
 | B-ANALYSIS-WALL-MS | 180,000 | ms | Full analysis | Cancel; Safe Mode |
 | B-APP-SHELL-MS | 2,000 | ms | Initial interactive target | `F-PERFORMANCE-GATE` |
 | B-ENGINE-COLD-MS | 10,000 | ms | Clean-cache parser ready target | `F-PERFORMANCE-GATE` |
@@ -4832,44 +4676,31 @@ parse inside TrustedRuntime. The Turnstile token is consumed before AI and is
 not included in any AI request.
 
 ### S-AI-TRANSPORT-REQUEST
-Exact internal object `{schema_version:"1",stage:"strawman"|"steelman"|
-"oracle",provider:"groq"|"openrouter_free",model_id:string,messages:[fixed
-system message, fixed user-data message],max_output_tokens:4096}`. Model ID must
-equal reviewed configuration; no caller-provided URL/model/message role.
+Exact internal object `{schema_version:"1",stage:"analysis",provider:"groq",
+model_id:"openai/gpt-oss-20b",messages:[fixed system message,fixed user-data
+message],max_output_tokens:2048}`. No caller-provided URL, model, role, prompt,
+provider, or message is allowed.
 
 ### S-AI-TRANSPORT-RESULT
-Union `{ok:true,provider:"groq"|"openrouter_free",body:unknown}` or
+Union `{ok:true,provider:"groq",body:unknown}` or
 `{ok:false,provider,reason:"network"|"rate_limit"|"unavailable"|"policy"|
 "timeout"|"too_large"|"invalid_schema"}`. Raw body is request-memory only and
-must be immediately parsed into the relevant strict stage schema.
+must be immediately parsed into Schema `S-FINISHED-ANALYSIS`.
 
-### S-STRAWMAN-OUTPUT
-Exact object `{schema_version:"1",findings:Finding[],risks:Risk[],
-assumptions:Assumption[],quantitative_candidates:Candidate[]}`. `Finding` is
-`{id:string,title:string,analysis:string,confidence:"high"|"medium"|"low",
-evidence:S-SOURCE-REFERENCE[]}`. `Risk`/`Assumption` use `{id,text,confidence,
-evidence}`. `Candidate` is `{id,label,value:number,unit:string,context:string,
-evidence:S-SOURCE-REFERENCE[]}`. Collections use Bounds Registry limits.
-
-### S-STEELMAN-OUTPUT
-Exact object `{schema_version:"1",items:Critique[]}` where `Critique` is
-`{id:string,strawman_finding_ids:string[],kind:"omission"|"contradiction"|
-"counter_evidence"|"unsupported"|"nuance"|"missed_connection",critique:string,
-evidence:S-SOURCE-REFERENCE[]}`. IDs are unique and referenced Strawman IDs exist.
-
-### S-ORACLE-OUTPUT
-Exact object `{schema_version:"1",executive_summary:string,findings:Finding[],
-recommendations:Recommendation[],risks:Risk[],quantitative_candidates:Candidate[],
-critique_resolutions:Resolution[]}`. `Recommendation` is `{id,title,action,
-priority:"high"|"medium"|"low",confidence,evidence}`. `Resolution` is
-`{steelman_item_id,status:"resolved"|"unresolved",explanation:string}` and
-covers every Steelman item exactly once. Shared types match `S-STRAWMAN-OUTPUT`.
+### S-FINISHED-ANALYSIS
+Exact object `{schema_version:"1",executive_summary:string,findings:string[],
+risks:string[],recommendations:string[]}`. The summary is non-empty and at most
+`B-FINISHED-SUMMARY-CHARS`. Each collection contains 1 through
+`B-FINISHED-ANALYSIS-ITEMS` non-empty strings, each at most
+`B-FINISHED-ANALYSIS-TEXT-CHARS`. Unknown fields and methodology-labelled
+intermediate structures are rejected.
 
 ### S-REPORT-MODEL
 Exact service-owned object `{schema_version:"1",focus:S-FOCUS,title:string,
 executive_summary:string,findings:Finding[],recommendations:Recommendation[],
 risks:Risk[],charts:S-CHART-DATA[],verification:{ed25519_key_id:string,
-mldsa65_key_id:string}}`; derived only from validated Oracle data/configuration.
+mldsa65_key_id:string}}`; when the separately approved report layer is active,
+it is derived only from validated `S-FINISHED-ANALYSIS` data and configuration.
 
 ### S-CHART-DATA
 Exact object `{schema_version:"1",id:string,title:string,unit:string,
@@ -4985,10 +4816,10 @@ named downstream operation must not run for that request.
 | F-PII-GATE-FAILURE | Redaction/corpus/leak validation | 0 | Privacy Safe Mode | Network, AI, PDF, signing |
 | F-NETWORK-BOUNDARY-FAILURE | Serialization/instrumented boundary/storage | 0 | Privacy Safe Mode and release block | AI, PDF, signing |
 | F-TURNSTILE-FAILURE | TrustedRuntime Siteverify | 0; fresh token for new user attempt | Verification Safe Mode/403/503 | AI, Browser Run, PDF, signing |
-| F-GROQ-FAILURE | Groq transport/schema/privacy | 0 to Groq | Mark unavailable; one OpenRouter Free attempt | Further Groq calls this request |
-| F-OPENROUTER-FAILURE | OpenRouter Free transport/schema/privacy | 0 | Analysis Safe Mode | Later AI stages, PDF, signing |
-| F-INVALID-AI-SCHEMA | Immediate strict stage parse | Counts as provider hard failure | Approved fallback or analysis Safe Mode | Unvalidated text use/report/signing |
-| F-AI-TIMEOUT | Provider or wall timer | Provider fallback if available; no wall retry | Approved fallback or analysis Safe Mode | Later work after wall stop |
+| F-GROQ-FAILURE | Groq transport/schema/privacy | 0 retries | Analysis Safe Mode | Fallback, second call, partial result |
+| F-OPENROUTER-FAILURE | Historical/inactive MVP fallback | 0 | Not reachable in the current MVP | Any OpenRouter request without new owner approval |
+| F-INVALID-AI-SCHEMA | Immediate strict finished-analysis parse | 0 | Analysis Safe Mode | Unvalidated text use/report/signing |
+| F-AI-TIMEOUT | Provider or wall timer | 0 | Analysis Safe Mode | Retry, fallback, later work after wall stop |
 | F-QUOTA-EXHAUSTED | TrustedRuntime Browser Run preflight | 0 | Quota Safe Mode; optional valid non-PDF journey only | Browser Run, PDF, signing |
 | F-BROWSER-RUN-FAILURE | Browser Run transport/deadline | 0 | PDF Safe Mode | PDF presentation and signing |
 | F-PDF-VALIDATION | PDF magic/size/content validation | 0 | PDF Safe Mode | Signing and PDF presentation |
