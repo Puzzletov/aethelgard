@@ -8,7 +8,7 @@ const francUrl = new URL("../node_modules/franc-min/index.js", import.meta.url).
 const compiled = ts.transpileModule(source, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
 }).outputText.replace('from "franc-min"', `from ${JSON.stringify(francUrl)}`);
-const { evaluateEnglishLanguage } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString("base64")}`);
+const { evaluateEnglishLanguage, inspectEnglishLanguage } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString("base64")}`);
 
 function records(content) {
   return Object.freeze([Object.freeze({
@@ -71,4 +71,12 @@ test("detector results are validated and only English ranked first passes", () =
   assert.deepEqual(evaluateEnglishLanguage(records(clearEnglish), () => [["und", 1]]), {
     schema_version: "1", accepted: false, reason: "insufficient",
   });
+});
+
+test("privacy-safe inspection exposes only the top language code without changing the decision", () => {
+  const inspection = inspectEnglishLanguage(records(clearEnglish), () => [["eng", 0.1], ["deu", 1]]);
+  assert.equal(inspection.top_rank, "eng");
+  assert.deepEqual(inspection.decision, evaluateEnglishLanguage(records(clearEnglish),
+    () => [["eng", 0.1], ["deu", 1]]));
+  assert.deepEqual(Object.keys(inspection).sort(), ["decision", "top_rank"]);
 });

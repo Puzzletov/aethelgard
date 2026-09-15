@@ -9,6 +9,11 @@ export const MAX_LANGUAGE_SAMPLE_CODE_POINTS = 20_000;
 type LanguageRanking = readonly (readonly [string, number])[];
 type LanguageDetector = (sample: string) => LanguageRanking;
 
+export interface LanguageInspection {
+  readonly decision: LanguageDecision;
+  readonly top_rank: string;
+}
+
 export type LanguageDecision =
   | Readonly<{
     schema_version: "1";
@@ -52,16 +57,27 @@ function validTuple(value: readonly [string, number] | undefined): value is read
     && value[1] >= 0 && value[1] <= 1;
 }
 
+export function inspectEnglishLanguage(
+  records: readonly NormalizedSourceRecord[], detect: LanguageDetector = francAll,
+): LanguageInspection {
+  const sample = leadingSample(records);
+  const [letters, tokens] = evidence(sample);
+  if (letters < MIN_LANGUAGE_LETTERS || tokens < MIN_LANGUAGE_TOKENS) {
+    return Object.freeze({ decision: rejected("insufficient"), top_rank: "und" });
+  }
+  let top: readonly [string, number] | undefined;
+  try { top = detect(sample)[0]; } catch {
+    return Object.freeze({ decision: rejected("mixed_or_uncertain"), top_rank: "und" });
+  }
+  if (!validTuple(top)) return Object.freeze({ decision: rejected("mixed_or_uncertain"), top_rank: "und" });
+  const decision = top[0] === "und" ? rejected("insufficient")
+    : top[0] !== "eng" ? rejected("non_english")
+      : Object.freeze({ schema_version: "1", accepted: true, language: "eng", letters, tokens } as const);
+  return Object.freeze({ decision, top_rank: top[0] });
+}
+
 export function evaluateEnglishLanguage(
   records: readonly NormalizedSourceRecord[], detect: LanguageDetector = francAll,
 ): LanguageDecision {
-  const sample = leadingSample(records);
-  const [letters, tokens] = evidence(sample);
-  if (letters < MIN_LANGUAGE_LETTERS || tokens < MIN_LANGUAGE_TOKENS) return rejected("insufficient");
-  let top: readonly [string, number] | undefined;
-  try { top = detect(sample)[0]; } catch { return rejected("mixed_or_uncertain"); }
-  if (!validTuple(top)) return rejected("mixed_or_uncertain");
-  if (top[0] === "und") return rejected("insufficient");
-  if (top[0] !== "eng") return rejected("non_english");
-  return Object.freeze({ schema_version: "1", accepted: true, language: "eng", letters, tokens });
+  return inspectEnglishLanguage(records, detect).decision;
 }

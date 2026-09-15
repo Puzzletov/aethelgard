@@ -2460,3 +2460,16 @@ historical work.
   `https://beta.aethelgard-3j9.pages.dev`; all six static routes return HTTP
   200. Production remains unchanged at deployment `07425838-...` from source
   `18c84b9`. PR #28 remains open and Task 4.12 remains paused.
+
+### 123. Owner-PDF local diagnostic build
+
+- **OBSERVATION BUILD READY** on 2026-09-15. The beta-only UI now reports the
+  first PDF preparation boundary as preflight, extraction, normalization,
+  language, redaction or outbound preparation, using only fixed reason codes,
+  file/page/source counts and local privacy-state flags. It exposes no filename,
+  document or extracted text, page content, PII value or mapping, verification
+  token, prompt, model response, network metadata or secret.
+- Validation, parsing, language, redaction and outbound behavior are unchanged.
+  Focused privacy/stage matrix tests, the complete frontend suite (89/89), strict
+  typecheck/lint and the deterministic beta build pass. Production, Workers,
+  Turnstile and Groq were not changed; Task 4.12 remains paused.

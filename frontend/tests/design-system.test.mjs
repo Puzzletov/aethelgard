@@ -82,6 +82,23 @@ test("the complete mission surface uses one restrained accessible visual system"
   assert.doesNotMatch(`${picker}\n${dashboard}`, /dangerouslySetInnerHTML|tabIndex=\{[1-9]\}/u);
 });
 
+test("beta PDF diagnostics are local-only and expose no document values", async () => {
+  const [picker, dashboard, diagnostic] = await Promise.all([
+    readText("components/document-picker.tsx"),
+    readText("components/analysis-dashboard.tsx"),
+    readText("analysis/pdf-diagnostic.ts"),
+  ]);
+  assert.match(picker, /NEXT_PUBLIC_AETHELGARD_SIMPLE_BETA === "1"/u);
+  assert.match(dashboard, /JSON\.stringify\(diagnostic, null, 2\)/u);
+  for (const field of ["stage", "reason_code", "file_type", "file_size_bytes", "pdf_page_count",
+    "pdf_nonempty_pages", "extracted_char_count", "extracted_word_count", "source_record_count",
+    "language_top_rank", "language_gate", "pii_detected_count", "redaction_status", "outbound_ready"]) {
+    assert.match(diagnostic, new RegExp(`\\b${field}\\b`, "u"));
+  }
+  assert.doesNotMatch(`${picker}\n${dashboard}\n${diagnostic}`,
+    /console\.|localStorage|sessionStorage|indexedDB|document_text|page_contents|pii_map|turnstile_token/iu);
+});
+
 test("a new selection clears and supersedes every prior preflight result", async () => {
   const picker = await readText("components/document-picker.tsx");
   const begin = picker.indexOf("const current = ++inspection.current");

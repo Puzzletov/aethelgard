@@ -74,6 +74,45 @@ test("zero-PII PDF and TXT content reaches exactly one analysis unchanged", asyn
     assert.equal(sends, 1);
     assert.equal(outbound.sources[0].content, safe);
     assert.equal(result.result.executive_summary, "A careful result.");
+    assert.equal(result.diagnostic, undefined);
+  }
+});
+
+test("PDF preparation failures expose only bounded local stage diagnostics", async () => {
+  const pdfDocument = { ...document, format: "pdf" };
+  const pdfValue = (content) => ({ ok: true, value: { ok: true, schema_version: "1",
+    format: "pdf", pages: [{ page: 2, content }] } });
+  const french = "Cette analyse indépendante explique clairement les preuves, les risques matériels, les contrôles internes et les recommandations pratiques pour une décision prudente.";
+  const cases = [
+    { stage: "EXTRACTION", reason: "pdf_parse_failed",
+      parseDocument: async () => ({ ok: true, value: { ok: false, code: "pdf_parse_failed" } }) },
+    { stage: "NORMALIZATION", reason: "invalid_document",
+      parseDocument: async () => pdfValue("") },
+    { stage: "LANGUAGE", reason: "non_english", parseDocument: async () => pdfValue(french) },
+    { stage: "REDACTION", reason: "redaction_failed", parseDocument: async () => pdfValue(english),
+      redact: async () => ({ schema_version: "1", ok: false, category: "privacy",
+        code: "redaction_failed", message: "Private information could not be removed safely.", retry: "fresh_document" }) },
+    { stage: "OUTBOUND_PREPARATION", reason: "redaction_failed", parseDocument: async () => pdfValue(english),
+      redact: async ({ sources }) => ({ schema_version: "1", sources: sources.map((source) =>
+        ({ ...source, content: "unsafe@example.invalid" })), placeholder_count: 1, must_redact_leaks: 0 }) },
+  ];
+  for (const item of cases) {
+    let sends = 0;
+    const result = await runBrowserMission(pdfDocument, "full", "token", () => undefined, {
+      parseDocument: item.parseDocument,
+      redact: item.redact ?? (async () => { throw new Error("not_reached"); }),
+      send: async () => { sends += 1; return oracle(); },
+    });
+    assert.equal(result.diagnostic.stage, item.stage);
+    assert.equal(result.diagnostic.reason_code, item.reason);
+    assert.equal(result.diagnostic.file_type, "PDF");
+    assert.equal(result.diagnostic.file_size_bytes, 4);
+    assert.deepEqual(Object.keys(result.diagnostic).sort(), ["extracted_char_count", "extracted_word_count",
+      "file_size_bytes", "file_type", "language_gate", "language_top_rank", "outbound_ready",
+      "pdf_nonempty_pages", "pdf_page_count", "pii_detected_count", "reason_code",
+      "redaction_status", "source_record_count", "stage"]);
+    assert.doesNotMatch(JSON.stringify(result.diagnostic), /filename|content|mapping|token|prompt|response/iu);
+    assert.equal(sends, 0);
   }
 });
 
