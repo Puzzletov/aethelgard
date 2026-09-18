@@ -14,7 +14,7 @@ const compiled = ts.transpileModule(source, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
 }).outputText.replace('from "compromise"', `from ${JSON.stringify(compromiseUrl)}`)
   .replace('from "../normalization/source-record"', `from ${JSON.stringify(normalizationUrl)}`);
-const { redactRequest } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString("base64")}`);
+const { MustRedactLeakError, redactRequest } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString("base64")}`);
 
 function sourceRecord(content, ordinal = 1) {
   return Object.freeze({ schema_version: "1", ordinal,
@@ -64,6 +64,19 @@ test("zero detected identifiers is an unchanged successful redaction", () => {
   assert.equal(result.must_redact_leaks, 0);
   assert.equal(result.sources[0].content, content);
   assert.equal("mapping" in result, false);
+});
+
+test("a real transformed-value collision still fails closed with structural evidence", () => {
+  assert.throws(() => redactRequest(request("Person | PERSON")), (error) => {
+    assert.equal(error instanceof MustRedactLeakError, true);
+    assert.deepEqual(error.diagnostic, {
+      must_redact_rule: "PERSON", must_redact_origin: "deterministic_pattern",
+      pre_transform_match_count: 1, planned_replacement_count: 1,
+      completed_replacement_count: 1, post_transform_match_count: 1,
+      match_representation: "transformed", span_alignment: "exact",
+    });
+    return true;
+  });
 });
 
 test("unknown request fields, invalid records, and the mapping bound fail closed", () => {

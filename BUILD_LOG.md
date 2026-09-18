@@ -2479,3 +2479,10 @@ historical work.
   transformation returns unchanged content for an empty local map. The beta
   diagnostic now attributes only allow-listed worker start, timeout, crash,
   invalid-result and transformation failure reasons without exposing content.
+- A second owner observation identified `must_redact_leak`. The guard checks
+  transformed sources against values actually placed in the local protection
+  map, so it is neither a zero-match rejection nor a wrong-buffer check. The
+  temporary beta diagnostic now reports only the rule class/origin and numeric
+  planned/completed/pre/post counts needed to distinguish an undetected repeat,
+  span mismatch or transformed-placeholder collision; failed counts otherwise
+  display `unavailable`. No matched value or derivative is exposed.

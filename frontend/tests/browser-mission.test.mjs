@@ -108,10 +108,12 @@ test("PDF preparation failures expose only bounded local stage diagnostics", asy
     assert.equal(result.diagnostic.reason_code, item.reason);
     assert.equal(result.diagnostic.file_type, "PDF");
     assert.equal(result.diagnostic.file_size_bytes, 4);
-    assert.deepEqual(Object.keys(result.diagnostic).sort(), ["extracted_char_count", "extracted_word_count",
-      "file_size_bytes", "file_type", "language_gate", "language_top_rank", "outbound_ready",
-      "pdf_nonempty_pages", "pdf_page_count", "pii_detected_count", "reason_code",
-      "redaction_status", "source_record_count", "stage"]);
+    assert.deepEqual(Object.keys(result.diagnostic).sort(), ["completed_replacement_count",
+      "extracted_char_count", "extracted_word_count", "file_size_bytes", "file_type", "language_gate", "language_top_rank",
+      "match_representation", "must_redact_origin", "must_redact_rule", "outbound_ready",
+      "pdf_nonempty_pages", "pdf_page_count", "pii_detected_count", "planned_replacement_count",
+      "post_transform_match_count", "pre_transform_match_count", "reason_code", "redaction_status",
+      "source_record_count", "span_alignment", "stage"]);
     assert.doesNotMatch(JSON.stringify(result.diagnostic), /filename|content|mapping|token|prompt|response/iu);
     assert.equal(sends, 0);
   }

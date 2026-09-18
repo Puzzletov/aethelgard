@@ -128,7 +128,7 @@ export async function runBrowserMission(
   catch { return failed(document, PRIVACY_FAILURE, "REDACTION", "redaction_failed",
     { ...languageObservation, redaction_status: "FAIL" }); }
   if ("ok" in redaction) return failed(document, PRIVACY_FAILURE, "REDACTION", redaction.diagnostic_reason,
-    { ...languageObservation, redaction_status: "FAIL" });
+    { ...languageObservation, redaction_status: "FAIL", ...(redaction.leak_diagnostic ?? {}) });
   const redactionObservation = { ...languageObservation, pii_detected_count: redaction.placeholder_count,
     redaction_status: "PASS" as const };
   let body: Uint8Array;

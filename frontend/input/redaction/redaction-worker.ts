@@ -1,4 +1,4 @@
-import { redactRequest } from "./redactor";
+import { MustRedactLeakError, redactRequest } from "./redactor";
 
 const KNOWN_FAILURES = new Set(["invalid_redaction_request", "mapping_limit", "redacted_output_limit",
   "must_redact_leak", "placeholder_limit"]);
@@ -11,6 +11,7 @@ self.onmessage = (event: MessageEvent<unknown>): void => {
   try {
     self.postMessage(redactRequest(event.data));
   } catch (error) {
-    self.postMessage({ schema_version: "1", ok: false, reason: failureReason(error) });
+    self.postMessage({ schema_version: "1", ok: false, reason: failureReason(error),
+      ...(error instanceof MustRedactLeakError ? { leak_diagnostic: error.diagnostic } : {}) });
   }
 };

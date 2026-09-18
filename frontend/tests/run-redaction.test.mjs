@@ -19,6 +19,10 @@ const record = Object.freeze({ schema_version: "1", ordinal: 1,
 const request = Object.freeze({ schema_version: "1", sources: Object.freeze([record]) });
 const result = Object.freeze({ schema_version: "1", sources: Object.freeze([record]),
   placeholder_count: 1, must_redact_leaks: 0 });
+const leakDiagnostic = Object.freeze({ must_redact_rule: "PERSON",
+  must_redact_origin: "deterministic_pattern", pre_transform_match_count: 1,
+  planned_replacement_count: 1, completed_replacement_count: 1,
+  post_transform_match_count: 1, match_representation: "transformed", span_alignment: "exact" });
 
 class FakeWorker {
   onmessage = null;
@@ -40,14 +44,15 @@ test("crash and invalid output fail closed with exact local reasons and no retry
     [(target) => target.onerror?.(new Event("error")), "crash"],
     [(target) => target.onmessage?.({ data: { ...result, mapping: {} } }), "invalid_result"],
     [(target) => target.onmessage?.({ data: { schema_version: "1", ok: false,
-      reason: "must_redact_leak" } }), "must_redact_leak"],
+      reason: "must_redact_leak", leak_diagnostic: leakDiagnostic } }), "must_redact_leak"],
   ]) {
     let factories = 0;
     const worker = new FakeWorker(behavior);
     const output = await runRedactionWorker(request, () => { factories += 1; return worker; });
     assert.deepEqual(output, { schema_version: "1", ok: false, category: "privacy",
       code: "redaction_failed", message: "Private information could not be removed safely.",
-      retry: "fresh_document", diagnostic_reason: reason });
+      retry: "fresh_document", diagnostic_reason: reason,
+      ...(reason === "must_redact_leak" ? { leak_diagnostic: leakDiagnostic } : {}) });
     assert.equal(factories, 1);
     assert.equal(worker.terminated, true);
   }

@@ -92,7 +92,9 @@ test("beta PDF diagnostics are local-only and expose no document values", async 
   assert.match(dashboard, /JSON\.stringify\(diagnostic, null, 2\)/u);
   for (const field of ["stage", "reason_code", "file_type", "file_size_bytes", "pdf_page_count",
     "pdf_nonempty_pages", "extracted_char_count", "extracted_word_count", "source_record_count",
-    "language_top_rank", "language_gate", "pii_detected_count", "redaction_status", "outbound_ready"]) {
+    "language_top_rank", "language_gate", "pii_detected_count", "redaction_status", "outbound_ready",
+    "must_redact_rule", "must_redact_origin", "pre_transform_match_count", "planned_replacement_count",
+    "completed_replacement_count", "post_transform_match_count", "match_representation", "span_alignment"]) {
     assert.match(diagnostic, new RegExp(`\\b${field}\\b`, "u"));
   }
   assert.doesNotMatch(`${picker}\n${dashboard}\n${diagnostic}`,
