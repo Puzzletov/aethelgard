@@ -2,8 +2,8 @@ const TASK_FIELDS = Object.freeze([
   "Purpose", "Preconditions", "Allowed scope", "Inputs", "Outputs",
   "Required behavior", "Bounds", "Schemas", "Failures", "Forbidden", "PASS",
 ]);
-const TASK_COUNTS = Object.freeze({ 0: 11, 1: 22, 2: 14, 3: 26, 4: 12 });
-const REGISTRY_SECTIONS = Object.freeze({ B: 53, S: 54, F: 55 });
+const TASK_COUNTS = Object.freeze({ 5: 3, 6: 3, 7: 3, 8: 3 });
+const REGISTRY_SECTIONS = Object.freeze({ B: 19, S: 20, F: 21 });
 
 function idsFromMatches(text, pattern, group = 1) {
   return [...text.matchAll(pattern)].map((match) => match[group]);
@@ -38,13 +38,13 @@ export function registryEntries(text, prefix) {
 
 function checkSections(text, errors) {
   const ids = idsFromMatches(text, /^# (\d+)\. /gm);
-  numericSequence(ids, 0, 55, "Section", errors);
+  numericSequence(ids, 0, 22, "Section", errors);
 }
 
 function checkEdrs(text, errors) {
-  const section = text.match(/^# 35\.[\s\S]*?(?=^# 36\.)/m)?.[0] ?? "";
+  const section = text.match(/^# 18\.[\s\S]*?(?=^# 19\.)/m)?.[0] ?? "";
   const ids = idsFromMatches(section, /^\| (\d+) \|/gm);
-  numericSequence(ids, 1, 41, "EDR", errors);
+  numericSequence(ids, 1, 42, "EDR", errors);
 }
 
 function checkTaskSequence(blocks, errors) {
@@ -58,7 +58,7 @@ function checkTaskSequence(blocks, errors) {
 }
 
 function checkTaskFields(blocks, errors) {
-  for (const task of blocks.filter((item) => item.phase >= 1)) {
+  for (const task of blocks) {
     for (const field of TASK_FIELDS) {
       if (!new RegExp(`^${field}:\\s+\\S`, "m").test(task.body)) errors.push(`Task ${task.id} lacks ${field}.`);
     }
@@ -76,19 +76,19 @@ function checkReferences(text, blocks, errors) {
 }
 
 function checkExitGates(text, errors) {
-  for (let phase = 0; phase <= 3; phase += 1) {
+  for (let phase = 5; phase <= 7; phase += 1) {
     const count = (text.match(new RegExp(`PHASE ${phase} EXIT GATE`, "g")) ?? []).length;
     if (count !== 1) errors.push(`Phase ${phase} must have exactly one exit gate.`);
   }
-  const phase4 = (text.match(/PHASE 4 EXIT GATE — PROJECT COMPLETE/g) ?? []).length;
-  if (phase4 !== 1) errors.push("Phase 4 must have exactly one PROJECT COMPLETE exit gate.");
-  if (!/^## Task 4\.12 — Final production release and live verification$/m.test(text)) errors.push("Task 4.12 final production release is absent.");
+  const phase8 = (text.match(/PHASE 8 EXIT GATE — MVP COMPLETE/g) ?? []).length;
+  if (phase8 !== 1) errors.push("Phase 8 must have exactly one MVP COMPLETE exit gate.");
+  if (!/^## Task 8\.3 — Owner-reviewed production promotion$/m.test(text)) errors.push("Task 8.3 production promotion is absent.");
 }
 
 function checkForbiddenWording(text, errors) {
   if (/Suggested task sequence|Suggested sequence/i.test(text)) errors.push("Suggested phase sequencing is forbidden.");
-  if (/Phase [1-4].{0,24}(?:not authorized|unauthorized)|not authorized yet/i.test(text)) errors.push("Architecture contains stale live authorization wording.");
-  const normative = text.match(/^# (?:10|11|53|54|55)\.[\s\S]*?(?=^# \d+\.|$(?![\s\S]))/gm)?.join("\n") ?? "";
+  if (/Phase [5-8].{0,24}(?:not authorized|unauthorized)|not authorized yet/i.test(text)) errors.push("Architecture contains stale live authorization wording.");
+  const normative = text.match(/^# (?:3|4|5|6|7|19|20|21)\.[\s\S]*?(?=^# \d+\.|$(?![\s\S]))/gm)?.join("\n") ?? "";
   if (/\b(?:TBD|TO BE DETERMINED)\b|<placeholder>/i.test(normative)) errors.push("Normative contract contains an unresolved placeholder.");
 }
 

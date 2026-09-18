@@ -74,7 +74,7 @@ const [rootPackage, frontendPackage, publicConfig, privateConfig, publicSource, 
   readFile(path.join(root, "workers/trusted-runtime/vendor/mldsa-native/mldsa65.wasm")),
 ]);
 
-check("architecture_version", ARCHITECTURE_VERSION === "2.1");
+check("architecture_version", ARCHITECTURE_VERSION === "2.2");
 check("architecture_hash", createHash("sha256").update(gitBlob(":ARCHITECTURE.md")).digest("hex") === AUTHORITATIVE_ARCHITECTURE_SHA256);
 check("build_phase", BUILD_PHASE === "2");
 check("project_version", rootPackage.version === "0.0.1");
