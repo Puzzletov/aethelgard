@@ -96,3 +96,16 @@ test("Architecture 2.2 preserves the English-first rule and records EDR 42", () 
   assert.match(architecture, /\| 41 \| Active \| One-call MVP golden spine \|/);
   assert.match(architecture, /\| 42 \| Active \| Privacy-gateway mission and local identity restoration \|/);
 });
+
+test("owner-review corrections keep provider, restoration, cardinality, and network contracts distinct", () => {
+  assert.match(architecture, /S-GROQ-GENERATION-SCHEMA[\s\S]*proven Groq-supported structural subset/u);
+  assert.match(architecture, /trusted Zod validation remains authoritative/u);
+  assert.match(architecture, /never scan or reinterpret inserted mapped values/u);
+  assert.match(architecture, /sequential `replace`\/`replaceAll`[\s\S]*recursive\s+restoration are forbidden/u);
+  assert.match(architecture, /does \*\*not\*\* yet prove[\s\S]*source-authored reserved-token-like string/u);
+  assert.match(architecture, /identity_count:int,replacement_occurrence_count:int/u);
+  assert.match(architecture, /Identity cardinality never determines occurrence replacement\s+cardinality/u);
+  assert.match(architecture, /\| B-NETWORK-REQUESTS \| 128 \| browser observations \|/u);
+  assert.match(architecture, /\| B-CONTENT-BEARING-REQUESTS \| 1 \| browser request \|/u);
+  assert.match(architecture, /operation ends at the earliest applicable event/u);
+});

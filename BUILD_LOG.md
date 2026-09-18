@@ -8,7 +8,7 @@ historical work.
 - Architecture: **2.2 — OWNER-AUTHORIZED RECONCILIATION FOR REVIEW** under
   EDR 42. Runtime implementation is not yet authorized.
 - Authoritative exact Git-blob SHA-256:
-  `31af902f90e1d5b8bc857905d56217b226d72b7805745591815d672401d49b38`.
+  `391db9fddbe04a0e7db4077c1c17f6cacd4d487201db10aa4c34d71e0fcbb381`.
 - Phase -1: **CLOSED**.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
 - Current implementation position: Architecture 2.1 Phases 0–3 and Tasks
@@ -2575,7 +2575,35 @@ historical work.
   5.1–5.3), canonical report (6.1–6.3), Markdown/TXT delivery (7.1–7.3), and
   canonical release (8.1–8.3). Architecture lint and task-context tests pass.
   Authoritative exact staged Git-blob SHA-256 is
-  `31af902f90e1d5b8bc857905d56217b226d72b7805745591815d672401d49b38`.
+  `31af902f90e1d5b8bc857905d56217b226d72b7805745591815d672401d49b38`
+  before the owner-review correction recorded below.
 - No runtime/application code, dependency, provider, secret, Cloudflare
   resource, beta/production deployment or PR #28 state was changed. Further
   implementation awaits explicit owner approval of the reconciled PES.
+
+### 127. Architecture 2.2 owner-review correction
+
+- **READY FOR OWNER REVIEW** on 2026-09-19. The bounded PES correction makes
+  the Groq-facing structural schema explicitly separate from authoritative
+  local Zod validation and places non-empty content and exact-token
+  preservation requirements in the fixed prompt plus local validation.
+- Exact restoration is now a single-pass span composition over the original
+  model string. Inserted identity values are never rescanned, recursively
+  substituted or chained through another reserved token. Identity-map release
+  is operation-scoped through the last possible output-mode selection and then
+  occurs at the earliest specified terminal lifecycle event.
+- Identity cardinality and protected-occurrence cardinality are separate.
+  Current implementation proves literal reserved-looking source text survives
+  redaction, but does not yet prove generated-token provenance through the full
+  restoration path; Tasks 5.1 and 5.2 therefore carry that gap explicitly as a
+  new fail-closed implementation requirement.
+- `B-NETWORK-REQUESTS` is corrected from the conceptual value `3` to `128`
+  browser-observed fetch/resource events matching the existing release harness.
+  `B-CONTENT-BEARING-REQUESTS = 1` separately fixes the permitted successful
+  content-bearing `/analyze` request count. Internal edge-to-Durable-Object,
+  Siteverify and Groq calls are accounted for independently.
+- Architecture lint and deterministic architecture-tooling tests pass. The new
+  authoritative exact staged Git-blob SHA-256 is
+  `391db9fddbe04a0e7db4077c1c17f6cacd4d487201db10aa4c34d71e0fcbb381`.
+  No runtime/application code, dependency, secret, provider, deployment,
+  production state or PR #28 state changed.

@@ -209,20 +209,45 @@ The controller retains that map only in ephemeral JavaScript memory for the
 current operation.
 
 The map remains available through AI response validation, token-integrity
-validation, selected restoration mode, rendering and delivery. It never
-crosses the network, enters persistent browser storage or appears in logs.
+validation, selected restoration mode, rendering and every output action for
+the current operation. If the UI permits switching restoration or output mode,
+the same operation-scoped map remains available until that operation ends. It
+never crosses the network, enters persistent browser storage, appears in logs,
+or becomes React/global application state beyond the current operation.
 
-After delivery completes, the user cancels, or any terminal failure occurs,
-the controller releases every reachable map/reference and terminates the
-disposable workers. Aethelgard claims reference release, not physical secure
-erasure from managed-memory hardware.
+The operation ends at the earliest applicable event:
+
+* the user explicitly clears or replaces the current document/operation;
+* a terminal operation failure occurs;
+* page or navigation teardown occurs; or
+* a deterministic completion point is reached after which no further restored
+  view or output can be requested.
+
+At operation end the controller releases every reachable map/reference and
+terminates disposable workers. Aethelgard claims reference release, not
+physical secure erasure from managed-memory hardware.
 
 ## 4.2 Restoration modes
 
 `restore` is the default. `protected` is the explicit alternative that keeps
 pseudonyms in the delivered result.
 
-Restoration is deterministic exact-token substitution in the browser only:
+Restoration is deterministic single-pass exact-token substitution in the
+browser only. For each original canonical-report string:
+
+1. scan only that original string and identify complete reserved-token spans;
+2. validate every identified token against `S-IDENTITY-MAP`;
+3. compose the output once from untouched original slices plus mapped values;
+4. insert each mapped original value exactly once; and
+5. never scan or reinterpret inserted mapped values.
+
+Therefore sequential `replace`/`replaceAll`, chained substitution and recursive
+restoration are forbidden. For example, if `[PERSON_1]` maps to
+`Contract ref [PERSON_2]` and `[PERSON_2]` maps to `Anna`, restoring an original
+`[PERSON_1]` produces exactly `Contract ref [PERSON_2]`, never
+`Contract ref Anna`.
+
+Additional invariants:
 
 * replace every occurrence of a known complete token using `S-IDENTITY-MAP`;
 * repeated known tokens resolve to the same original value;
@@ -248,6 +273,22 @@ matching the reserved grammar must exist in the map. Unknown tokens fail
 closed. Known tokens may appear zero or more times because the model may omit
 irrelevant source material.
 
+## 4.4 Source token-collision requirement
+
+The current proven span-composition test preserves source text such as a
+literal `[LOCATION_9]` when no protection span targets it. That test proves
+redaction-stage preservation only. It does **not** yet prove that later
+restoration can distinguish a source-authored reserved-token-like string from
+an Aethelgard-created pseudonym.
+
+Task 5.1 must establish a deterministic browser-local collision contract and
+proven provenance before restoration is enabled. Task 5.2 must consume only
+tokens proven to be Aethelgard-created under that contract. Source-authored
+reserved-token-like text must never be reclassified, restored, or made
+indistinguishable from a generated token. Until this is proven, restoration
+fails closed. This is a new implementation requirement, not a claim that the
+current runtime already solves it.
+
 ---
 
 # 5. DOCUMENT AND NETWORK CONTRACT
@@ -271,6 +312,21 @@ The browser constructs only Schema `S-ANALYZE-REQUEST`. Public edge and private
 runtime both perform strict validation. No filename, raw bytes, unredacted text,
 identity map, browser restoration mode or local download preference is sent.
 
+Network measurements use distinct scopes:
+
+* `B-NETWORK-REQUESTS` counts browser-observed `fetch` calls plus browser
+  Performance Resource Timing entries in the complete instrumented proof; it
+  does not count conceptual architecture hops;
+* one successful analysis has exactly one browser content-bearing `/analyze`
+  request under `B-CONTENT-BEARING-REQUESTS`;
+* the public-edge to Durable Object invocation is one internal binding call,
+  not a browser-observed request;
+* TrustedRuntime makes one Siteverify request and, only after success, one Groq
+  request; and
+* an HTTP response is not counted as another request.
+
+Every scope retains zero forbidden-content egress.
+
 ---
 
 # 6. AI AND CANONICAL REPORT
@@ -288,6 +344,27 @@ requested, stored or shown.
 
 AI may produce only Schema `S-CANONICAL-REPORT`. It may not choose providers,
 URLs, routes, storage, renderers, credentials or code execution.
+
+The Groq-facing generation schema and Aethelgard's trusted validation are
+separate contracts:
+
+* the provider-facing Groq schema uses only the currently proven supported
+  structural subset: required object fields, closed objects with
+  `additionalProperties:false` where supported, and supported primitive,
+  object and array structure;
+* provider generation correctness must not depend on `minLength`, `maxLength`,
+  `minItems`, `maxItems` or equivalent content/cardinality keywords unless that
+  keyword is separately re-proven against Groq;
+* the fixed prompt explicitly requires non-empty bounded professional strings
+  and items, exact preservation of Aethelgard pseudonym tokens when referring
+  to protected entities, and no invention of reserved pseudonym tokens; and
+* trusted Zod validation remains authoritative for non-empty content, string
+  lengths, collection cardinality, enums, unknown fields, source-reference
+  validity, unique item IDs and every registered report bound.
+
+A result accepted structurally by Groq but rejected by trusted Zod validation
+fails closed and is never restored, rendered or delivered. Local validation is
+never weakened to match the provider subset.
 
 ## 6.2 Professional report model
 
@@ -453,12 +530,12 @@ Preconditions: Architecture 2.2 implementation is explicitly owner-authorized; t
 Allowed scope: Redaction Worker/browser-controller contract, memory lifecycle, local tests.
 Inputs: `S-REDACTION-REQUEST`.
 Outputs: `S-REDACTION-RESULT` containing `S-IDENTITY-MAP` in browser memory.
-Required behavior: Return stable exact token mappings locally; accept an empty map; release on cancellation or terminal failure; never serialize to network/storage/logs.
+Required behavior: Return stable exact token mappings locally; expose separate unique-identity and protected-occurrence counts; accept an empty map; establish provenance that distinguishes generated tokens from source-authored token-like text; apply the operation-scoped release rule; never serialize to network/storage/logs.
 Bounds: `B-IDENTITY-MAP-ENTRIES`, `B-IDENTITY-VALUE-CHARS`, `B-REDACTION-TIMEOUT-MS`.
 Schemas: `S-REDACTION-REQUEST`, `S-REDACTION-RESULT`, `S-IDENTITY-MAP`.
 Failures: `F-REDACTION-FAILURE`, `F-NETWORK-BOUNDARY-FAILURE`.
 Forbidden: Server map, persistent browser map, telemetry, changed detection thresholds.
-PASS: All formats and zero-PII fixtures produce exact browser-only maps; network/storage/log probes observe zero map egress.
+PASS: All formats and zero-PII fixtures produce exact browser-only maps; repeated-identity fixtures prove identity cardinality never limits occurrence replacement cardinality; token-collision fixtures prove source literals remain distinguishable; network/storage/log probes observe zero map egress.
 
 ## Task 5.2 — Exact local restoration
 Purpose: Restore known identities locally or keep protected tokens by explicit user choice.
@@ -466,12 +543,12 @@ Preconditions: Task 5.1 passed.
 Allowed scope: Pure browser restoration module, selection control, deterministic tests.
 Inputs: `S-CANONICAL-REPORT`, `S-IDENTITY-MAP`, `S-RESTORATION-MODE`.
 Outputs: `S-RESTORATION-RESULT`.
-Required behavior: Default to `restore`; replace all and only exact known tokens; protected mode changes none; empty map passes unchanged; unknown reserved tokens fail closed.
+Required behavior: Default to `restore`; identify spans only in each original report string and compose once from original slices plus mapped values; never rescan inserted values; replace all and only exact provenance-approved known tokens; protected mode changes none; empty map passes unchanged; unknown or source-authored reserved-token-like text follows the proven collision contract and otherwise fails closed.
 Bounds: `B-RESTORATION-TOKENS`, `B-RESTORATION-TEXT-CHARS`, `B-RESTORATION-TIMEOUT-MS`.
 Schemas: `S-CANONICAL-REPORT`, `S-IDENTITY-MAP`, `S-RESTORATION-MODE`, `S-RESTORATION-RESULT`.
 Failures: `F-TOKEN-INTEGRITY`, `F-RESTORATION-FAILURE`.
-Forbidden: Fuzzy match, guessing, AI restoration, server restoration, second AI call.
-PASS: Table-driven repeated/unknown/malformed/empty/protected/restored cases pass with exact string equality and no egress.
+Forbidden: Sequential `replace`/`replaceAll`, recursive or chained substitution, rescanning inserted values, fuzzy match, guessing, AI restoration, server restoration, second AI call.
+PASS: Table-driven repeated/unknown/malformed/source-collision/empty/protected/restored cases pass with exact string equality; the `[PERSON_1]` mapped-value example in Section 4.2 remains non-recursive; no identity data egresses.
 
 ## Task 5.3 — Privacy lifecycle release proof
 Purpose: Prove the complete map/restoration lifecycle and permanent heartbeat.
@@ -480,7 +557,7 @@ Allowed scope: Chrome/Edge E2E, network/storage/log instrumentation, cleanup hoo
 Inputs: Six synthetic formats with repeated identities and zero-PII controls.
 Outputs: `S-PRIVACY-LIFECYCLE-RESULT`.
 Required behavior: Exercise success, cancellation and every terminal failure; verify reference release and both restoration modes while the golden heartbeat remains green.
-Bounds: `B-BROWSER-STORAGE-WRITES`, `B-NETWORK-REQUESTS`, `B-ANALYSIS-WALL-MS`.
+Bounds: `B-BROWSER-STORAGE-WRITES`, `B-NETWORK-REQUESTS`, `B-CONTENT-BEARING-REQUESTS`, `B-ANALYSIS-WALL-MS`.
 Schemas: `S-PRIVACY-LIFECYCLE-RESULT`, `S-NETWORK-BOUNDARY-RESULT`.
 Failures: `F-NETWORK-BOUNDARY-FAILURE`, `F-RESTORATION-FAILURE`.
 Forbidden: Physical-erasure claim, hidden storage, content diagnostics, test Turnstile in production.
@@ -501,12 +578,12 @@ Preconditions: Phase 5 passed and Phase 6 is owner-authorized.
 Allowed scope: Strict schema, fixed focus prompts, fixtures and mutation tests.
 Inputs: `S-TRUSTED-ANALYZE-REQUEST`.
 Outputs: `S-CANONICAL-REPORT`.
-Required behavior: Cover context, summary, findings/evidence/implications, risks, recommendations/priority/timeframe and closing assessment in one response.
+Required behavior: Cover context, summary, findings/evidence/implications, risks, recommendations/priority/timeframe and closing assessment in one response; keep the Groq structural generation schema separate from authoritative trusted Zod validation; require non-empty bounded content and exact existing-token preservation in the fixed prompt; forbid invented reserved tokens.
 Bounds: `B-REPORT-TITLE-CHARS`, `B-REPORT-SUMMARY-CHARS`, `B-REPORT-ITEMS`, `B-REPORT-ITEM-CHARS`, `B-EVIDENCE-REFERENCES`.
-Schemas: `S-CANONICAL-REPORT`, `S-SOURCE-REFERENCE`, `S-FOCUS`.
+Schemas: `S-GROQ-GENERATION-SCHEMA`, `S-CANONICAL-REPORT`, `S-SOURCE-REFERENCE`, `S-FOCUS`.
 Failures: `F-INVALID-AI-SCHEMA`, `F-OUTPUT-SIZE`.
 Forbidden: HTML/CSS, chain-of-thought, intermediate methodology schemas, provider choice, invented source references.
-PASS: Strict valid fixtures pass and unknown/missing/oversize/bad-reference mutations fail deterministically.
+PASS: Provider-schema tests prove only the supported structural subset is emitted; trusted-schema tests prove all local content/cardinality/reference/ID bounds; strict valid fixtures pass and unknown/missing/empty/oversize/bad-reference/token-invention mutations fail deterministically.
 
 ## Task 6.2 — One-call runtime integration
 Purpose: Make the proven one-call Groq spine return only the canonical report.
@@ -514,9 +591,9 @@ Preconditions: Task 6.1 passed.
 Allowed scope: Existing TrustedRuntime prompt/validation adapter and focused tests.
 Inputs: `S-TRUSTED-ANALYZE-REQUEST`.
 Outputs: `S-ANALYZE-RESPONSE`.
-Required behavior: Call Groq exactly once, validate before response, return `no-store`, and preserve Turnstile-before-AI and exact-zero failure behavior.
+Required behavior: Call Groq exactly once, validate the structurally accepted provider result with authoritative trusted Zod before response, return `no-store`, and preserve Turnstile-before-AI and exact-zero failure behavior.
 Bounds: `B-PROVIDER-ATTEMPTS-TOTAL`, `B-AI-TIMEOUT-MS`, `B-AI-RESPONSE-BYTES`, `B-ANALYSIS-WALL-MS`.
-Schemas: `S-AI-TRANSPORT-REQUEST`, `S-CANONICAL-REPORT`, `S-ANALYZE-RESPONSE`.
+Schemas: `S-AI-TRANSPORT-REQUEST`, `S-GROQ-GENERATION-SCHEMA`, `S-CANONICAL-REPORT`, `S-ANALYZE-RESPONSE`.
 Failures: `F-TURNSTILE-FAILURE`, `F-GROQ-FAILURE`, `F-INVALID-AI-SCHEMA`, `F-AI-TIMEOUT`.
 Forbidden: OpenRouter, second call, partial/unvalidated result, Browser Run, signing.
 PASS: Request counting proves one call; valid response passes; provider/schema/timeout faults fail closed; heartbeat remains green.
@@ -738,7 +815,8 @@ All bounds are inclusive. No implementation may truncate silently.
 | B-RESTORATION-TEXT-CHARS | 200,000 | code points | Whole report projection | `F-OUTPUT-SIZE` |
 | B-RESTORATION-TIMEOUT-MS | 2,000 | ms | One local restoration | `F-RESTORATION-FAILURE` |
 | B-BROWSER-STORAGE-WRITES | 0 | user-data writes | Every journey | `F-NETWORK-BOUNDARY-FAILURE` |
-| B-NETWORK-REQUESTS | 3 | requests | One analysis: Siteverify, Groq, application response path | `F-NETWORK-BOUNDARY-FAILURE` |
+| B-NETWORK-REQUESTS | 128 | browser observations | Complete Chrome/Edge proof: instrumented `fetch` calls plus distinct Performance Resource Timing entries | `F-NETWORK-BOUNDARY-FAILURE` |
+| B-CONTENT-BEARING-REQUESTS | 1 | browser request | One accepted analysis: pseudonymized `/analyze` request only | `F-NETWORK-BOUNDARY-FAILURE` |
 | B-ANALYZE-BODY-BYTES | 524,288 | bytes | Public request | HTTP 413 |
 | B-TURNSTILE-TOKEN-CHARS | 2,048 | characters | One token | `F-TURNSTILE-FAILURE` |
 | B-TURNSTILE-TIMEOUT-MS | 10,000 | ms | Siteverify | `F-TURNSTILE-FAILURE` |
@@ -801,8 +879,11 @@ Exact local object `{schema_version:"1",entries:[{token:string,type:"EMAIL"|"PHO
 Tokens are unique, follow Section 4.3 grammar and are ordered by numeric creation order. Originals are non-empty within `B-IDENTITY-VALUE-CHARS`. Empty `entries` is valid.
 
 ### S-REDACTION-RESULT
-Exact browser-local object `{schema_version:"2",sources:S-NORMALIZED-SOURCE-RECORD[],placeholder_count:int,must_redact_leaks:0,identity_map:S-IDENTITY-MAP}`.
-`placeholder_count` equals map length. A zero count and empty map are successful.
+Exact browser-local object `{schema_version:"2",sources:S-NORMALIZED-SOURCE-RECORD[],identity_count:int,replacement_occurrence_count:int,must_redact_leaks:0,identity_map:S-IDENTITY-MAP}`.
+`identity_count` equals map length. `replacement_occurrence_count` equals the
+number of original source spans replaced across all records and may exceed
+`identity_count`. Identity cardinality never determines occurrence replacement
+cardinality. Both counts may be zero with an empty map and unchanged safe text.
 
 ### S-FOCUS
 String enum `full|financial|strategic|security`.
@@ -822,6 +903,15 @@ TrustedRuntime. The consumed Turnstile token is absent from the AI request.
 Exact internal object `{schema_version:"2",stage:"analysis",provider:"groq",model_id:"openai/gpt-oss-20b",messages:[fixed_system,fixed_user_data],max_output_tokens:4096}`.
 No caller-provided URL, model, provider, role or prompt is allowed.
 
+### S-GROQ-GENERATION-SCHEMA
+Provider-facing JSON Schema projection of `S-CANONICAL-REPORT` containing only
+the proven Groq-supported structural subset: object/array/supported primitive
+types, every required field, and `additionalProperties:false` on closed objects
+where supported. It deliberately omits string-length and collection-cardinality
+keywords such as `minLength`, `maxLength`, `minItems` and `maxItems` unless a
+future isolated Groq proof explicitly promotes one. It is a generation aid,
+not the trusted acceptance contract.
+
 ### S-CANONICAL-REPORT
 Exact object `{schema_version:"2",title:string,context:{focus:S-FOCUS,scope:string},executive_summary:string,findings:[{id:string,title:string,analysis:string,evidence:S-SOURCE-REFERENCE[],implications:string}],risks:[{id:string,title:string,analysis:string}],recommendations:[{id:string,title:string,action:string,priority:"high"|"medium"|"low",timeframe:"immediate"|"near_term"|"medium_term"|"long_term",rationale:string,evidence:S-SOURCE-REFERENCE[]}],closing_assessment:string}`.
 All collections contain 1 through `B-REPORT-ITEMS`; all evidence arrays contain
@@ -835,17 +925,21 @@ All collections contain 1 through `B-REPORT-ITEMS`; all evidence arrays contain
 Exact no-store object `{schema_version:"2",report:S-CANONICAL-REPORT}`.
 
 ### S-RESTORATION-RESULT
-Exact local object `{schema_version:"1",mode:S-RESTORATION-MODE,report:S-CANONICAL-REPORT,replacements:int,unknown_tokens:0}`.
-The report is either exact-token restored or unchanged protected data.
+Exact local object `{schema_version:"1",mode:S-RESTORATION-MODE,report:S-CANONICAL-REPORT,replacement_occurrence_count:int,unknown_tokens:0}`.
+The count is the number of token spans replaced in the original report strings,
+not the unique identity count. The report is either single-pass exact-token
+restored or unchanged protected data.
 
 ### S-LOCAL-OUTPUT
 Exact local object `{schema_version:"1",format:"markdown"|"text",mime:"text/markdown;charset=utf-8"|"text/plain;charset=utf-8",bytes:Uint8Array}` within `B-TEXT-OUTPUT-BYTES`.
 
 ### S-NETWORK-BOUNDARY-RESULT
-Exact evidence object `{schema_version:"2",requests_observed:int,storage_writes:0,raw_source_egress:0,filename_egress:0,unredacted_text_egress:0,mapping_egress:0,restored_result_egress:0,passed:boolean}` containing no captured content.
+Exact evidence object `{schema_version:"2",browser_requests_observed:int,content_bearing_analyze_requests:int,public_to_trusted_invocations:int,siteverify_requests:int,groq_requests:int,storage_writes:0,raw_source_egress:0,filename_egress:0,unredacted_text_egress:0,mapping_egress:0,restored_result_egress:0,passed:boolean}` containing no captured content.
+`browser_requests_observed` uses the existing browser harness semantics and
+`B-NETWORK-REQUESTS`; it is not a count of architecture hops.
 
 ### S-PRIVACY-LIFECYCLE-RESULT
-Exact evidence object `{schema_version:"1",format:string,mode:S-RESTORATION-MODE,map_entries:int,known_tokens_replaced:int,unknown_tokens:0,reference_release_observed:boolean,network:S-NETWORK-BOUNDARY-RESULT,passed:boolean}`.
+Exact evidence object `{schema_version:"1",format:string,mode:S-RESTORATION-MODE,identity_count:int,replacement_occurrence_count:int,unknown_tokens:0,reference_release_observed:boolean,network:S-NETWORK-BOUNDARY-RESULT,passed:boolean}`.
 
 ### S-TRUST-CLAIMS
 Fixed claim IDs: `privacy_gateway`, `browser_local_source`, `browser_local_mapping`, `pseudonymized_ai_processing`, `browser_local_restoration`, `no_copy`, `provider_metadata_limit`, `english_only`, `desktop_chrome_edge`, `no_malware_scan`, `exact_zero`, `portfolio_signing_evidence`.
