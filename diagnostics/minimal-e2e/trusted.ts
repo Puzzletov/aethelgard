@@ -4,6 +4,7 @@ import { verifyTurnstile } from "../../workers/trusted-runtime/src/turnstile.ts"
 import {
   BASELINE_BODY_BYTES,
   BASELINE_MODEL,
+  MINIMAL_RESPONSE_FORMAT,
   baselineAnalysisSchema,
   baselineRequestSchema,
   type BaselineAnalysis,
@@ -37,21 +38,7 @@ type ServerStage = "TRUSTED_RUNTIME_RECEIVED" | "TURNSTILE_VERIFIED" | "GROQ_REQ
 type ServerTrace = { stage: ServerStage; elapsed_ms: number }[];
 
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
-const RESPONSE_FORMAT = Object.freeze({ type: "json_schema", json_schema: {
-  name: "minimal_analysis", strict: true, schema: {
-    type: "object", additionalProperties: false,
-    properties: {
-      executive_summary: { type: "string", minLength: 1, maxLength: 2_000 },
-      findings: { type: "array", minItems: 1, maxItems: 12,
-        items: { type: "string", minLength: 1, maxLength: 1_200 } },
-      risks: { type: "array", minItems: 1, maxItems: 12,
-        items: { type: "string", minLength: 1, maxLength: 1_200 } },
-      recommendations: { type: "array", minItems: 1, maxItems: 12,
-        items: { type: "string", minLength: 1, maxLength: 1_200 } },
-    },
-    required: ["executive_summary", "findings", "risks", "recommendations"],
-  },
-} });
+const RESPONSE_FORMAT = MINIMAL_RESPONSE_FORMAT;
 const RESPONSE_HEADERS = Object.freeze({
   "cache-control": "no-store",
   "content-type": "application/json; charset=utf-8",
@@ -85,7 +72,8 @@ function prompt(request: BaselineRequest) {
     "Never expose internal reasoning labels or methodology.",
     "Return exactly executive_summary, findings, risks, and recommendations as JSON.",
     "executive_summary must be one concise string.",
-    "findings, risks, and recommendations must each be an array of one to twelve concise strings.",
+    "findings, risks, and recommendations must each be an array of one to twelve concise, non-empty strings.",
+    "Never emit an empty string or blank array item.",
     FOCUS[request.focus],
   ].join("\n");
   return [{ role: "system", content: system }, {
@@ -139,8 +127,7 @@ async function callGroq(request: BaselineRequest, key: string, stages: ServerTra
     response = await fetch(GROQ_URL, { method: "POST", headers: {
       authorization: `Bearer ${key}`, "content-type": "application/json",
     }, body: JSON.stringify({ model: BASELINE_MODEL, messages: prompt(request), max_tokens: 2_048,
-      temperature: 0,
-      response_format: RESPONSE_FORMAT, stream: false }), signal: AbortSignal.timeout(30_000) });
+      temperature: 0, response_format: RESPONSE_FORMAT, stream: false }), signal: AbortSignal.timeout(30_000) });
   } catch (error) {
     return json(502, { schema_version: "baseline-error-1", stage: "GROQ_REQUESTED",
       error: error instanceof DOMException ? error.name : "network" });

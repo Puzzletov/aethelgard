@@ -31,15 +31,15 @@ function providerBody(request: AiTransportRequest): Readonly<Record<string, unkn
   } };
 }
 
-const ITEM = Object.freeze({ type: "string", minLength: 1, maxLength: 1_200 });
+const ITEM = Object.freeze({ type: "string" });
 const FINISHED_RESPONSE_FORMAT = Object.freeze({ type: "json_schema", json_schema: {
   name: "aethelgard_finished_analysis", strict: true, schema: {
     type: "object", additionalProperties: false,
     properties: {
-      executive_summary: { type: "string", minLength: 1, maxLength: 2_000 },
-      findings: { type: "array", minItems: 1, maxItems: 12, items: ITEM },
-      risks: { type: "array", minItems: 1, maxItems: 12, items: ITEM },
-      recommendations: { type: "array", minItems: 1, maxItems: 12, items: ITEM },
+      executive_summary: { type: "string" },
+      findings: { type: "array", items: ITEM },
+      risks: { type: "array", items: ITEM },
+      recommendations: { type: "array", items: ITEM },
     },
     required: ["executive_summary", "findings", "risks", "recommendations"],
   },

@@ -3,6 +3,19 @@ import { z } from "zod";
 export const BASELINE_MODEL = "openai/gpt-oss-20b";
 export const BASELINE_BODY_BYTES = 131_072;
 
+export const MINIMAL_RESPONSE_FORMAT = Object.freeze({ type: "json_schema", json_schema: {
+  name: "minimal_analysis", strict: true, schema: {
+    type: "object", additionalProperties: false,
+    properties: {
+      executive_summary: { type: "string" },
+      findings: { type: "array", items: { type: "string" } },
+      risks: { type: "array", items: { type: "string" } },
+      recommendations: { type: "array", items: { type: "string" } },
+    },
+    required: ["executive_summary", "findings", "risks", "recommendations"],
+  },
+} });
+
 export const baselineRequestSchema = z.strictObject({
   schema_version: z.literal("baseline-1"),
   turnstile_token: z.string().min(1).max(2_048),

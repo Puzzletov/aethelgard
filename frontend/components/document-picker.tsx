@@ -3,13 +3,11 @@
 import { type ChangeEvent, type DragEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import type { MissionOutcome, MissionStage } from "../analysis/browser-mission";
-import { pdfDiagnostic, type PdfPreparationDiagnostic } from "../analysis/pdf-diagnostic";
 import { DOCUMENT_ACCEPT, type BrowserInputResult, selectBrowserDocument } from "../input/document-input";
-import { PreflightRuntimeFailure, preflightRuntimeMessage,
-  runDocumentPreflight } from "../input/preflight/run-preflight";
+import { preflightRuntimeMessage, runDocumentPreflight } from "../input/preflight/run-preflight";
 import type { TurnstileController } from "../security/turnstile-client";
 import type { SafeMode } from "../../src/contracts/safe-mode";
-import { AnalysisDashboard, PdfDiagnosticPanel } from "./analysis-dashboard";
+import { AnalysisDashboard } from "./analysis-dashboard";
 import { TurnstileWidget } from "./turnstile-widget";
 
 type Focus = "full" | "financial" | "strategic" | "security";
@@ -18,7 +16,6 @@ const STAGE_TEXT: Readonly<Record<MissionStage, string>> = Object.freeze({
   reporting: "Preparing report", complete: "Analysis complete",
 });
 const STAGES = Object.freeze(Object.keys(STAGE_TEXT) as MissionStage[]);
-const PDF_DIAGNOSTICS_ENABLED = process.env.NEXT_PUBLIC_AETHELGARD_SIMPLE_BETA === "1";
 const VERIFICATION_FAILURE = Object.freeze({ schema_version: "1", ok: false,
   category: "verification", code: "turnstile_required", message: "Complete a fresh verification challenge.",
   retry: "fresh_turnstile" } as const satisfies SafeMode);
@@ -36,30 +33,20 @@ function useDocumentSelection() {
   const [result, setResult] = useState<BrowserInputResult | null>(null);
   const [checking, setChecking] = useState(false);
   const [preflightError, setPreflightError] = useState<string | null>(null);
-  const [diagnostic, setDiagnostic] = useState<PdfPreparationDiagnostic | undefined>();
   const inspection = useRef(0);
   async function inspect(files: FileList | readonly File[]) {
     const current = ++inspection.current;
     const next = selectBrowserDocument(files);
-    setPreflightError(null); setDiagnostic(undefined);
+    setPreflightError(null);
     if (!next.ok) { setResult(next); return; }
     setResult(null); setChecking(true);
     try {
       const preflight = await runDocumentPreflight(next.document);
       if (current !== inspection.current) return;
-      if (preflight.ok) setResult(next); else {
-        setPreflightError(preflight.message);
-        if (PDF_DIAGNOSTICS_ENABLED && next.document.format === "pdf") {
-          setDiagnostic(pdfDiagnostic(next.document.byteLength, "PREFLIGHT", preflight.code));
-        }
-      }
+      if (preflight.ok) setResult(next); else setPreflightError(preflight.message);
     } catch (error) {
       if (current === inspection.current) {
         setPreflightError(preflightRuntimeMessage(error));
-        if (PDF_DIAGNOSTICS_ENABLED && next.document.format === "pdf") {
-          const reason = error instanceof PreflightRuntimeFailure ? error.reason : "client_runtime_failed";
-          setDiagnostic(pdfDiagnostic(next.document.byteLength, "PREFLIGHT", reason));
-        }
       }
     } finally {
       if (current === inspection.current) setChecking(false);
@@ -75,14 +62,14 @@ function useDocumentSelection() {
   }
   function clearSelection() {
     inspection.current += 1;
-    setResult(null); setPreflightError(null); setDiagnostic(undefined);
+    setResult(null); setPreflightError(null);
     if (input.current !== null) input.current.value = "";
   }
   const error = result?.ok === false ? result.message : preflightError;
   const status = checking ? "Checking the document locally."
     : error ?? (result === null ? "No document selected." : selectionText(result));
   return Object.freeze({ input, result, checking, error, status, handleSelection, handleDrop,
-    clearSelection, diagnostic });
+    clearSelection });
 }
 
 function DocumentControl({ state }: Readonly<{ state: ReturnType<typeof useDocumentSelection> }>) {
@@ -159,7 +146,6 @@ export function DocumentPicker() {
     aria-busy={state.checking || running}>
     <h2 className="visually-hidden" id="document-intake-title">Choose a document</h2>
     <DocumentControl state={state} />
-    <PdfDiagnosticPanel diagnostic={state.diagnostic} />
     {state.result?.ok === true ? <details className="options-disclosure">
       <summary>Analysis options <span>{focus[0]?.toUpperCase()}{focus.slice(1)}</span></summary>
       <MissionControls disabled={running} focus={focus} setFocus={setFocus} />
@@ -171,7 +157,6 @@ export function DocumentPicker() {
       onClick={() => void analyze()}>Analyze document</button>
     </div> : null}
     <MissionProgress stage={stage} running={running} />
-    <AnalysisDashboard result={outcome?.result ?? null}
-      diagnostic={PDF_DIAGNOSTICS_ENABLED ? outcome?.diagnostic : undefined} />
+    <AnalysisDashboard result={outcome?.result ?? null} />
   </section>;
 }

@@ -19,7 +19,8 @@ const SYSTEM_RULES = Object.freeze([
   "Internally identify the obvious or weak interpretation, challenge it, construct the strongest competing interpretation, and synthesize a balanced final judgment.",
   "Return only the cohesive finished professional analysis. Do not expose internal reasoning or methodology labels.",
   "Return exact JSON fields: schema_version, executive_summary, findings, risks, recommendations.",
-  "schema_version must be 1. Each collection must contain one to twelve concise strings.",
+  "schema_version must be 1. Each collection must contain one to twelve concise, non-empty strings.",
+  "Never emit an empty string or blank array item.",
 ]);
 
 export function createFinishedAnalysisRequest(

@@ -59,6 +59,7 @@ test("Groq request uses only the fixed endpoint, secret header, and bounded JSON
   assert.equal(body.max_tokens, 2_048);
   assert.equal(body.response_format.type, "json_schema");
   assert.equal(body.response_format.json_schema.strict, true);
+  assert.doesNotMatch(JSON.stringify(body.response_format), /minLength|maxLength|minItems|maxItems/u);
   assert.deepEqual(body.response_format.json_schema.schema.required,
     ["executive_summary", "findings", "risks", "recommendations"]);
   assert.equal(JSON.stringify(body).includes("private-key"), false);

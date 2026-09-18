@@ -1,18 +1,8 @@
 import type { FinishedAnalysis } from "../../src/contracts/finished-analysis";
 import type { SafeMode } from "../../src/contracts/safe-mode";
-import type { PdfPreparationDiagnostic } from "../analysis/pdf-diagnostic";
 
 interface DashboardProps {
   readonly result: FinishedAnalysis | SafeMode | null;
-  readonly diagnostic?: PdfPreparationDiagnostic;
-}
-
-export function PdfDiagnosticPanel({ diagnostic }: Readonly<{ diagnostic?: PdfPreparationDiagnostic }>) {
-  if (diagnostic === undefined) return null;
-  return <aside className="pdf-diagnostic" aria-labelledby="pdf-diagnostic-title">
-    <h3 id="pdf-diagnostic-title">Local PDF diagnostic</h3>
-    <pre>{JSON.stringify(diagnostic, null, 2)}</pre>
-  </aside>;
 }
 
 function Items({ id, title, values }: Readonly<{
@@ -25,11 +15,11 @@ function Items({ id, title, values }: Readonly<{
   </section>;
 }
 
-export function AnalysisDashboard({ result, diagnostic }: DashboardProps) {
+export function AnalysisDashboard({ result }: DashboardProps) {
   if (result === null) return null;
   if ("ok" in result) return <section className="analysis-fault" role="alert" aria-labelledby="fault-title">
     <p className="section-label">Protected stop</p><h2 id="fault-title">Analysis paused</h2>
-    <p>{result.message}</p><PdfDiagnosticPanel diagnostic={diagnostic} /></section>;
+    <p>{result.message}</p></section>;
   return <section className="analysis-dashboard" aria-labelledby="analysis-title">
     <header className="analysis-heading"><p className="section-label">Finished analysis</p>
       <h2 id="analysis-title">Analysis</h2></header>

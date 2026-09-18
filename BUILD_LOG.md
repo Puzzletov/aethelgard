@@ -2520,3 +2520,34 @@ historical work.
   200. Production remains deployment `07425838-e45e-440c-86ec-c30aac2215b3`
   from source `18c84b9`. The temporary privacy-safe PDF diagnostic UI remains
   for one owner confirmation; PR #28 stays open and Task 4.12 stays paused.
+
+### 125. Groq strict-output contract correction and diagnostic cleanup
+
+- **PASS** on 2026-09-18. The bounded provider-contract matrix isolated the
+  prior HTTP 400 to the full request only. Groq returned
+  `invalid_request_error` / `json_validate_failed` (request
+  `req_01m2t7wncpe6qv0jc16594b9kw`) because generated `findings[5]` was empty
+  and failed the provider schema's `minLength: 1`. Plain chat, a minimal strict
+  schema and the exact Aethelgard structure all reached HTTP 200; credentials,
+  model availability, Turnstile and document processing were not the cause.
+- The Groq-facing strict schema now uses the documented structural subset
+  (types, required fields and `additionalProperties: false`) and the prompt
+  explicitly forbids empty strings. Local Zod validation retains the existing
+  one-to-twelve item and string-length bounds, so malformed output still fails
+  closed. Regression tests prove both properties; model, privacy pipeline,
+  Turnstile, one-call behavior and Architecture 2.1 are unchanged.
+- After correction, the official-test heartbeat passed TXT, PDF, DOCX, CSV,
+  PPTX, XLSX and TXT serially. Every journey rendered a validated result with
+  one Groq call, zero configured identifier egress and zero browser application
+  storage writes. Root/frontend tests, strict typecheck/lint, deterministic
+  beta build, architecture lint, Doctor, dependency audit, license and
+  exact-zero gates pass.
+- Temporary owner-PDF diagnostic rendering and its CSS were removed; the
+  production artifact contains no diagnostic panel or test Turnstile key. The
+  isolated beta runtime version is `5e73622a-06df-45b7-82e0-d96ebf040a36`.
+  Beta deployment `84fe8174-51c0-4f7b-aaa0-ca3156428b30` is live at
+  `https://beta.aethelgard-3j9.pages.dev`; `/`, `/trust`, `/privacy`, `/verify`,
+  `/sample` and `/case-study` return HTTP 200. Production remains unchanged at
+  deployment `07425838-e45e-440c-86ec-c30aac2215b3` from source `18c84b9`.
+  PR #28 remains open and Task 4.12 remains paused pending owner PDF/TXT smoke
+  tests.
