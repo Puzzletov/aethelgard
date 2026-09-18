@@ -7,13 +7,16 @@ import { baselineRequestSchema, baselineResponseSchema } from "../diagnostics/mi
 
 const redactorSource = await readFile(new URL("../frontend/input/redaction/redactor.ts", import.meta.url), "utf8");
 const normalizationSource = await readFile(new URL("../frontend/input/normalization/source-record.ts", import.meta.url), "utf8");
+const protectionSource = await readFile(new URL("../frontend/input/redaction/protection-plan.ts", import.meta.url), "utf8");
 const compile = (source) => ts.transpileModule(source, { compilerOptions: {
   module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022,
 } }).outputText;
 const normalizationUrl = `data:text/javascript;base64,${Buffer.from(compile(normalizationSource)).toString("base64")}`;
+const protectionUrl = `data:text/javascript;base64,${Buffer.from(compile(protectionSource)).toString("base64")}`;
 const compromiseUrl = new URL("../frontend/node_modules/compromise/src/three.js", import.meta.url).href;
 const redactorCompiled = compile(redactorSource).replace('from "compromise"', `from ${JSON.stringify(compromiseUrl)}`)
-  .replace('from "../normalization/source-record"', `from ${JSON.stringify(normalizationUrl)}`);
+  .replace('from "../normalization/source-record"', `from ${JSON.stringify(normalizationUrl)}`)
+  .replace('from "./protection-plan"', `from ${JSON.stringify(protectionUrl)}`);
 const { redactRequest } = await import(`data:text/javascript;base64,${Buffer.from(redactorCompiled).toString("base64")}`);
 
 const originals = ["Evelyn Marlowe", "Northstar Lantern Ltd", "evelyn.marlowe@example.invalid",

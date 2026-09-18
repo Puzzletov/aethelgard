@@ -2486,3 +2486,37 @@ historical work.
   planned/completed/pre/post counts needed to distinguish an undetected repeat,
   span mismatch or transformed-placeholder collision; failed counts otherwise
   display `unavailable`. No matched value or derivative is exposed.
+
+### 124. Redaction identity/occurrence cardinality repair
+
+- **PASS** on 2026-09-18. A deterministic synthetic `LOCATION` fixture first
+  reproduced the owner trace under the prior implementation: two exact
+  occurrences, one local identity, one planned/completed replacement and one
+  surviving protected value. The leak guard correctly failed closed.
+- Identity assignment is now separate from occurrence planning. The single
+  production redactor builds a validated per-record occurrence plan for every
+  exact protected value, then one pure core composes the transformed string
+  from original slices. The owner fixture now produces one identity, two
+  planned/completed span replacements and zero surviving values. No parser,
+  Worker contract, network boundary, Turnstile, provider, prompt or runtime was
+  changed.
+- The deterministic protection-plan matrix passes repeated person/location/
+  organization values, repeated identities across SourceRecords, distinct and
+  adjacent spans, exact duplicates, widest nested spans, Unicode, punctuation,
+  placeholder-like source text and the empty plan. Partial overlaps and invalid
+  ranges fail closed; the independent real-leak collision test still raises
+  `must_redact_leak`.
+- The official-test Turnstile browser heartbeat passed TXT, PDF, DOCX, CSV,
+  PPTX and XLSX, followed by TXT again, with one Groq request per successful
+  journey, browser rendering, zero configured identifier egress and zero
+  browser application-storage writes. Two XLSX attempts received an upstream
+  Groq HTTP 400; the unchanged, structurally valid XLSX request then passed,
+  confirming no format/redaction defect or corrective provider change.
+- Complete repository tests pass (root 181/181; frontend 100/100), together
+  with strict typecheck/lint, deterministic beta build, architecture lint/hash,
+  Doctor, dependency audit (zero findings), license gate and exact-zero gate.
+  Beta deployment `bb2e6a80-4a47-4d3a-90aa-1db58f78809a` is live at
+  `https://beta.aethelgard-3j9.pages.dev`; all six public routes return HTTP
+  200. Production remains deployment `07425838-e45e-440c-86ec-c30aac2215b3`
+  from source `18c84b9`. The temporary privacy-safe PDF diagnostic UI remains
+  for one owner confirmation; PR #28 stays open and Task 4.12 stays paused.

@@ -10,10 +10,16 @@ const normalizationCompiled = ts.transpileModule(normalizationSource, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
 }).outputText;
 const normalizationUrl = `data:text/javascript;base64,${Buffer.from(normalizationCompiled).toString("base64")}`;
+const protectionSource = await readFile(new URL("../input/redaction/protection-plan.ts", import.meta.url), "utf8");
+const protectionCompiled = ts.transpileModule(protectionSource, {
+  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+}).outputText;
+const protectionUrl = `data:text/javascript;base64,${Buffer.from(protectionCompiled).toString("base64")}`;
 const compiled = ts.transpileModule(source, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
 }).outputText.replace('from "compromise"', `from ${JSON.stringify(compromiseUrl)}`)
-  .replace('from "../normalization/source-record"', `from ${JSON.stringify(normalizationUrl)}`);
+  .replace('from "../normalization/source-record"', `from ${JSON.stringify(normalizationUrl)}`)
+  .replace('from "./protection-plan"', `from ${JSON.stringify(protectionUrl)}`);
 const { MustRedactLeakError, redactRequest } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString("base64")}`);
 
 function sourceRecord(content, ordinal = 1) {
@@ -77,6 +83,25 @@ test("a real transformed-value collision still fails closed with structural evid
     });
     return true;
   });
+});
+
+test("owner cardinality defect protects two LOCATION occurrences with one identity", () => {
+  const content = "The office in London supports regional operations. The London-based team manages delivery.";
+  const result = redactRequest(request(content));
+  assert.equal(result.placeholder_count, 1);
+  assert.equal(result.sources[0].content.match(/\[LOCATION_1\]/gu)?.length, 2);
+  assert.equal(result.sources[0].content.includes("London"), false);
+  assert.equal(result.must_redact_leaks, 0);
+});
+
+test("one identity is protected across separate source records", () => {
+  const result = redactRequest(request(
+    "Location | London",
+    "Location | London",
+  ));
+  assert.equal(result.placeholder_count, 1);
+  assert.equal(result.sources.every((record) => record.content.includes("[LOCATION_1]")), true);
+  assert.equal(result.sources.some((record) => record.content.includes("London")), false);
 });
 
 test("unknown request fields, invalid records, and the mapping bound fail closed", () => {

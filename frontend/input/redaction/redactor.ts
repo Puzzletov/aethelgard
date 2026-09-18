@@ -7,6 +7,11 @@ import {
   MAX_NORMALIZED_SOURCES,
   type NormalizedSourceRecord,
 } from "../normalization/source-record";
+import {
+  applyProtectionPlan,
+  normalizeProtectionPlan,
+  type ProtectionOccurrence,
+} from "./protection-plan";
 
 export const MAX_PII_MAPPINGS = 10_000;
 export const MAX_PLACEHOLDER_ASCII_CHARS = 64;
@@ -203,9 +208,9 @@ function placeholder(state: MappingState, candidate: Candidate, value: string): 
   const key = `${type}\0${value}`;
   const current = state.traces.get(key);
   const origin = candidate.priority === 3 ? "entity_detector" : "deterministic_pattern";
-  state.traces.set(key, current === undefined ? { rule: type, origin, planned: 1, completed: 0 }
+  state.traces.set(key, current === undefined ? { rule: type, origin, planned: 0, completed: 0 }
     : { ...current, origin: current.origin === "deterministic_pattern" ? current.origin : origin,
-      planned: current.planned + 1 });
+    });
   const existing = state.values.get(key);
   if (existing !== undefined) return existing;
   if (state.values.size >= MAX_PII_MAPPINGS) throw new Error("mapping_limit");
@@ -217,20 +222,39 @@ function placeholder(state: MappingState, candidate: Candidate, value: string): 
   return result;
 }
 
-function redactContent(content: string, state: MappingState): string {
-  const selected = selectedCandidates(content);
-  let redacted = "";
-  let cursor = 0;
-  for (const candidate of selected) {
-    const value = content.slice(candidate.start, candidate.end);
-    redacted += content.slice(cursor, candidate.start);
-    redacted += placeholder(state, candidate, value);
-    const key = `${candidate.type}\0${value}`;
-    const trace = state.traces.get(key);
-    if (trace !== undefined) state.traces.set(key, { ...trace, completed: trace.completed + 1 });
-    cursor = candidate.end;
+function detectIdentities(sources: readonly NormalizedSourceRecord[], state: MappingState): void {
+  for (const source of sources) {
+    for (const candidate of selectedCandidates(source.content)) {
+      placeholder(state, candidate, source.content.slice(candidate.start, candidate.end));
+    }
   }
-  return redacted + content.slice(cursor);
+}
+
+function occurrencePlan(content: string, state: MappingState): readonly ProtectionOccurrence[] {
+  const occurrences: ProtectionOccurrence[] = [];
+  for (const [key, token] of state.values) {
+    const separator = key.indexOf("\0");
+    const type = key.slice(0, separator);
+    const value = key.slice(separator + 1);
+    let start = 0;
+    while ((start = content.indexOf(value, start)) >= 0) {
+      occurrences.push({ start, end: start + value.length, type, placeholder: token });
+      start += Math.max(1, value.length);
+    }
+  }
+  return normalizeProtectionPlan(content, occurrences);
+}
+
+function redactContent(content: string, state: MappingState): string {
+  const plan = occurrencePlan(content, state);
+  const application = applyProtectionPlan(content, plan);
+  for (const occurrence of plan) {
+    const value = content.slice(occurrence.start, occurrence.end);
+    const trace = state.traces.get(`${occurrence.type}\0${value}`);
+    if (trace !== undefined) state.traces.set(`${occurrence.type}\0${value}`,
+      { ...trace, planned: trace.planned + 1, completed: trace.completed + 1 });
+  }
+  return application.content;
 }
 
 function occurrences(sources: readonly NormalizedSourceRecord[], value: string): number {
@@ -265,6 +289,7 @@ export function redactRequest(value: unknown): RedactionResult {
   if (request === undefined) throw new Error("invalid_redaction_request");
   const state: MappingState = { values: new Map(), counters: new Map(), traces: new Map() };
   try {
+    detectIdentities(request.sources, state);
     const sources = request.sources.map((source) => Object.freeze({ ...source,
       content: redactContent(source.content, state) }));
     const checked = validateRedactionRequest({ schema_version: "1", sources });
