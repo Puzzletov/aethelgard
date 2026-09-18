@@ -65,7 +65,8 @@ test("the provider-marked test response is accepted only by explicit test config
 });
 
 test("Siteverify rejects invalid and replayed tokens", async () => {
-  const invalid = createFetcher({ success: false, "error-codes": ["invalid-input-response"] });
+  const invalid = createFetcher({ success: false, "error-codes": ["invalid-input-response"],
+    messages: [] });
   const replay = createFetcher({ success: false, "error-codes": ["timeout-or-duplicate"] });
   assert.deepEqual(await verifyTurnstile(dummyToken, config, invalid.fetcher), {
     ok: false,
@@ -155,7 +156,41 @@ test("complete verification decision matrix returns one fixed result per attempt
     { ok: false, reason: "unavailable" });
 });
 
-test("the fixed Siteverify deadline cancels one in-flight request", async () => {
+test("a response before the 10,000 ms Siteverify deadline may complete", async () => {
+  const nativeTimeout = AbortSignal.timeout;
+  let requestedMs = 0;
+  AbortSignal.timeout = (milliseconds) => {
+    requestedMs = milliseconds;
+    return new AbortController().signal;
+  };
+  try {
+    const result = await verifyTurnstile(dummyToken, config, createFetcher({ success: true,
+      hostname: config.expectedHostname, action: config.expectedAction }).fetcher);
+    assert.deepEqual(result, { ok: true });
+    assert.equal(requestedMs, 10_000);
+  } finally {
+    AbortSignal.timeout = nativeTimeout;
+  }
+});
+
+test("Siteverify accepts Cloudflare's bounded messages field without weakening strict parsing", async () => {
+  const valid = createFetcher({ success: true, hostname: config.expectedHostname,
+    action: config.expectedAction, "error-codes": [], messages: [],
+    challenge_ts: "2026-09-13T12:00:00.000Z", metadata: { interactive: false } });
+  const invalid = createFetcher({ success: false, "error-codes": ["invalid-input-response"],
+    messages: ["validation failed"] });
+  const unbounded = createFetcher({ success: false, "error-codes": ["invalid-input-response"],
+    messages: ["x".repeat(257)] });
+  assert.deepEqual(await verifyTurnstile(dummyToken, config, valid.fetcher), { ok: true });
+  assert.deepEqual(await verifyTurnstile(dummyToken, config, invalid.fetcher), {
+    ok: false, reason: "invalid",
+  });
+  assert.deepEqual(await verifyTurnstile(dummyToken, config, unbounded.fetcher), {
+    ok: false, reason: "unavailable",
+  });
+});
+
+test("the 10,000 ms Siteverify deadline cancels the one in-flight request", async () => {
   const nativeTimeout = AbortSignal.timeout;
   const controller = new AbortController();
   let requestedMs = 0;
@@ -166,7 +201,7 @@ test("the fixed Siteverify deadline cancels one in-flight request", async () => 
         () => reject(new DOMException("deadline", "TimeoutError")), { once: true })));
     controller.abort();
     assert.deepEqual(await pending, { ok: false, reason: "unavailable" });
-    assert.equal(requestedMs, 5_000);
+    assert.equal(requestedMs, 10_000);
   } finally {
     AbortSignal.timeout = nativeTimeout;
   }

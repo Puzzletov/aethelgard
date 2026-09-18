@@ -14,7 +14,8 @@ async function bundle(entryPoint, externalPyodide = false) {
     }));
   } }] : [];
   const result = await build({ absWorkingDir: root, entryPoints: [`./${entryPoint}`], bundle: true,
-    write: false, format: "esm", platform: "browser", target: ["chrome120"], logLevel: "silent", plugins });
+    write: false, format: "esm", platform: "browser", target: ["chrome120"], logLevel: "silent", plugins,
+    define: { "process.env.NEXT_PUBLIC_AETHELGARD_SIMPLE_BETA": '"0"' } });
   return result.outputFiles[0].text;
 }
 
@@ -26,20 +27,9 @@ import { runRedactionWorker } from "/phase1/redaction-controller.js";
 import { runAnalysis } from "/phase1/orchestrator.js";
 const privateText = "This project provides a clear independent analysis of the evidence and explains every recommendation in plain English for careful review. Customer ID CUST-100001.";
 const reference = { kind: "txt_lines", line_start: 1, line_end: 1 };
-const outputs = {
-  strawman: { schema_version: "1", findings: [{ id: "finding-1", title: "Evidence finding",
-    analysis: "The evidence supports review.", confidence: "high", evidence: [reference] }],
-    risks: [], assumptions: [], quantitative_candidates: [] },
-  steelman: { schema_version: "1", items: [{ id: "critique-1", strawman_finding_ids: ["finding-1"],
-    kind: "nuance", critique: "The evidence needs qualification.", evidence: [reference] }] },
-  oracle: { schema_version: "1", executive_summary: "The evidence supports a qualified decision.",
-    findings: [{ id: "oracle-1", title: "Qualified finding", analysis: "The evidence is material.",
-      confidence: "high", evidence: [reference] }], recommendations: [{ id: "recommendation-1",
-      title: "Review controls", action: "Verify the material controls.", priority: "high",
-      confidence: "high", evidence: [reference] }], risks: [], quantitative_candidates: [],
-    critique_resolutions: [{ steelman_item_id: "critique-1", status: "resolved",
-      explanation: "The final finding is qualified." }] },
-};
+const output = { schema_version: "1", executive_summary: "The evidence supports a qualified decision.",
+  findings: ["The evidence is material."], risks: ["Delivery controls require review."],
+  recommendations: ["Verify the material controls."] };
 let storageWrites = 0;
 for (const method of ["setItem", "removeItem", "clear"]) {
   const native = Storage.prototype[method];
@@ -61,9 +51,9 @@ export async function runProof() {
     const prompt = request.messages.map((message) => message.content).join("\\n");
     if (prompt.includes("fresh-exit-token") || prompt.includes(privateText)) throw new Error("prompt_boundary_failed");
     return { ok: true, provider: request.provider,
-      body: { choices: [{ message: { content: JSON.stringify(outputs[request.stage]) } }] } };
+      body: { choices: [{ message: { content: JSON.stringify(output) } }] } };
   };
-  const outcome = await runBrowserMission(selected.document, "full", ["pdf"], "fresh-exit-token",
+  const outcome = await runBrowserMission(selected.document, "full", "fresh-exit-token",
     () => undefined, {
       parseDocument: (document) => runParserWorker(document,
         () => new Worker("/phase1/parser-worker.js", { type: "module" })),
@@ -71,20 +61,20 @@ export async function runProof() {
         () => new Worker("/phase1/redaction-worker.js", { type: "module" })),
       send: async (body) => {
         analyzeRequests += 1; capturedRequest = JSON.parse(new TextDecoder().decode(body));
-        return runAnalysis(capturedRequest, { groq: "test-only", openrouter_free: "test-only" }, transport);
+        return runAnalysis(capturedRequest, "test-only", transport);
       },
     });
   const requestText = capturedRequest === undefined ? "" : JSON.stringify(capturedRequest);
-  const passed = !("ok" in outcome.result) && outcome.result.executive_summary === outputs.oracle.executive_summary
-    && analyzeRequests === 1 && calls.join(",") === "strawman:groq,steelman:groq,oracle:groq"
+  const passed = !("ok" in outcome.result) && outcome.result.executive_summary === output.executive_summary
+    && analyzeRequests === 1 && calls.join(",") === "analysis:groq"
     && requestText.includes("[CUSTOMER_ID_1]") && !requestText.includes("CUST-100001")
     && !requestText.includes("private-review.txt")
     && workersCreated === 2 && workersTerminated === 2 && storageWrites === 0;
-  return { status: passed ? "ok" : "failed", valid_oracle: !("ok" in outcome.result),
+  return { status: passed ? "ok" : "failed", valid_finished_analysis: !("ok" in outcome.result),
     analyze_requests: analyzeRequests, provider_calls: calls,
     raw_or_pii_egress: requestText.includes("CUST-100001"), storage_writes: storageWrites,
     workers_created: workersCreated, workers_terminated: workersTerminated,
-    outcome_category: "ok" in outcome.result ? outcome.result.category : "oracle",
+    outcome_category: "ok" in outcome.result ? outcome.result.category : "finished_analysis",
     outcome_code: "ok" in outcome.result ? outcome.result.code : "valid" };
 }`;
 

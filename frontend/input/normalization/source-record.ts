@@ -64,10 +64,12 @@ function append(state: NormalizationState, reference: SourceReference, content: 
 }
 
 function normalizePdf(values: readonly unknown[], state: NormalizationState): boolean {
-  for (let index = 0; index < values.length; index += 1) {
-    const value = values[index];
-    if (!isRecord(value) || !exactFields(value, ["page", "content"]) || value.page !== index + 1) return false;
-    if (!append(state, { kind: "pdf_page", page: index + 1 }, value.content)) return false;
+  let previousPage = 0;
+  for (const value of values) {
+    if (!isRecord(value) || !exactFields(value, ["page", "content"])
+      || !positive(value.page) || value.page <= previousPage || value.page > 500) return false;
+    if (!append(state, { kind: "pdf_page", page: value.page }, value.content)) return false;
+    previousPage = value.page;
   }
   return true;
 }

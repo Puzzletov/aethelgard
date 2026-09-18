@@ -1,9 +1,8 @@
 # Aethelgard
 
 Aethelgard is a privacy-first document-analysis instrument and enterprise
-engineering showcase. It accepts PDF, DOCX, PPTX, XLSX, CSV and TXT, produces a
-three-stage Strawman → Steelman → Oracle analysis, and returns an exact-byte
-hybrid-signed PDF with optional XLSX and text exports.
+engineering showcase. It accepts PDF, DOCX, PPTX, XLSX, CSV and TXT, protects
+and redacts each document locally, and returns one cohesive finished analysis.
 
 ## How it works
 
@@ -12,15 +11,13 @@ Desktop Chrome or Edge
   → browser-local validation, parsing and PII redaction
   → secret-free Cloudflare edge Worker
   → private TrustedRuntime Durable Object
-  → Groq, then OpenRouter Free only when needed
-  → Browser Run PDF rendering and atomic Ed25519 + ML-DSA-65 signing
+  → one bounded Groq analysis request
+  → strict validation and browser rendering
 ```
 
 Raw files, unredacted extracted text and PII mappings stay in browser memory.
 Only redacted source records and the Turnstile token cross the network boundary.
-Aethelgard stores no user, document, prompt, report or analysis-job history; its
-only application persistence is the UTC date and aggregate Browser Run
-milliseconds used for anonymous quota enforcement.
+Aethelgard stores no user, document, prompt, report or analysis-job history.
 
 The validated launch scope is English-language documents on current desktop
 Chrome and Edge. Aethelgard does not claim to malware-scan source files, cannot

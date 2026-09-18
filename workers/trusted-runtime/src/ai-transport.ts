@@ -18,7 +18,7 @@ function providerBody(request: AiTransportRequest): Readonly<Record<string, unkn
     model: request.model_id,
     messages: request.messages,
     max_tokens: request.max_output_tokens,
-    response_format: { type: "json_object" },
+    response_format: request.stage === "analysis" ? FINISHED_RESPONSE_FORMAT : { type: "json_object" },
     stream: false,
   };
   if (request.provider === "groq") return common;
@@ -30,6 +30,20 @@ function providerBody(request: AiTransportRequest): Readonly<Record<string, unkn
     max_price: { prompt: 0, completion: 0 },
   } };
 }
+
+const ITEM = Object.freeze({ type: "string" });
+const FINISHED_RESPONSE_FORMAT = Object.freeze({ type: "json_schema", json_schema: {
+  name: "aethelgard_finished_analysis", strict: true, schema: {
+    type: "object", additionalProperties: false,
+    properties: {
+      executive_summary: { type: "string" },
+      findings: { type: "array", items: ITEM },
+      risks: { type: "array", items: ITEM },
+      recommendations: { type: "array", items: ITEM },
+    },
+    required: ["executive_summary", "findings", "risks", "recommendations"],
+  },
+} });
 
 type FailureReason = Extract<AiTransportResult, { ok: false }>["reason"];
 

@@ -1,0 +1,18 @@
+name = "aethelgard-managed-golden-edge"
+main = "edge.ts"
+compatibility_date = "2026-08-04"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+preview_urls = false
+
+[observability]
+enabled = false
+
+[vars]
+ALLOWED_ORIGIN = "https://managed-golden-path.aethelgard-3j9.pages.dev"
+BETA_ALLOWED_ORIGIN = "https://beta.aethelgard-3j9.pages.dev"
+
+[[durable_objects.bindings]]
+name = "MINIMAL_RUNTIME"
+class_name = "MinimalRuntime"
+script_name = "aethelgard-managed-golden-runtime"

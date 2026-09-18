@@ -7,6 +7,11 @@ import {
   MAX_NORMALIZED_SOURCES,
   type NormalizedSourceRecord,
 } from "../normalization/source-record";
+import {
+  applyProtectionPlan,
+  normalizeProtectionPlan,
+  type ProtectionOccurrence,
+} from "./protection-plan";
 
 export const MAX_PII_MAPPINGS = 10_000;
 export const MAX_PLACEHOLDER_ASCII_CHARS = 64;
@@ -24,6 +29,26 @@ interface Candidate {
 interface MappingState {
   readonly values: Map<string, string>;
   readonly counters: Map<PiiType, number>;
+  readonly traces: Map<string, { rule: PiiType; origin: "deterministic_pattern" | "entity_detector";
+    planned: number; completed: number }>;
+}
+
+export interface MustRedactDiagnostic {
+  readonly must_redact_rule: PiiType;
+  readonly must_redact_origin: "deterministic_pattern" | "entity_detector";
+  readonly pre_transform_match_count: number;
+  readonly planned_replacement_count: number;
+  readonly completed_replacement_count: number;
+  readonly post_transform_match_count: number;
+  readonly match_representation: "transformed";
+  readonly span_alignment: "exact" | "mismatch";
+}
+
+export class MustRedactLeakError extends Error {
+  constructor(readonly diagnostic: MustRedactDiagnostic) {
+    super("must_redact_leak");
+    this.name = "MustRedactLeakError";
+  }
 }
 
 export interface RedactionRequest {
@@ -178,8 +203,14 @@ function selectedCandidates(content: string): Candidate[] {
   return selected.sort((left, right) => left.start - right.start);
 }
 
-function placeholder(state: MappingState, type: PiiType, value: string): string {
+function placeholder(state: MappingState, candidate: Candidate, value: string): string {
+  const type = candidate.type;
   const key = `${type}\0${value}`;
+  const current = state.traces.get(key);
+  const origin = candidate.priority === 3 ? "entity_detector" : "deterministic_pattern";
+  state.traces.set(key, current === undefined ? { rule: type, origin, planned: 0, completed: 0 }
+    : { ...current, origin: current.origin === "deterministic_pattern" ? current.origin : origin,
+    });
   const existing = state.values.get(key);
   if (existing !== undefined) return existing;
   if (state.values.size >= MAX_PII_MAPPINGS) throw new Error("mapping_limit");
@@ -191,40 +222,85 @@ function placeholder(state: MappingState, type: PiiType, value: string): string 
   return result;
 }
 
-function redactContent(content: string, state: MappingState): string {
-  const selected = selectedCandidates(content);
-  let redacted = "";
-  let cursor = 0;
-  for (const candidate of selected) {
-    redacted += content.slice(cursor, candidate.start);
-    redacted += placeholder(state, candidate.type, content.slice(candidate.start, candidate.end));
-    cursor = candidate.end;
+function detectIdentities(sources: readonly NormalizedSourceRecord[], state: MappingState): void {
+  for (const source of sources) {
+    for (const candidate of selectedCandidates(source.content)) {
+      placeholder(state, candidate, source.content.slice(candidate.start, candidate.end));
+    }
   }
-  return redacted + content.slice(cursor);
 }
 
-function leaked(sources: readonly NormalizedSourceRecord[], state: MappingState): boolean {
+function occurrencePlan(content: string, state: MappingState): readonly ProtectionOccurrence[] {
+  const occurrences: ProtectionOccurrence[] = [];
+  for (const [key, token] of state.values) {
+    const separator = key.indexOf("\0");
+    const type = key.slice(0, separator);
+    const value = key.slice(separator + 1);
+    let start = 0;
+    while ((start = content.indexOf(value, start)) >= 0) {
+      occurrences.push({ start, end: start + value.length, type, placeholder: token });
+      start += Math.max(1, value.length);
+    }
+  }
+  return normalizeProtectionPlan(content, occurrences);
+}
+
+function redactContent(content: string, state: MappingState): string {
+  const plan = occurrencePlan(content, state);
+  const application = applyProtectionPlan(content, plan);
+  for (const occurrence of plan) {
+    const value = content.slice(occurrence.start, occurrence.end);
+    const trace = state.traces.get(`${occurrence.type}\0${value}`);
+    if (trace !== undefined) state.traces.set(`${occurrence.type}\0${value}`,
+      { ...trace, planned: trace.planned + 1, completed: trace.completed + 1 });
+  }
+  return application.content;
+}
+
+function occurrences(sources: readonly NormalizedSourceRecord[], value: string): number {
+  let count = 0;
+  for (const source of sources) {
+    let offset = 0;
+    while ((offset = source.content.indexOf(value, offset)) >= 0) { count += 1; offset += Math.max(1, value.length); }
+  }
+  return count;
+}
+
+function leakDiagnostic(
+  original: readonly NormalizedSourceRecord[], transformed: readonly NormalizedSourceRecord[], state: MappingState,
+): MustRedactDiagnostic | undefined {
   for (const key of state.values.keys()) {
     const value = key.slice(key.indexOf("\0") + 1);
-    if (sources.some((source) => source.content.includes(value))) return true;
+    const post = occurrences(transformed, value);
+    const trace = state.traces.get(key);
+    if (post > 0 && trace !== undefined) return Object.freeze({
+      must_redact_rule: trace.rule, must_redact_origin: trace.origin,
+      pre_transform_match_count: occurrences(original, value), planned_replacement_count: trace.planned,
+      completed_replacement_count: trace.completed, post_transform_match_count: post,
+      match_representation: "transformed", span_alignment: occurrences(original, value) === trace.planned
+        ? "exact" : "mismatch",
+    });
   }
-  return false;
+  return undefined;
 }
 
 export function redactRequest(value: unknown): RedactionResult {
   const request = validateRedactionRequest(value);
   if (request === undefined) throw new Error("invalid_redaction_request");
-  const state: MappingState = { values: new Map(), counters: new Map() };
+  const state: MappingState = { values: new Map(), counters: new Map(), traces: new Map() };
   try {
+    detectIdentities(request.sources, state);
     const sources = request.sources.map((source) => Object.freeze({ ...source,
       content: redactContent(source.content, state) }));
     const checked = validateRedactionRequest({ schema_version: "1", sources });
     if (checked === undefined) throw new Error("redacted_output_limit");
-    if (leaked(checked.sources, state)) throw new Error("must_redact_leak");
+    const leak = leakDiagnostic(request.sources, checked.sources, state);
+    if (leak !== undefined) throw new MustRedactLeakError(leak);
     return Object.freeze({ schema_version: "1", sources: checked.sources,
       placeholder_count: state.values.size, must_redact_leaks: 0 });
   } finally {
     state.values.clear();
     state.counters.clear();
+    state.traces.clear();
   }
 }

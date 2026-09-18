@@ -12,7 +12,7 @@ import { callAiProvider } from "../workers/trusted-runtime/src/ai-transport.ts";
 function request(provider = "groq", overrides = {}) {
   return {
     schema_version: "1",
-    stage: "strawman",
+    stage: provider === "groq" ? "analysis" : "strawman",
     provider,
     model_id: APPROVED_MODEL_IDS[provider],
     messages: [
@@ -56,8 +56,12 @@ test("Groq request uses only the fixed endpoint, secret header, and bounded JSON
   const body = JSON.parse(init.body);
   assert.deepEqual(Object.keys(body), ["model", "messages", "max_tokens", "response_format", "stream"]);
   assert.equal(body.model, "openai/gpt-oss-20b");
-  assert.equal(body.max_tokens, 4_096);
-  assert.deepEqual(body.response_format, { type: "json_object" });
+  assert.equal(body.max_tokens, 2_048);
+  assert.equal(body.response_format.type, "json_schema");
+  assert.equal(body.response_format.json_schema.strict, true);
+  assert.doesNotMatch(JSON.stringify(body.response_format), /minLength|maxLength|minItems|maxItems/u);
+  assert.deepEqual(body.response_format.json_schema.schema.required,
+    ["executive_summary", "findings", "risks", "recommendations"]);
   assert.equal(JSON.stringify(body).includes("private-key"), false);
 });
 

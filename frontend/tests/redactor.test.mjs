@@ -10,11 +10,17 @@ const normalizationCompiled = ts.transpileModule(normalizationSource, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
 }).outputText;
 const normalizationUrl = `data:text/javascript;base64,${Buffer.from(normalizationCompiled).toString("base64")}`;
+const protectionSource = await readFile(new URL("../input/redaction/protection-plan.ts", import.meta.url), "utf8");
+const protectionCompiled = ts.transpileModule(protectionSource, {
+  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+}).outputText;
+const protectionUrl = `data:text/javascript;base64,${Buffer.from(protectionCompiled).toString("base64")}`;
 const compiled = ts.transpileModule(source, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
 }).outputText.replace('from "compromise"', `from ${JSON.stringify(compromiseUrl)}`)
-  .replace('from "../normalization/source-record"', `from ${JSON.stringify(normalizationUrl)}`);
-const { redactRequest } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString("base64")}`);
+  .replace('from "../normalization/source-record"', `from ${JSON.stringify(normalizationUrl)}`)
+  .replace('from "./protection-plan"', `from ${JSON.stringify(protectionUrl)}`);
+const { MustRedactLeakError, redactRequest } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString("base64")}`);
 
 function sourceRecord(content, ordinal = 1) {
   return Object.freeze({ schema_version: "1", ordinal,
@@ -55,6 +61,47 @@ test("equal exact values reuse stable counters and distinct values advance them"
   assert.equal(result.sources[0].content.match(/\[EMAIL_1\]/gu)?.length, 2);
   assert.equal(result.sources[0].content.match(/\[EMAIL_2\]/gu)?.length, 1);
   assert.equal(result.placeholder_count, 2);
+});
+
+test("zero detected identifiers is an unchanged successful redaction", () => {
+  const content = "This independent business analysis explains revenue growth, supplier concentration, delivery risk, internal controls, and practical recommendations for executive review.";
+  const result = redactRequest(request(content));
+  assert.equal(result.placeholder_count, 0);
+  assert.equal(result.must_redact_leaks, 0);
+  assert.equal(result.sources[0].content, content);
+  assert.equal("mapping" in result, false);
+});
+
+test("a real transformed-value collision still fails closed with structural evidence", () => {
+  assert.throws(() => redactRequest(request("Person | PERSON")), (error) => {
+    assert.equal(error instanceof MustRedactLeakError, true);
+    assert.deepEqual(error.diagnostic, {
+      must_redact_rule: "PERSON", must_redact_origin: "deterministic_pattern",
+      pre_transform_match_count: 1, planned_replacement_count: 1,
+      completed_replacement_count: 1, post_transform_match_count: 1,
+      match_representation: "transformed", span_alignment: "exact",
+    });
+    return true;
+  });
+});
+
+test("owner cardinality defect protects two LOCATION occurrences with one identity", () => {
+  const content = "The office in London supports regional operations. The London-based team manages delivery.";
+  const result = redactRequest(request(content));
+  assert.equal(result.placeholder_count, 1);
+  assert.equal(result.sources[0].content.match(/\[LOCATION_1\]/gu)?.length, 2);
+  assert.equal(result.sources[0].content.includes("London"), false);
+  assert.equal(result.must_redact_leaks, 0);
+});
+
+test("one identity is protected across separate source records", () => {
+  const result = redactRequest(request(
+    "Location | London",
+    "Location | London",
+  ));
+  assert.equal(result.placeholder_count, 1);
+  assert.equal(result.sources.every((record) => record.content.includes("[LOCATION_1]")), true);
+  assert.equal(result.sources.some((record) => record.content.includes("London")), false);
 });
 
 test("unknown request fields, invalid records, and the mapping bound fail closed", () => {

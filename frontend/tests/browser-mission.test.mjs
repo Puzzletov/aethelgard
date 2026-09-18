@@ -21,10 +21,11 @@ test("production analysis targets only the approved public Worker", async () => 
     readFile(new URL("../analysis/browser-mission.ts", import.meta.url), "utf8"));
   assert.match(source, /fetch\(ANALYZE_ENDPOINT,/u);
   assert.doesNotMatch(source, /fetch\(["'`]\/analyze/u);
-  assert.deepEqual(source.match(/https:\/\/[^"'`]+/gu), [ANALYZE_ENDPOINT]);
+  assert.deepEqual(source.match(/https:\/\/[^"'`]+/gu), [ANALYZE_ENDPOINT,
+    "https://aethelgard-managed-golden-edge.justbwas.workers.dev/analyze"]);
+  assert.match(source, /NEXT_PUBLIC_AETHELGARD_SIMPLE_BETA === "1"/u);
 });
 
-const reference = Object.freeze({ kind: "txt_lines", line_start: 1, line_end: 1 });
 const english = "This independent project analysis explains the evidence, material risks, controls, and practical recommendations clearly for careful executive review.";
 const parsed = Object.freeze({ ok: true, value: { ok: true, schema_version: "1", format: "txt",
   sources: [{ line_start: 1, line_end: 1, content: english }] } });
@@ -33,30 +34,14 @@ const document = Object.freeze({ format: "txt", byteLength: 4,
 
 function oracle(content = "A careful result.") {
   return { schema_version: "1", executive_summary: content,
-    findings: [{ id: "finding-1", title: "Finding", analysis: "Analysis", confidence: "high", evidence: [reference] }],
-    recommendations: [{ id: "recommendation-1", title: "Act", action: "Review evidence", priority: "high",
-      confidence: "high", evidence: [reference] }], risks: [], quantitative_candidates: [],
-    critique_resolutions: [{ steelman_item_id: "critique-1", status: "resolved", explanation: "Resolved" }] };
-}
-
-function reportResponse() {
-  const result = oracle();
-  return { schema_version: "1", dashboard: { schema_version: "1", focus: "full", title: "Review",
-    executive_summary: result.executive_summary, findings: result.findings,
-    recommendations: result.recommendations, risks: result.risks, charts: [],
-    verification: { ed25519_key_id: `ed25519:${"a".repeat(32)}`,
-      mldsa65_key_id: `mldsa65:${"b".repeat(32)}` } },
-  pdf: { bytes_b64: btoa("%PDF-1.7\n%%EOF"), signature_manifest: { schema_version: "1",
-    pdf_sha256: "c".repeat(64), ed25519_algorithm: "Ed25519",
-    ed25519_public_key_id: `ed25519:${"a".repeat(32)}`, ed25519_signature_b64: btoa("e".repeat(64)),
-    mldsa65_algorithm: "ML-DSA-65", mldsa65_public_key_id: `mldsa65:${"b".repeat(32)}`,
-    mldsa65_signature_b64: btoa("m".repeat(3_309)) } } };
+    findings: ["Finding: Analysis"], risks: ["Material delivery risk"],
+    recommendations: ["Review evidence"] };
 }
 
 test("valid local flow sends only canonical redacted sources and reports every stage", async () => {
   const stages = [];
   let request;
-  const result = await runBrowserMission(document, "full", ["pdf"], "fresh-token",
+  const result = await runBrowserMission(document, "full", "fresh-token",
     (stage) => stages.push(stage), {
       parseDocument: async () => parsed,
       redact: async ({ sources }) => ({ schema_version: "1", sources: sources.map((source) =>
@@ -64,7 +49,7 @@ test("valid local flow sends only canonical redacted sources and reports every s
       placeholder_count: 1, must_redact_leaks: 0 }),
       send: async (body) => { request = JSON.parse(new TextDecoder().decode(body)); return oracle(); },
     });
-  assert.deepEqual(stages, ["local_parse", "language", "redaction", "verification", "analysis", "complete"]);
+  assert.deepEqual(stages, ["preparing", "analyzing", "reporting", "complete"]);
   assert.equal(request.turnstile_token, "fresh-token");
   assert.equal(request.sources[0].content.includes("[PERSON_1]"), true);
   assert.equal(JSON.stringify(request).includes(english), false);
@@ -72,30 +57,80 @@ test("valid local flow sends only canonical redacted sources and reports every s
   assert.equal(result.sources[0].content.includes("[PERSON_1]"), true);
 });
 
-test("a complete report response retains its detached download pair in memory", async () => {
-  const response = reportResponse();
-  const outcome = await runBrowserMission(document, "full", ["pdf"], "token", () => undefined, {
-    parseDocument: async () => parsed,
-    redact: async ({ sources }) => ({ schema_version: "1", sources,
-      placeholder_count: 0, must_redact_leaks: 0 }),
-    send: async () => response,
-  });
-  assert.equal(outcome.result.title, "Review");
-  assert.equal(outcome.response, response);
-  assert.equal(outcome.response.pdf.signature_manifest.ed25519_algorithm, "Ed25519");
+test("zero-PII PDF and TXT content reaches exactly one analysis unchanged", async () => {
+  for (const format of ["pdf", "txt"]) {
+    const safe = "This independent business analysis explains revenue growth, supplier concentration, delivery risk, internal controls, and practical recommendations for executive review.";
+    const parsedSafe = { ok: true, value: format === "pdf"
+      ? { ok: true, schema_version: "1", format, pages: [{ page: 1, content: safe }] }
+      : { ok: true, schema_version: "1", format, sources: [{ line_start: 1, line_end: 1, content: safe }] } };
+    let sends = 0;
+    let outbound;
+    const result = await runBrowserMission({ ...document, format }, "full", "token", () => undefined, {
+      parseDocument: async () => parsedSafe,
+      redact: async ({ sources }) => ({ schema_version: "1", sources,
+        placeholder_count: 0, must_redact_leaks: 0 }),
+      send: async (body) => { sends += 1; outbound = JSON.parse(new TextDecoder().decode(body)); return oracle(); },
+    });
+    assert.equal(sends, 1);
+    assert.equal(outbound.sources[0].content, safe);
+    assert.equal(result.result.executive_summary, "A careful result.");
+    assert.equal(result.diagnostic, undefined);
+  }
+});
+
+test("PDF preparation failures expose only bounded local stage diagnostics", async () => {
+  const pdfDocument = { ...document, format: "pdf" };
+  const pdfValue = (content) => ({ ok: true, value: { ok: true, schema_version: "1",
+    format: "pdf", pages: [{ page: 2, content }] } });
+  const french = "Cette analyse indépendante explique clairement les preuves, les risques matériels, les contrôles internes et les recommandations pratiques pour une décision prudente.";
+  const cases = [
+    { stage: "EXTRACTION", reason: "pdf_parse_failed",
+      parseDocument: async () => ({ ok: true, value: { ok: false, code: "pdf_parse_failed" } }) },
+    { stage: "NORMALIZATION", reason: "invalid_document",
+      parseDocument: async () => pdfValue("") },
+    { stage: "LANGUAGE", reason: "non_english", parseDocument: async () => pdfValue(french) },
+    { stage: "REDACTION", reason: "transformation_error", parseDocument: async () => pdfValue(english),
+      redact: async () => ({ schema_version: "1", ok: false, category: "privacy",
+        code: "redaction_failed", message: "Private information could not be removed safely.",
+        retry: "fresh_document", diagnostic_reason: "transformation_error" }) },
+    { stage: "OUTBOUND_PREPARATION", reason: "redaction_failed", parseDocument: async () => pdfValue(english),
+      redact: async ({ sources }) => ({ schema_version: "1", sources: sources.map((source) =>
+        ({ ...source, content: "unsafe@example.invalid" })), placeholder_count: 1, must_redact_leaks: 0 }) },
+  ];
+  for (const item of cases) {
+    let sends = 0;
+    const result = await runBrowserMission(pdfDocument, "full", "token", () => undefined, {
+      parseDocument: item.parseDocument,
+      redact: item.redact ?? (async () => { throw new Error("not_reached"); }),
+      send: async () => { sends += 1; return oracle(); },
+    });
+    assert.equal(result.diagnostic.stage, item.stage);
+    assert.equal(result.diagnostic.reason_code, item.reason);
+    assert.equal(result.diagnostic.file_type, "PDF");
+    assert.equal(result.diagnostic.file_size_bytes, 4);
+    assert.deepEqual(Object.keys(result.diagnostic).sort(), ["completed_replacement_count",
+      "extracted_char_count", "extracted_word_count", "file_size_bytes", "file_type", "language_gate", "language_top_rank",
+      "match_representation", "must_redact_origin", "must_redact_rule", "outbound_ready",
+      "pdf_nonempty_pages", "pdf_page_count", "pii_detected_count", "planned_replacement_count",
+      "post_transform_match_count", "pre_transform_match_count", "reason_code", "redaction_status",
+      "source_record_count", "span_alignment", "stage"]);
+    assert.doesNotMatch(JSON.stringify(result.diagnostic), /filename|content|mapping|token|prompt|response/iu);
+    assert.equal(sends, 0);
+  }
 });
 
 test("local document and privacy failures forbid the network", async () => {
   let sends = 0;
   const common = { redact: async () => { throw new Error("unreached"); },
     send: async () => { sends += 1; return oracle(); } };
-  const invalid = await runBrowserMission(document, "full", ["pdf"], "token", () => undefined,
+  const invalid = await runBrowserMission(document, "full", "token", () => undefined,
     { ...common, parseDocument: async () => ({ ok: false, reason: "invalid" }) });
   assert.equal(invalid.result.category, "document");
-  const privacy = await runBrowserMission(document, "full", ["pdf"], "token", () => undefined, {
+  const privacy = await runBrowserMission(document, "full", "token", () => undefined, {
     parseDocument: async () => parsed,
     redact: async () => ({ schema_version: "1", ok: false, category: "privacy", code: "redaction_failed",
-      message: "Private information could not be removed safely.", retry: "fresh_document" }),
+      message: "Private information could not be removed safely.", retry: "fresh_document",
+      diagnostic_reason: "transformation_error" }),
     send: common.send,
   });
   assert.equal(privacy.result.category, "privacy");
@@ -106,7 +141,7 @@ for (const reason of ["crash", "timeout", "allocation"]) {
   test(`one fresh parser Worker recovers after ${reason}`, async () => {
     let attempts = 0;
     let sends = 0;
-    const result = await runBrowserMission(document, "full", ["pdf"], "token", () => undefined, {
+    const result = await runBrowserMission(document, "full", "token", () => undefined, {
       parseDocument: async () => (++attempts === 1 ? { ok: false, reason } : parsed),
       redact: async ({ sources }) => ({ schema_version: "1", sources,
         placeholder_count: 0, must_redact_leaks: 0 }),
@@ -123,7 +158,7 @@ for (const reason of ["crash", "timeout", "allocation"]) {
     let attempts = 0;
     let redactions = 0;
     let sends = 0;
-    const result = await runBrowserMission(document, "full", ["pdf"], "token", () => undefined, {
+    const result = await runBrowserMission(document, "full", "token", () => undefined, {
       parseDocument: async () => { attempts += 1; return { ok: false, reason }; },
       redact: async () => { redactions += 1; throw new Error("forbidden"); },
       send: async () => { sends += 1; return oracle(); },
@@ -138,7 +173,7 @@ for (const reason of ["crash", "timeout", "allocation"]) {
 
 test("invalid documents do not consume the resource retry", async () => {
   let attempts = 0;
-  const result = await runBrowserMission(document, "full", ["pdf"], "token", () => undefined, {
+  const result = await runBrowserMission(document, "full", "token", () => undefined, {
     parseDocument: async () => { attempts += 1; return { ok: false, reason: "invalid" }; },
     redact: async () => { throw new Error("forbidden"); }, send: async () => oracle(),
   });
@@ -149,7 +184,7 @@ test("invalid documents do not consume the resource retry", async () => {
 test("redaction and analysis exceptions have zero local retry and fixed Safe Mode", async () => {
   let redactions = 0;
   let sends = 0;
-  const privacy = await runBrowserMission(document, "full", ["pdf"], "token", () => undefined, {
+  const privacy = await runBrowserMission(document, "full", "token", () => undefined, {
     parseDocument: async () => parsed,
     redact: async () => { redactions += 1; throw new Error("private value"); },
     send: async () => { sends += 1; return oracle(); },
@@ -157,13 +192,13 @@ test("redaction and analysis exceptions have zero local retry and fixed Safe Mod
   assert.equal(privacy.result.category, "privacy");
   assert.equal(redactions, 1);
   assert.equal(sends, 0);
-  const analysis = await runBrowserMission(document, "full", ["pdf"], "token", () => undefined, {
+  const analysis = await runBrowserMission(document, "full", "token", () => undefined, {
     parseDocument: async () => parsed,
     redact: async ({ sources }) => ({ schema_version: "1", sources,
       placeholder_count: 0, must_redact_leaks: 0 }),
     send: async () => { sends += 1; throw new Error("provider secret"); },
   });
   assert.equal(analysis.result.category, "analysis");
-  assert.equal(analysis.result.message, "Analysis is unavailable. Try again later.");
+  assert.equal(analysis.result.message, "Analysis temporarily unavailable.");
   assert.equal(sends, 1);
 });

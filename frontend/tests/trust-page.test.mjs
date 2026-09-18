@@ -5,8 +5,7 @@ import test from "node:test";
 const root = new URL("../", import.meta.url);
 const read = (path) => readFile(new URL(path, root), "utf8");
 const claimIds = ["mission_no_copy", "browser_local_source", "redacted_ai_processing",
-  "anonymous_quota_state", "provider_metadata_limit", "english_only",
-  "desktop_chrome_edge", "no_malware_scan", "hybrid_exact_byte_signing", "exact_zero"];
+  "provider_metadata_limit", "english_only", "desktop_chrome_edge", "no_malware_scan", "exact_zero"];
 
 test("Trust page contains the complete allow-listed claim set within its bound", async () => {
   const claims = await read("trust/claims.ts");
@@ -14,7 +13,7 @@ test("Trust page contains the complete allow-listed claim set within its bound",
   assert.equal((claims.match(/\bid: "/gu) ?? []).length, claimIds.length);
   assert.ok([...claims].length <= 20_000);
   assert.match(claims, /Raw source files and unredacted extracted text are never sent/);
-  assert.match(claims, /both Ed25519 and ML-DSA-65\. All checks must pass/);
+  assert.match(claims, /Groq processes one bounded analysis request/);
 });
 
 test("Trust claims preserve the approved limits without stronger marketing claims", async () => {
@@ -50,8 +49,7 @@ test("Trust route has accessible landmarks, headings and local navigation", asyn
 test("each canonical lifecycle row maps once to exact plain-language handling", async () => {
   const lifecycle = await read("components/data-lifecycle.tsx");
   const ids = ["raw-source", "unredacted-text", "pii-mapping", "redacted-sources",
-    "turnstile-token", "ai-results", "report-model", "report-html", "report-outputs",
-    "signing-material", "public-keys", "quota-state", "static-sample"];
+    "turnstile-token", "ai-results", "public-keys", "static-sample"];
   for (const id of ids) assert.equal(lifecycle.match(new RegExp(`\\["${id}"`, "gu"))?.length, 1);
   assert.equal((lifecycle.match(/^  \["/gmu) ?? []).length, ids.length);
   assert.match(lifecycle, /Never collected/);
