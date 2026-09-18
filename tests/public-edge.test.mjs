@@ -71,7 +71,7 @@ test("health is minimal, secure, and no-indexed", async () => {
   assert.deepEqual(await response.json(), {
     status: "ok",
     service: "aethelgard-edge",
-    architecture: "2.1",
+    architecture: "2.2",
   });
   assert.equal(response.headers.get("cache-control"), "no-store");
   assert.equal(response.headers.get("x-content-type-options"), "nosniff");

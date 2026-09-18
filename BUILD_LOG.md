@@ -5,13 +5,15 @@ historical work.
 
 ## Current State
 
-- Architecture: **2.1 — APPROVED FOR BUILD**, execution-hardened under EDR 37.
+- Architecture: **2.2 — OWNER-AUTHORIZED RECONCILIATION FOR REVIEW** under
+  EDR 42. Runtime implementation is not yet authorized.
 - Authoritative exact Git-blob SHA-256:
-  `56fdc13dcde678c35dc8ad0ab67c28b9340d5095ed1a63999adde140c0c091c2`.
+  `391db9fddbe04a0e7db4077c1c17f6cacd4d487201db10aa4c34d71e0fcbb381`.
 - Phase -1: **CLOSED**.
 - Preparation gate: **PASSED — MERGED** in PR #3 on 2026-08-28.
-- Current implementation position: **PHASE 4 — IN PROGRESS** on
-  `phase/4-trust-portfolio`; Task 4.1 passed.
+- Current implementation position: Architecture 2.1 Phases 0–3 and Tasks
+  4.1–4.11 are completed evidence. Its Task 4.12 is superseded before
+  completion; Architecture 2.2 implementation has not started.
 - Phase 0 status: **PASSED — MERGED** in PR #7 on 2026-08-29.
 - Phase 1 status: **PASSED — MERGED** in PR #11 on 2026-08-31.
 - Phase 2 status: **PASSED — MERGED** in PR #16 on 2026-09-02.
@@ -23,8 +25,8 @@ historical work.
 - Frozen PII baseline: **APPROVED**.
 - Trusted PDF and hybrid-signing feasibility: **PASSED**.
 - External Durable Object direct binding: **PASSED**.
-- Architecture research: **CLOSED**.
-- Production Architecture 2.1 implementation: **NOT COMPLETE**.
+- Architecture research: **CLOSED**; EDR 42 is a bounded product/PES correction.
+- Production Architecture 2.2 implementation: **NOT STARTED**.
 
 ## Binding Evidence
 
@@ -2551,3 +2553,57 @@ historical work.
   deployment `07425838-e45e-440c-86ec-c30aac2215b3` from source `18c84b9`.
   PR #28 remains open and Task 4.12 remains paused pending owner PDF/TXT smoke
   tests.
+
+### 126. Architecture 2.2 privacy-gateway reconciliation
+
+- **READY FOR OWNER REVIEW** on 2026-09-18. EDR 42 re-centres Aethelgard as a
+  privacy gateway: protect locally, send pseudonymized records to one Groq
+  request, restore exact known identities locally, deliver from browser memory
+  and keep no copy. The owner-verified six-format Managed-Turnstile golden spine
+  remains the permanent heartbeat.
+- The browser-private identity map now has a deterministic ephemeral lifecycle
+  through response validation, exact-token restoration and delivery. Default
+  `restore` and explicit `protected` modes are specified; empty maps pass,
+  unknown reserved tokens fail closed, and mapping/restored content never
+  crosses the network, enters application storage or appears in logs.
+- The future one-call result is one strict professional canonical report.
+  Browser display plus local Markdown/TXT is the MVP delivery boundary. Browser
+  Run, generated PDF, charts, XLSX output, exact-PDF hybrid signing, manifests
+  and verifiers remain preserved implementation/portfolio evidence but are not
+  Architecture 2.2 MVP release dependencies.
+- Remaining work is four short sequential phases: privacy lifecycle (Tasks
+  5.1–5.3), canonical report (6.1–6.3), Markdown/TXT delivery (7.1–7.3), and
+  canonical release (8.1–8.3). Architecture lint and task-context tests pass.
+  Authoritative exact staged Git-blob SHA-256 is
+  `31af902f90e1d5b8bc857905d56217b226d72b7805745591815d672401d49b38`
+  before the owner-review correction recorded below.
+- No runtime/application code, dependency, provider, secret, Cloudflare
+  resource, beta/production deployment or PR #28 state was changed. Further
+  implementation awaits explicit owner approval of the reconciled PES.
+
+### 127. Architecture 2.2 owner-review correction
+
+- **READY FOR OWNER REVIEW** on 2026-09-19. The bounded PES correction makes
+  the Groq-facing structural schema explicitly separate from authoritative
+  local Zod validation and places non-empty content and exact-token
+  preservation requirements in the fixed prompt plus local validation.
+- Exact restoration is now a single-pass span composition over the original
+  model string. Inserted identity values are never rescanned, recursively
+  substituted or chained through another reserved token. Identity-map release
+  is operation-scoped through the last possible output-mode selection and then
+  occurs at the earliest specified terminal lifecycle event.
+- Identity cardinality and protected-occurrence cardinality are separate.
+  Current implementation proves literal reserved-looking source text survives
+  redaction, but does not yet prove generated-token provenance through the full
+  restoration path; Tasks 5.1 and 5.2 therefore carry that gap explicitly as a
+  new fail-closed implementation requirement.
+- `B-NETWORK-REQUESTS` is corrected from the conceptual value `3` to `128`
+  browser-observed fetch/resource events matching the existing release harness.
+  `B-CONTENT-BEARING-REQUESTS = 1` separately fixes the permitted successful
+  content-bearing `/analyze` request count. Internal edge-to-Durable-Object,
+  Siteverify and Groq calls are accounted for independently.
+- Architecture lint and deterministic architecture-tooling tests pass. The new
+  authoritative exact staged Git-blob SHA-256 is
+  `391db9fddbe04a0e7db4077c1c17f6cacd4d487201db10aa4c34d71e0fcbb381`.
+  No runtime/application code, dependency, secret, provider, deployment,
+  production state or PR #28 state changed.
