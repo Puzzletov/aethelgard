@@ -127,7 +127,7 @@ export async function runBrowserMission(
   try { redaction = await dependencies.redact({ schema_version: "1", sources: bounded.records }); }
   catch { return failed(document, PRIVACY_FAILURE, "REDACTION", "redaction_failed",
     { ...languageObservation, redaction_status: "FAIL" }); }
-  if ("ok" in redaction) return failed(document, PRIVACY_FAILURE, "REDACTION", redaction.code,
+  if ("ok" in redaction) return failed(document, PRIVACY_FAILURE, "REDACTION", redaction.diagnostic_reason,
     { ...languageObservation, redaction_status: "FAIL" });
   const redactionObservation = { ...languageObservation, pii_detected_count: redaction.placeholder_count,
     redaction_status: "PASS" as const };

@@ -35,23 +35,26 @@ test("a valid result is returned and its disposable Worker is terminated", async
   assert.equal(worker.terminated, true);
 });
 
-test("crash and invalid output fail closed with no fresh Worker retry", async () => {
-  for (const behavior of [
-    (target) => target.onerror?.(new Event("error")),
-    (target) => target.onmessage?.({ data: { ...result, mapping: {} } }),
+test("crash and invalid output fail closed with exact local reasons and no retry", async () => {
+  for (const [behavior, reason] of [
+    [(target) => target.onerror?.(new Event("error")), "crash"],
+    [(target) => target.onmessage?.({ data: { ...result, mapping: {} } }), "invalid_result"],
+    [(target) => target.onmessage?.({ data: { schema_version: "1", ok: false,
+      reason: "must_redact_leak" } }), "must_redact_leak"],
   ]) {
     let factories = 0;
     const worker = new FakeWorker(behavior);
     const output = await runRedactionWorker(request, () => { factories += 1; return worker; });
     assert.deepEqual(output, { schema_version: "1", ok: false, category: "privacy",
       code: "redaction_failed", message: "Private information could not be removed safely.",
-      retry: "fresh_document" });
+      retry: "fresh_document", diagnostic_reason: reason });
     assert.equal(factories, 1);
     assert.equal(worker.terminated, true);
   }
   assert.deepEqual(await runRedactionWorker(request, () => { throw new Error("worker_start_failed"); }),
     { schema_version: "1", ok: false, category: "privacy", code: "redaction_failed",
-      message: "Private information could not be removed safely.", retry: "fresh_document" });
+      message: "Private information could not be removed safely.", retry: "fresh_document",
+      diagnostic_reason: "worker_start" });
 });
 
 test("controller fixes a 10-second hard stop and contains no retry or storage path", () => {

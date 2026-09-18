@@ -89,9 +89,10 @@ test("PDF preparation failures expose only bounded local stage diagnostics", asy
     { stage: "NORMALIZATION", reason: "invalid_document",
       parseDocument: async () => pdfValue("") },
     { stage: "LANGUAGE", reason: "non_english", parseDocument: async () => pdfValue(french) },
-    { stage: "REDACTION", reason: "redaction_failed", parseDocument: async () => pdfValue(english),
+    { stage: "REDACTION", reason: "transformation_error", parseDocument: async () => pdfValue(english),
       redact: async () => ({ schema_version: "1", ok: false, category: "privacy",
-        code: "redaction_failed", message: "Private information could not be removed safely.", retry: "fresh_document" }) },
+        code: "redaction_failed", message: "Private information could not be removed safely.",
+        retry: "fresh_document", diagnostic_reason: "transformation_error" }) },
     { stage: "OUTBOUND_PREPARATION", reason: "redaction_failed", parseDocument: async () => pdfValue(english),
       redact: async ({ sources }) => ({ schema_version: "1", sources: sources.map((source) =>
         ({ ...source, content: "unsafe@example.invalid" })), placeholder_count: 1, must_redact_leaks: 0 }) },
@@ -126,7 +127,8 @@ test("local document and privacy failures forbid the network", async () => {
   const privacy = await runBrowserMission(document, "full", "token", () => undefined, {
     parseDocument: async () => parsed,
     redact: async () => ({ schema_version: "1", ok: false, category: "privacy", code: "redaction_failed",
-      message: "Private information could not be removed safely.", retry: "fresh_document" }),
+      message: "Private information could not be removed safely.", retry: "fresh_document",
+      diagnostic_reason: "transformation_error" }),
     send: common.send,
   });
   assert.equal(privacy.result.category, "privacy");

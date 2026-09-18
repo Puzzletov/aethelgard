@@ -8,6 +8,10 @@ import {
 
 export const REDACTION_TIMEOUT_MS = 10_000;
 
+export type RedactionFailureReason = "worker_start" | "timeout" | "crash" | "post_failed"
+  | "invalid_result" | "invalid_redaction_request" | "mapping_limit"
+  | "redacted_output_limit" | "must_redact_leak" | "placeholder_limit" | "transformation_error";
+
 export interface RedactionSafeMode {
   readonly schema_version: "1";
   readonly ok: false;
@@ -15,15 +19,19 @@ export interface RedactionSafeMode {
   readonly code: "redaction_failed";
   readonly message: "Private information could not be removed safely.";
   readonly retry: "fresh_document";
+  readonly diagnostic_reason: RedactionFailureReason;
 }
 
 export type RedactionOperationResult = RedactionResult | RedactionSafeMode;
 type WorkerFactory = () => Worker;
 
-const SAFE_MODE: RedactionSafeMode = Object.freeze({
+function safeMode(diagnosticReason: RedactionFailureReason): RedactionSafeMode {
+  return Object.freeze({
   schema_version: "1", ok: false, category: "privacy", code: "redaction_failed",
-  message: "Private information could not be removed safely.", retry: "fresh_document",
-});
+    message: "Private information could not be removed safely.", retry: "fresh_document",
+    diagnostic_reason: diagnosticReason,
+  });
+}
 
 function defaultWorker(): Worker {
   return new Worker(new URL("./redaction-worker.ts", import.meta.url), { type: "module" });
@@ -66,12 +74,20 @@ function isResult(value: unknown): value is RedactionResult {
     && Number(record.placeholder_count) <= 10_000 && validSources(record.sources);
 }
 
+function workerFailure(value: unknown): RedactionFailureReason | undefined {
+  if (!isRecord(value) || Object.keys(value).sort().join("\0") !== "ok\0reason\0schema_version"
+    || value.schema_version !== "1" || value.ok !== false || typeof value.reason !== "string") return undefined;
+  const reasons = new Set<RedactionFailureReason>(["invalid_redaction_request", "mapping_limit",
+    "redacted_output_limit", "must_redact_leak", "placeholder_limit", "transformation_error"]);
+  return reasons.has(value.reason as RedactionFailureReason) ? value.reason as RedactionFailureReason : undefined;
+}
+
 export function runRedactionWorker(
   request: RedactionRequest, createWorker: WorkerFactory = defaultWorker,
 ): Promise<RedactionOperationResult> {
   return new Promise((resolve) => {
     let worker: Worker;
-    try { worker = createWorker(); } catch { resolve(SAFE_MODE); return; }
+    try { worker = createWorker(); } catch { resolve(safeMode("worker_start")); return; }
     let settled = false;
     const finish = (result: RedactionOperationResult): void => {
       if (settled) return;
@@ -80,12 +96,15 @@ export function runRedactionWorker(
       worker.terminate();
       resolve(result);
     };
-    const timer = setTimeout(() => finish(SAFE_MODE), REDACTION_TIMEOUT_MS);
-    worker.onmessage = (event: MessageEvent<unknown>) => finish(isResult(event.data) ? event.data : SAFE_MODE);
+    const timer = setTimeout(() => finish(safeMode("timeout")), REDACTION_TIMEOUT_MS);
+    worker.onmessage = (event: MessageEvent<unknown>) => {
+      const reason = workerFailure(event.data);
+      finish(isResult(event.data) ? event.data : safeMode(reason ?? "invalid_result"));
+    };
     worker.onerror = (event) => {
       event.preventDefault();
-      finish(SAFE_MODE);
+      finish(safeMode("crash"));
     };
-    try { worker.postMessage(request); } catch { finish(SAFE_MODE); }
+    try { worker.postMessage(request); } catch { finish(safeMode("post_failed")); }
   });
 }

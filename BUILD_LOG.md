@@ -2473,3 +2473,9 @@ historical work.
   Focused privacy/stage matrix tests, the complete frontend suite (89/89), strict
   typecheck/lint and the deterministic beta build pass. Production, Workers,
   Turnstile and Groq were not changed; Task 4.12 remains paused.
+- Owner observation reached redaction, but the displayed zero count was the
+  diagnostic default after failure rather than a successful worker result. The
+  canonical validator already accepts `placeholder_count >= 0` and the same
+  transformation returns unchanged content for an empty local map. The beta
+  diagnostic now attributes only allow-listed worker start, timeout, crash,
+  invalid-result and transformation failure reasons without exposing content.
